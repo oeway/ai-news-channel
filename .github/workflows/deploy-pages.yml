@@ -7,26 +7,22 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
+  contents: write
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          path: docs/
-
-      - uses: actions/deploy-pages@v4
-        id: deploy
+      - name: Deploy to gh-pages branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan gh-pages-tmp
+          git rm -rf .
+          cp -r docs/* .
+          cp docs/.nojekyll . 2>/dev/null || true
+          git add -A
+          git commit -m "Deploy docs to GitHub Pages"
+          git push origin HEAD:gh-pages --force
