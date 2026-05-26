@@ -2,9 +2,9 @@ name: Update AI News Newsletter
 
 on:
   schedule:
-    # Run daily at 07:00 UTC (early morning, so news is ready for the day)
+    # Run daily at 07:00 UTC so the digest is ready each morning
     - cron: '0 7 * * *'
-  workflow_dispatch:   # Allow manual trigger from the Actions tab
+  workflow_dispatch:    # Manual trigger from the Actions tab
   push:
     branches: [main]
     paths:
@@ -13,8 +13,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   update-newsletter:
@@ -52,30 +50,3 @@ jobs:
             git commit -m "📰 Update AI newsletter · $DATE [skip ci]"
             git push
           fi
-
-  # Deploy to GitHub Pages after the newsletter is committed
-  deploy-pages:
-    name: Deploy to GitHub Pages
-    needs: update-newsletter
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: main   # always deploy from main
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/
-
-      - name: Deploy to GitHub Pages
-        id: deploy
-        uses: actions/deploy-pages@v4
