@@ -1,39 +1,67 @@
 # ⚡ AI Pulse — Daily AI News Digest
 
-A fully automated, daily newsletter that scrapes and curates the most important AI developments from 8+ trusted sources, rendered as a beautiful static site served via GitHub Pages.
+A fully automated, daily newsletter that scrapes and curates the most important AI developments from 11+ trusted sources, rendered as a beautiful static site served via GitHub Pages.
+
+**Live site:** https://oeway.github.io/ai-news-channel/
 
 ## What it covers
 
 | Category | Topics |
 |---|---|
-| 🔬 Research & Breakthroughs | arXiv CS.AI/LG/CL papers, new model architectures, benchmarks |
+| 🔬 Research & Breakthroughs | arXiv CS.AI/LG/CL papers, new model architectures, benchmarks, hardware |
 | 🤖 AI Agents & Automation | Agent frameworks, tool use, multi-agent systems, agentic products |
-| 🚀 New Products & Releases | Model launches, API updates, developer tools |
-| 💼 Industry & Business | Funding, acquisitions, regulation, AI policy |
-| 🌐 Open Source & Community | Open-weight models, frameworks, community projects |
+| 🚀 New Products & Releases | Model launches, API updates, developer tools, new capabilities |
+| 💼 Industry & Business | Funding, acquisitions, regulation, AI policy, enterprise deals |
+| 🌐 Open Source & Community | Open-weight models, frameworks, Hugging Face, community projects |
 
 ## Sources
 
-- TechCrunch AI · VentureBeat AI · The Verge · Wired · IEEE Spectrum · MIT Tech Review
-- arXiv (cs.AI, cs.LG, cs.CL, cs.NE)
-- HackerNews via Algolia API
+- **RSS feeds:** TechCrunch AI · VentureBeat AI · The Verge · Wired · IEEE Spectrum · MIT Tech Review
+- **arXiv:** cs.AI, cs.LG, cs.CL, cs.NE (latest papers, sorted by submission date)
+- **HackerNews:** via Algolia API, filtered for AI/ML/LLM topics
 
 ## How it works
 
-1. **Daily at 07:00 UTC** — GitHub Actions runs `scripts/fetch_news.py`
-2. The script fetches RSS feeds + arXiv + HackerNews, deduplicates, classifies, and scores articles
-3. It renders a complete `docs/index.html` with the day's top stories
-4. The action commits the new HTML and GitHub Pages serves it immediately
+```
+07:00 UTC daily
+    ↓
+GitHub Actions runs scripts/fetch_news.py
+    ↓
+Fetches RSS + arXiv + HackerNews → deduplicates → classifies → scores
+    ↓
+Renders docs/index.html with top stories per category
+    ↓
+Commits new HTML → push triggers deploy workflow
+    ↓
+GitHub Pages serves the updated newsletter
+```
+
+### Workflows
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `fetch-news.yml` | Daily 07:00 UTC + manual | Runs the Python fetcher, commits & pushes updated HTML |
+| `deploy-pages.yml` | Push to `docs/**` on main | Deploys `docs/` to GitHub Pages |
 
 ## Setup
 
-### Enable GitHub Pages
+### 1. Enable GitHub Pages
 
-In your repository settings → **Pages** → set source to **Deploy from a branch**, branch `main`, folder `/docs`.
+In your repository settings → **Pages**:
+- Set source to **Deploy from a branch**
+- Branch: `main`, folder: `/docs`
 
-### Manual trigger
+> Alternatively, if the deploy workflow uses the GitHub Pages API (requires Pages to be enabled as a GitHub Actions source), it will deploy automatically via the workflow.
 
-Go to **Actions → Update AI News Newsletter → Run workflow** for an immediate update.
+### 2. First run
+
+The newsletter is bootstrapped with a hand-curated Issue #1. After enabling Pages, trigger the first automated update:
+
+**Actions tab → "Fetch AI News & Update Newsletter" → Run workflow**
+
+### 3. That's it
+
+The `fetch-news.yml` workflow runs every morning at 07:00 UTC automatically.
 
 ## Local development
 
@@ -41,6 +69,22 @@ Go to **Actions → Update AI News Newsletter → Run workflow** for an immediat
 pip install -r requirements.txt
 python scripts/fetch_news.py
 open docs/index.html
+```
+
+## Project structure
+
+```
+.
+├── docs/
+│   ├── index.html        ← Generated newsletter (auto-updated daily)
+│   ├── state.json        ← Tracks current issue number
+│   └── .nojekyll         ← Prevents Jekyll processing on gh-pages
+├── scripts/
+│   └── fetch_news.py     ← News fetcher + HTML renderer
+├── .github/workflows/
+│   ├── fetch-news.yml    ← Daily news fetch → commit → push
+│   └── deploy-pages.yml  ← Deploy docs/ to GitHub Pages
+└── requirements.txt
 ```
 
 ## License

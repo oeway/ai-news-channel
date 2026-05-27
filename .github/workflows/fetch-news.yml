@@ -1,0 +1,47 @@
+name: 📰 Fetch AI News & Update Newsletter
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # Every day at 07:00 UTC
+  workflow_dispatch:        # Manual trigger from Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-and-update:
+    name: Fetch, Render & Commit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch latest AI news & render newsletter
+        run: python scripts/fetch_news.py
+
+      - name: Commit & push if updated
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if git diff --staged --quiet; then
+            echo "✅ No changes – newsletter is already up to date."
+          else
+            ISSUE=$(python -c "import json,pathlib; d=pathlib.Path('docs/state.json'); print(json.loads(d.read_text()).get('issue',0)) if d.exists() else print(0)" 2>/dev/null || echo "?")
+            git commit -m "📰 AI Pulse Issue #${ISSUE} — $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git push origin HEAD
+            echo "🚀 Newsletter updated and pushed."
+          fi
