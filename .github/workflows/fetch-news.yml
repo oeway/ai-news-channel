@@ -1,0 +1,64 @@
+name: Fetch & Publish AI News
+
+on:
+  schedule:
+    # Run daily at 07:00 UTC
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force regeneration even if few articles are fetched"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch latest AI news
+        run: python scripts/fetch_news.py
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet docs/index.html docs/state.json 2>/dev/null \
+            && echo "changed=false" >> "$GITHUB_OUTPUT" \
+            || echo "changed=true"  >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push updated newsletter
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name  "AI Pulse Bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html docs/state.json
+          ISSUE=$(python - <<'PY'
+          import json, pathlib
+          s = pathlib.Path("docs/state.json")
+          print(json.loads(s.read_text()).get("issue", "?") if s.exists() else "?")
+          PY
+          )
+          git commit -m "chore: AI Pulse Issue #${ISSUE} — $(date -u '+%Y-%m-%d')"
+          git push origin main

@@ -14,16 +14,11 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from html import escape as h
+from html.parser import HTMLParser
 from typing import List, Dict, Any, Optional
 import urllib.parse
 import urllib.request
 import urllib.error
-
-try:
-    import feedparser
-except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -36,6 +31,7 @@ STATE_FILE = DOCS_DIR / "state.json"
 # ─── Sources ────────────────────────────────────────────────────────────────
 
 RSS_FEEDS = [
+    # Mainstream tech/AI news
     {"url": "https://techcrunch.com/category/artificial-intelligence/feed/",
      "source": "TechCrunch",   "color": "#22c55e"},
     {"url": "https://venturebeat.com/category/ai/feed/",
@@ -48,10 +44,31 @@ RSS_FEEDS = [
      "source": "IEEE Spectrum", "color": "#0ea5e9"},
     {"url": "https://www.technologyreview.com/feed/",
      "source": "MIT Tech Review", "color": "#a78bfa"},
+    # Lab & community blogs (typically open RSS)
+    {"url": "https://openai.com/news/rss.xml",
+     "source": "OpenAI",       "color": "#10b981"},
+    {"url": "https://www.anthropic.com/rss.xml",
+     "source": "Anthropic",    "color": "#f59e0b"},
+    {"url": "https://deepmind.google/blog/rss.xml",
+     "source": "DeepMind",     "color": "#6366f1"},
+    {"url": "https://ai.googleblog.com/feeds/posts/default",
+     "source": "Google AI",    "color": "#4285f4"},
+    {"url": "https://huggingface.co/blog/feed.xml",
+     "source": "Hugging Face", "color": "#ff9d00"},
+    # Reddit AI communities (open RSS)
+    {"url": "https://www.reddit.com/r/MachineLearning/.rss?limit=25",
+     "source": "r/ML",         "color": "#ff4500"},
+    {"url": "https://www.reddit.com/r/artificial/.rss?limit=25",
+     "source": "r/artificial", "color": "#ff6314"},
+    {"url": "https://www.reddit.com/r/LocalLLaMA/.rss?limit=25",
+     "source": "r/LocalLLaMA", "color": "#ff8c00"},
+    # Papers With Code (open)
+    {"url": "https://paperswithcode.com/rss",
+     "source": "Papers w/ Code", "color": "#21cbce"},
 ]
 
 HN_API  = "https://hn.algolia.com/api/v1/search_by_date"
-HN_TAGS = ["artificial intelligence", "AI agent", "large language model", "machine learning", "LLM"]
+HN_TAGS = ["artificial intelligence", "AI agent", "large language model", "LLM", "machine learning"]
 
 ARXIV_API   = "https://export.arxiv.org/api/query"
 ARXIV_QUERY = "cat:cs.AI+OR+cat:cs.LG+OR+cat:cs.CL+OR+cat:cs.NE"
@@ -131,16 +148,31 @@ MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
 
-UA = "AI-Pulse-Newsletter/2.0 (+https://github.com/oeway/ai-news-channel)"
+UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+HEADERS = {
+    "User-Agent": UA,
+    "Accept": "application/rss+xml,application/atom+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "identity",
+    "Cache-Control": "no-cache",
+}
 
-def fetch(url: str, timeout: int = 20) -> Optional[str]:
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            return r.read().decode("utf-8", errors="replace")
-    except Exception as e:
-        print(f"  [!] fetch {url[:70]}: {e}", file=sys.stderr)
-        return None
+def fetch(url: str, timeout: int = 25) -> Optional[str]:
+    for attempt in range(2):
+        try:
+            req = urllib.request.Request(url, headers=HEADERS)
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return r.read().decode("utf-8", errors="replace")
+        except urllib.error.HTTPError as e:
+            print(f"  [!] fetch {url[:70]}: HTTP {e.code}", file=sys.stderr)
+            return None
+        except Exception as e:
+            if attempt == 0:
+                time.sleep(2)
+            else:
+                print(f"  [!] fetch {url[:70]}: {e}", file=sys.stderr)
+    return None
 
 # ─── Date helpers ────────────────────────────────────────────────────────────
 
@@ -179,32 +211,76 @@ def long_date(dt: Optional[datetime]) -> str:
 
 # ─── Fetchers ────────────────────────────────────────────────────────────────
 
+class _StripHTML(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self._chunks: List[str] = []
+    def handle_data(self, data: str):
+        self._chunks.append(data)
+    @staticmethod
+    def strip(html: str) -> str:
+        p = _StripHTML()
+        try:
+            p.feed(html)
+        except Exception:
+            pass
+        return re.sub(r"\s+", " ", " ".join(p._chunks)).strip()
+
+def _rss_text(el: ET.Element, *tags: str) -> str:
+    for tag in tags:
+        child = el.find(tag)
+        if child is not None and child.text:
+            return child.text.strip()
+    return ""
+
 def fetch_rss(cfg: Dict) -> List[Dict]:
     print(f"  RSS  {cfg['source']}…", flush=True)
     raw = fetch(cfg["url"])
     if not raw: return []
     try:
-        feed     = feedparser.parse(raw)
-        articles = []
-        for e in feed.entries[:20]:
-            desc = ""
-            for attr in ("summary", "description", "content"):
-                val = getattr(e, attr, None)
-                if isinstance(val, list): val = val[0].get("value", "") if val else ""
-                if val:
-                    desc = re.sub(r"<[^>]+>", " ", val)
-                    desc = re.sub(r"\s+", " ", desc).strip()[:400]
-                    break
-            dt = None
-            for attr in ("published_parsed", "updated_parsed", "created_parsed"):
-                dt = to_dt(getattr(e, attr, None))
-                if dt: break
-            title = getattr(e, "title", "").strip()
-            url   = getattr(e, "link",  "").strip()
-            if not title or not url: continue
-            articles.append({"title": title, "url": url, "desc": desc,
-                              "source": cfg["source"], "source_color": cfg["color"],
-                              "date": dt, "category": None})
+        root = ET.fromstring(raw.encode("utf-8", errors="replace"))
+        articles: List[Dict] = []
+
+        # Detect Atom vs RSS
+        ns_atom = "http://www.w3.org/2005/Atom"
+        ns_dc   = "http://purl.org/dc/elements/1.1/"
+        ns_content = "http://purl.org/rss/1.0/modules/content/"
+        tag = root.tag.lower()
+
+        if "atom" in tag or root.tag == f"{{{ns_atom}}}feed":
+            # Atom feed
+            entries = root.findall(f"{{{ns_atom}}}entry")
+            for e in entries[:20]:
+                title = (e.findtext(f"{{{ns_atom}}}title") or "").strip()
+                link_el = e.find(f"{{{ns_atom}}}link[@rel='alternate']") or e.find(f"{{{ns_atom}}}link")
+                url   = (link_el.get("href","") if link_el is not None else "").strip()
+                summary = (e.findtext(f"{{{ns_atom}}}summary") or
+                           e.findtext(f"{{{ns_atom}}}content") or "")
+                desc  = _StripHTML.strip(summary)[:400]
+                pub   = e.findtext(f"{{{ns_atom}}}published") or e.findtext(f"{{{ns_atom}}}updated") or ""
+                dt    = to_dt(pub.strip())
+                if not title or not url: continue
+                articles.append({"title": title, "url": url, "desc": desc,
+                                  "source": cfg["source"], "source_color": cfg["color"],
+                                  "date": dt, "category": None})
+        else:
+            # RSS 2.0 / RSS 1.0
+            channel = root.find("channel") or root
+            items = channel.findall("item") or root.findall(".//item")
+            for e in items[:20]:
+                title = _rss_text(e, "title")
+                url   = _rss_text(e, "link", "guid")
+                raw_desc = (e.findtext(f"{{{ns_content}}}encoded") or
+                            _rss_text(e, "description", "summary") or "")
+                desc  = _StripHTML.strip(raw_desc)[:400]
+                pub   = _rss_text(e, "pubDate", "dc:date",
+                                  f"{{{ns_dc}}}date", "updated")
+                dt    = to_dt(pub)
+                if not title or not url: continue
+                articles.append({"title": title, "url": url, "desc": desc,
+                                  "source": cfg["source"], "source_color": cfg["color"],
+                                  "date": dt, "category": None})
+
         print(f"     → {len(articles)} items", flush=True)
         return articles
     except Exception as ex:
@@ -865,6 +941,13 @@ def main() -> None:
     total = sum(len(v) for v in sections.values())
     print(f"  Sections: {', '.join(f'{k}:{len(v)}' for k,v in sections.items() if v)}", flush=True)
     print(f"  Total placed: {total}", flush=True)
+
+    # Guard: don't overwrite an existing page with an empty one
+    MIN_ARTICLES = 5
+    if total < MIN_ARTICLES:
+        print(f"\n⚠️  Only {total} articles fetched (minimum {MIN_ARTICLES}). "
+              f"Keeping existing page unchanged.", flush=True)
+        sys.exit(0)
 
     # ── Render ──
     print("\n[4/4] Rendering HTML…", flush=True)
