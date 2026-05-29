@@ -177,6 +177,12 @@ def to_dt(v: Any) -> Optional[datetime]:
                 return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
             except ValueError:
                 continue
+        # Fallback: fromisoformat handles fractional seconds and ±HH:MM offsets
+        try:
+            dt = datetime.fromisoformat(v.strip().replace("Z", "+00:00"))
+            return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+        except ValueError:
+            pass
     return None
 
 def age_str(dt: Optional[datetime]) -> str:
@@ -1003,6 +1009,12 @@ def main() -> None:
             break
     if featured is None and articles:
         featured = articles[0]
+
+    # Remove featured article from its section bucket to avoid duplication
+    if featured:
+        cat = featured.get("category", DEFAULT_CATEGORY)
+        if featured in sections.get(cat, []):
+            sections[cat].remove(featured)
 
     print(f"  Sections: {', '.join(f'{k}:{len(v)}' for k, v in sections.items() if v)}", flush=True)
     print(f"  Total placed: {total}", flush=True)
