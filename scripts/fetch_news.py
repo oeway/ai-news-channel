@@ -199,17 +199,38 @@ NS_DC      = "http://purl.org/dc/elements/1.1/"
 NS_MEDIA   = "http://search.yahoo.com/mrss/"
 
 def _txt(el: Optional[ET.Element], *tags: str) -> str:
-    """Return text of first found tag, stripped."""
+    """Return concatenated text of first found tag (handles mixed/CDATA content)."""
     if el is None:
         return ""
     for tag in tags:
         child = el.find(tag)
-        if child is not None and child.text:
-            return child.text.strip()
+        if child is not None:
+            text = "".join(child.itertext()).strip()
+            if text:
+                return text
     return ""
 
 def _ns(ns: str, tag: str) -> str:
     return f"{{{ns}}}{tag}"
+
+def _rss2_link(item: ET.Element) -> str:
+    """Extract permalink from RSS 2.0 <item>; skip atom:link self-references."""
+    for child in item:
+        if child.tag == "link":
+            # Text node link (standard RSS 2.0)
+            text = (child.text or "").strip()
+            if text:
+                return text
+            # Some feeds use tail text after <link/> (quirky but seen in practice)
+            tail = (child.tail or "").strip()
+            if tail:
+                return tail
+        elif child.tag == _ns(NS_ATOM, "link"):
+            rel  = child.get("rel", "alternate")
+            href = (child.get("href") or "").strip()
+            if href and rel != "self":
+                return href
+    return ""
 
 def _parse_rss2(root: ET.Element) -> List[Dict]:
     """Parse RSS 2.0 <channel><item>..."""
@@ -217,19 +238,35 @@ def _parse_rss2(root: ET.Element) -> List[Dict]:
     arts  = []
     for item in items[:25]:
         title = _txt(item, "title")
-        link  = _txt(item, "link")
+        link  = _rss2_link(item)
         if not title or not link:
             continue
         desc_raw = (
             _txt(item, _ns(NS_CONTENT, "encoded")) or
             _txt(item, "description") or ""
         )
-        desc  = strip_html(desc_raw)[:400]
-        date  = to_dt(
+        desc = strip_html(desc_raw)[:400]
+        date = to_dt(
             _txt(item, "pubDate") or _txt(item, _ns(NS_DC, "date"))
         )
         arts.append({"title": title, "link": link, "desc": desc, "date": date})
     return arts
+
+def _atom_link(entry: ET.Element) -> str:
+    """Prefer rel=alternate permalink; fall back to first non-self link."""
+    links = entry.findall(_ns(NS_ATOM, "link"))
+    alternate = ""
+    fallback  = ""
+    for lk in links:
+        rel  = lk.get("rel", "alternate")
+        href = (lk.get("href") or "").strip()
+        if not href:
+            continue
+        if rel == "alternate" and not alternate:
+            alternate = href
+        elif rel not in ("self", "enclosure") and not fallback:
+            fallback = href
+    return alternate or fallback
 
 def _parse_atom(root: ET.Element) -> List[Dict]:
     """Parse Atom <feed><entry>..."""
@@ -237,20 +274,20 @@ def _parse_atom(root: ET.Element) -> List[Dict]:
     arts    = []
     for entry in entries[:25]:
         title_el = entry.find(_ns(NS_ATOM, "title"))
-        title    = title_el.text.strip() if (title_el is not None and title_el.text) else ""
+        title    = "".join(title_el.itertext()).strip() if title_el is not None else ""
 
-        link_el = entry.find(_ns(NS_ATOM, "link"))
-        link    = (link_el.get("href") or "").strip() if link_el is not None else ""
+        link = _atom_link(entry)
 
         summary_el = entry.find(_ns(NS_ATOM, "summary")) or entry.find(_ns(NS_ATOM, "content"))
-        desc       = strip_html(summary_el.text or "")[:400] if summary_el is not None and summary_el.text else ""
+        desc       = strip_html("".join(summary_el.itertext()))[:400] if summary_el is not None else ""
 
-        pub  = ""
+        pub = ""
         for tag in (_ns(NS_ATOM, "published"), _ns(NS_ATOM, "updated")):
             el = entry.find(tag)
-            if el is not None and el.text:
-                pub = el.text.strip()
-                break
+            if el is not None:
+                pub = "".join(el.itertext()).strip()
+                if pub:
+                    break
         date = to_dt(pub)
 
         if not title or not link:

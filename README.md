@@ -45,9 +45,9 @@ The newsletter generator uses **Python stdlib only** — no external packages or
 ## Local development
 
 ```bash
-pip install -r requirements.txt
+# No dependencies needed — stdlib only
 python scripts/fetch_news.py
-open docs/index.html
+open docs/index.html   # macOS; use xdg-open on Linux
 ```
 
 ## License
