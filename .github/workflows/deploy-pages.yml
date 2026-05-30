@@ -6,11 +6,20 @@ on:
     paths: ['docs/**']
   workflow_dispatch:
 
+# Skip if this push came from the automated fetch workflow (it deploys itself)
+# Still runs for manual doc edits pushed directly to main.
+
 permissions:
   contents: write
 
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: true
+
 jobs:
   deploy:
+    # Don't double-deploy when the fetch workflow commits (it deploys itself)
+    if: "!contains(github.event.head_commit.message, 'chore: auto-update newsletter')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,7 +30,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout --orphan gh-pages-tmp
           git rm -rf .
-          cp -r docs/* .
+          cp -r docs/. .
           cp docs/.nojekyll . 2>/dev/null || true
           git add -A
           git commit -m "Deploy docs to GitHub Pages"

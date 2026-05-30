@@ -1,0 +1,58 @@
+name: Fetch News & Publish
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # Daily at 07:00 UTC
+  workflow_dispatch:       # Allow manual trigger from GitHub UI
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: fetch-and-publish
+  cancel-in-progress: false
+
+jobs:
+  fetch-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch latest AI news
+        run: python scripts/fetch_news.py
+
+      - name: Commit updated newsletter
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git diff --cached --quiet || git commit -m "chore: auto-update newsletter $(date -u +'%Y-%m-%d %H:%M UTC')"
+
+      - name: Push to main
+        run: git push origin main
+
+      - name: Deploy to gh-pages
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan gh-pages-tmp
+          git rm -rf .
+          cp -r docs/. .
+          cp docs/.nojekyll . 2>/dev/null || true
+          git add -A
+          git commit -m "deploy: newsletter $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push origin HEAD:gh-pages --force
