@@ -19,11 +19,7 @@ import urllib.parse
 import urllib.request
 import urllib.error
 
-try:
-    import feedparser
-except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
+# stdlib-only RSS/Atom parser — no feedparser required
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -179,37 +175,59 @@ def long_date(dt: Optional[datetime]) -> str:
 
 # ─── Fetchers ────────────────────────────────────────────────────────────────
 
+def _text(el) -> str:
+    return (el.text or "") if el is not None else ""
+
+def _strip_html(s: str) -> str:
+    s = re.sub(r"<[^>]+>", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
 def fetch_rss(cfg: Dict) -> List[Dict]:
     print(f"  RSS  {cfg['source']}…", flush=True)
     raw = fetch(cfg["url"])
     if not raw: return []
     try:
-        feed     = feedparser.parse(raw)
-        articles = []
-        for e in feed.entries[:20]:
-            desc = ""
-            for attr in ("summary", "description", "content"):
-                val = getattr(e, attr, None)
-                if isinstance(val, list): val = val[0].get("value", "") if val else ""
-                if val:
-                    desc = re.sub(r"<[^>]+>", " ", val)
-                    desc = re.sub(r"\s+", " ", desc).strip()[:400]
-                    break
-            dt = None
-            for attr in ("published_parsed", "updated_parsed", "created_parsed"):
-                dt = to_dt(getattr(e, attr, None))
-                if dt: break
-            title = getattr(e, "title", "").strip()
-            url   = getattr(e, "link",  "").strip()
+        root = ET.fromstring(raw)
+    except ET.ParseError as ex:
+        print(f"  [!] XML parse error {cfg['source']}: {ex}", file=sys.stderr)
+        return []
+
+    articles: List[Dict] = []
+    ns_atom = "http://www.w3.org/2005/Atom"
+    ns_content = "http://purl.org/rss/1.0/modules/content/"
+
+    # Atom feed
+    if root.tag in (f"{{{ns_atom}}}feed", "feed"):
+        ns = {"a": ns_atom}
+        for entry in root.findall("a:entry", ns)[:20]:
+            title = _text(entry.find("a:title", ns)).strip()
+            link_el = entry.find("a:link[@rel='alternate']", ns) or entry.find("a:link", ns)
+            url = (link_el.get("href","") if link_el is not None else "").strip()
+            summary = _text(entry.find("a:summary", ns)) or _text(entry.find("a:content", ns))
+            desc = _strip_html(summary)[:400]
+            pub = (_text(entry.find("a:published", ns)) or _text(entry.find("a:updated", ns))).strip()
             if not title or not url: continue
             articles.append({"title": title, "url": url, "desc": desc,
                               "source": cfg["source"], "source_color": cfg["color"],
-                              "date": dt, "category": None})
-        print(f"     → {len(articles)} items", flush=True)
-        return articles
-    except Exception as ex:
-        print(f"  [!] parse error {cfg['source']}: {ex}", file=sys.stderr)
-        return []
+                              "date": to_dt(pub), "category": None})
+    else:
+        # RSS 2.0 — find channel/item elements (handle optional namespace prefixes)
+        items = root.findall(".//item")[:20]
+        for item in items:
+            title = _text(item.find("title")).strip()
+            url   = _text(item.find("link")).strip()
+            # prefer content:encoded, fall back to description
+            desc_raw = (_text(item.find(f"{{{ns_content}}}encoded")) or
+                        _text(item.find("description")))
+            desc = _strip_html(desc_raw)[:400]
+            pub  = (_text(item.find("pubDate")) or _text(item.find("dc:date"))).strip()
+            if not title or not url: continue
+            articles.append({"title": title, "url": url, "desc": desc,
+                              "source": cfg["source"], "source_color": cfg["color"],
+                              "date": to_dt(pub), "category": None})
+
+    print(f"     → {len(articles)} items", flush=True)
+    return articles
 
 
 def fetch_hn() -> List[Dict]:

@@ -1,2 +1,2 @@
-feedparser>=6.0.0
-requests>=2.31.0
+# All fetching uses Python stdlib (urllib, xml.etree.ElementTree)
+# No third-party dependencies required
