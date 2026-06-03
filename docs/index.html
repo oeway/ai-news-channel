@@ -4,274 +4,323 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Pulse — Daily AI News Digest</title>
-  <meta name="description" content="Daily curated AI news: research breakthroughs, AI agents, new products, and industry. Automated digest updated every morning.">
+  <meta name="description" content="Daily curated AI news: research breakthroughs, AI agents, new products, and industry — refreshed every morning automatically.">
   <meta property="og:title"       content="AI Pulse — Daily AI News Digest">
-  <meta property="og:description" content="Curated AI news covering research, agents, products, industry and open source — refreshed every morning automatically.">
+  <meta property="og:description" content="Curated AI news covering research, agents, products, industry and open source — refreshed every morning.">
   <meta property="og:type"        content="website">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+/* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+
+/* ── Tokens ── */
 :root {
   --bg:       #07071a;
   --surface:  #0d0d24;
-  --card:     #111128;
-  --card-h:   #16163a;
-  --border:   rgba(255,255,255,0.06);
+  --card:     #0f0f2a;
+  --card-h:   #14143a;
+  --border:   rgba(255,255,255,0.065);
   --border-h: rgba(255,255,255,0.13);
   --text:     #e8eaf6;
   --sub:      #94a3b8;
   --muted:    #64748b;
   --dim:      #334155;
+  --research: #22d3ee;
+  --agents:   #c084fc;
+  --products: #60a5fa;
+  --industry: #4ade80;
+  --os:       #fb923c;
 }
-html { scroll-behavior: smooth }
+
+html { scroll-behavior: smooth; font-size: 15px }
+
 body {
-  background: var(--bg); color: var(--text);
-  font-family: 'Inter', system-ui, sans-serif;
-  line-height: 1.6; min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.65;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
+
 a { color: inherit; text-decoration: none }
+
 body::before {
-  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 50% at 15% 0%,   rgba(99,102,241,.09) 0%, transparent 65%),
-    radial-gradient(ellipse 50% 40% at 85% 90%,  rgba(6,182,212,.07)  0%, transparent 65%),
-    radial-gradient(ellipse 40% 30% at 50% 50%,  rgba(139,92,246,.04) 0%, transparent 60%);
+    radial-gradient(ellipse 70% 45% at 10%  5%,  rgba(99,102,241,.09) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 40% at 90% 85%,  rgba(6,182,212,.07)  0%, transparent 60%),
+    radial-gradient(ellipse 40% 35% at 55% 50%,  rgba(139,92,246,.04) 0%, transparent 60%);
 }
 .page { position: relative; z-index: 1 }
 
-/* ─ Header ─ */
+/* ── Header ── */
 .site-header {
-  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
   background: linear-gradient(180deg, rgba(13,13,36,.98) 0%, rgba(7,7,26,.92) 100%);
   backdrop-filter: blur(14px);
-  position: sticky; top: 0; z-index: 100;
+  border-bottom: 1px solid var(--border);
 }
 .header-inner {
-  max-width: 1180px; margin: 0 auto; padding: .85rem 1.5rem;
+  max-width: 1200px; margin: 0 auto; padding: .9rem 1.5rem;
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   flex-wrap: wrap;
 }
-.brand { display: flex; align-items: center; gap: .7rem }
-.brand-logo { font-size: 1.65rem; line-height: 1 }
+.brand { display: flex; align-items: center; gap: .75rem }
+.brand-logo { font-size: 1.75rem; line-height: 1 }
 .brand-name {
-  font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 700;
-  background: linear-gradient(130deg, #a78bfa 0%, #38bdf8 100%);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.35rem; font-weight: 700;
+  background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
-.brand-sub { font-size: .7rem; color: var(--muted); margin-top: 2px }
-.header-right { display: flex; align-items: center; gap: .65rem; flex-shrink: 0 }
+.brand-sub { font-size: .71rem; color: var(--muted); margin-top: 1px }
+
+.header-right { display: flex; align-items: center; gap: .7rem; flex-shrink: 0 }
 .issue-badge {
-  font-size: .7rem; font-weight: 700; letter-spacing: .07em;
-  background: linear-gradient(135deg, rgba(167,139,250,.14), rgba(56,189,248,.12));
-  border: 1px solid rgba(167,139,250,.28); color: #a78bfa;
-  padding: .22rem .65rem; border-radius: 20px;
+  font-size: .71rem; font-weight: 700; letter-spacing: .07em;
+  background: linear-gradient(135deg, rgba(167,139,250,.15), rgba(56,189,248,.12));
+  border: 1px solid rgba(167,139,250,.3);
+  color: #a78bfa; padding: .24rem .68rem; border-radius: 20px;
 }
-.header-date { font-size: .78rem; color: var(--muted) }
+.header-date { font-size: .8rem; color: var(--muted) }
 .live-dot {
   display: inline-block; width: 7px; height: 7px; border-radius: 50%;
-  background: #22c55e; margin-right: .3rem;
-  animation: blink 2.4s ease-in-out infinite;
+  background: #22c55e; margin-right: .32rem;
+  animation: blink 2.5s ease-in-out infinite;
 }
 @keyframes blink {
-  0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(34,197,94,.5) }
-  50%      { opacity:.6; box-shadow: 0 0 0 5px rgba(34,197,94,0) }
+  0%,100% { opacity:1; box-shadow: 0 0 0 0   rgba(34,197,94,.5) }
+  50%      { opacity:.7; box-shadow: 0 0 0 5px rgba(34,197,94,0) }
 }
 
-/* ─ Category nav ─ */
+/* ── Category nav ── */
 .cat-nav {
-  max-width: 1180px; margin: 0 auto; padding: .8rem 1.5rem;
+  max-width: 1200px; margin: 0 auto; padding: .75rem 1.5rem;
   display: flex; gap: .45rem; flex-wrap: wrap;
   border-bottom: 1px solid var(--border);
 }
 .nav-pill {
-  font-size: .76rem; font-weight: 500; padding: .28rem .72rem; border-radius: 20px;
-  border: 1px solid color-mix(in srgb, var(--cat) 28%, transparent);
-  color: var(--cat); transition: background .15s, transform .15s; white-space: nowrap;
+  font-size: .77rem; font-weight: 500;
+  padding: .28rem .72rem; border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--c,#a78bfa) 30%, transparent);
+  color: var(--c, #a78bfa); white-space: nowrap;
+  transition: background .15s, transform .15s;
 }
-.nav-pill:hover { background: color-mix(in srgb, var(--cat) 11%, transparent); transform: translateY(-1px) }
+.nav-pill:hover {
+  background: color-mix(in srgb, var(--c,#a78bfa) 12%, transparent);
+  transform: translateY(-1px);
+}
 
-/* ─ Main ─ */
-main { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem }
+/* ── Main ── */
+main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem }
 
-/* ─ Hero / Featured ─ */
-.hero {
-  background: linear-gradient(135deg, #140f3c 0%, #0e0e2c 55%, #091428 100%);
-  border: 1px solid rgba(167,139,250,.2); border-radius: 20px;
-  padding: 2.25rem 2.75rem; margin-bottom: 2.75rem;
-  position: relative; overflow: hidden;
+/* ── Featured hero ── */
+.featured {
+  background: linear-gradient(135deg, #120f38 0%, #0d0d2a 50%, #091424 100%);
+  border: 1px solid rgba(167,139,250,.22);
+  border-radius: 20px; padding: 2.25rem 2.75rem;
+  margin-bottom: 2rem; position: relative; overflow: hidden;
 }
-.hero::before {
-  content: ''; position: absolute; top: -100px; right: -100px;
-  width: 420px; height: 420px; border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle, rgba(99,102,241,.13) 0%, transparent 65%);
+.featured::before {
+  content: ''; position: absolute; top: -90px; right: -90px;
+  width: 400px; height: 400px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(99,102,241,.14) 0%, transparent 65%);
 }
-.hero::after {
-  content: ''; position: absolute; bottom: -60px; left: 20%;
-  width: 250px; height: 250px; border-radius: 50%; pointer-events: none;
-  background: radial-gradient(circle, rgba(6,182,212,.07) 0%, transparent 65%);
+.featured::after {
+  content: ''; position: absolute; bottom: -60px; left: 25%;
+  width: 280px; height: 280px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(6,182,212,.08) 0%, transparent 65%);
 }
-.hero-eyebrow { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.1rem }
-.hero-tag {
-  font-size: .7rem; font-weight: 700; letter-spacing: .11em; color: #a78bfa;
-  text-transform: uppercase;
+.feat-eyebrow { display: flex; align-items: center; gap: .9rem; margin-bottom: 1.1rem }
+.feat-tag {
+  font-size: .7rem; font-weight: 700; letter-spacing: .12em;
+  color: #a78bfa; text-transform: uppercase;
 }
-.hero-cat { font-size: .76rem; font-weight: 500; color: #67e8f9 }
-.hero-title {
+.feat-cat { font-size: .77rem; font-weight: 500; color: #67e8f9 }
+.feat-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(1.35rem, 3.5vw, 2rem); font-weight: 700; line-height: 1.28;
-  margin-bottom: 1rem;
+  font-size: clamp(1.35rem, 3.5vw, 2.05rem);
+  font-weight: 700; line-height: 1.28; margin-bottom: 1rem;
+  position: relative; z-index: 1;
 }
-.hero-meta { display: flex; align-items: center; gap: .7rem; margin-bottom: 1.1rem; flex-wrap: wrap }
-.hero-age  { font-size: .78rem; color: var(--muted) }
-.hero-body { color: var(--sub); line-height: 1.75; margin-bottom: 1.6rem; max-width: 700px; position: relative; z-index: 1 }
-.hero-btn {
+.feat-meta { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.1rem; flex-wrap: wrap }
+.feat-body {
+  color: var(--sub); line-height: 1.75; margin-bottom: 1.6rem;
+  max-width: 720px; position: relative; z-index: 1;
+}
+.feat-btn {
   display: inline-flex; align-items: center; gap: .4rem;
   background: linear-gradient(135deg, #6d28d9, #4f46e5);
-  color: #fff; padding: .62rem 1.35rem; border-radius: 9px;
+  color: #fff; padding: .62rem 1.35rem; border-radius: 10px;
   font-size: .87rem; font-weight: 600;
   box-shadow: 0 4px 18px rgba(99,102,241,.38);
   transition: opacity .2s, transform .15s; position: relative; z-index: 1;
 }
-.hero-btn:hover { opacity: .86; transform: translateY(-1px) }
+.feat-btn:hover { opacity: .87; transform: translateY(-1px) }
 
-/* ─ Section ─ */
+/* ── Today's brief ── */
+.brief {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid #a78bfa;
+  border-radius: 14px; padding: 1.4rem 1.75rem;
+  margin-bottom: 2.5rem;
+}
+.brief-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: .95rem; font-weight: 600; color: #a78bfa;
+  margin-bottom: .9rem; display: flex; align-items: center; gap: .45rem;
+}
+.brief-list { list-style: none; display: flex; flex-direction: column; gap: .55rem }
+.brief-list li {
+  font-size: .85rem; color: var(--sub);
+  display: flex; gap: .65rem; align-items: baseline;
+}
+.brief-list li::before { content: '▸'; color: #a78bfa; font-size: .75rem; flex-shrink: 0 }
+
+/* ── Section ── */
 .section { margin-bottom: 3rem }
 .section-hdr {
-  display: flex; align-items: center; gap: .55rem;
-  margin-bottom: 1.3rem; padding-bottom: .7rem;
+  display: flex; align-items: center; gap: .6rem;
+  margin-bottom: 1.3rem; padding-bottom: .75rem;
   border-bottom: 1px solid var(--border);
 }
-.section-icon  { font-size: 1.2rem }
+.section-icon { font-size: 1.25rem }
 .section-label {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.05rem; font-weight: 600; color: var(--cat);
+  font-size: 1.08rem; font-weight: 600; color: var(--c, var(--text));
 }
 .section-count {
-  margin-left: auto; font-size: .7rem; color: var(--muted);
+  margin-left: auto; font-size: .71rem; color: var(--muted);
   background: var(--card); border: 1px solid var(--border);
   padding: .13rem .52rem; border-radius: 12px;
 }
 
-/* ─ Card grid ─ */
+/* ── Card grid ── */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 1.05rem;
 }
 
-/* ─ Card ─ */
+/* ── Card ── */
 .card {
-  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-  padding: 1.1rem 1.2rem;
-  display: flex; flex-direction: column; gap: .55rem;
-  transition: border-color .2s, background .2s, transform .2s, box-shadow .2s;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.1rem 1.25rem;
+  display: flex; flex-direction: column; gap: .6rem;
   position: relative; overflow: hidden;
+  transition: border-color .2s, background .2s, transform .2s, box-shadow .2s;
 }
 .card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--cat, #8b5cf6); opacity: 0; transition: opacity .2s;
+  background: var(--c, #8b5cf6); opacity: 0; transition: opacity .2s;
 }
 .card:hover {
-  border-color: color-mix(in srgb, var(--cat) 38%, transparent);
-  background: var(--card-h); transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(0,0,0,.4), 0 0 0 1px color-mix(in srgb,var(--cat) 12%,transparent);
+  border-color: color-mix(in srgb, var(--c, #a78bfa) 38%, transparent);
+  background: var(--card-h);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 32px rgba(0,0,0,.38), 0 0 0 1px color-mix(in srgb,var(--c,#a78bfa) 12%,transparent);
 }
 .card:hover::before { opacity: 1 }
-.card-top  { display: flex; align-items: center; justify-content: space-between }
-.card-age  { font-size: .7rem; color: var(--muted) }
+.card-top { display: flex; align-items: center; justify-content: space-between }
+.card-age { font-size: .7rem; color: var(--muted) }
 .card-title { font-size: .92rem; font-weight: 600; line-height: 1.45 }
 .card-title a { color: var(--text); transition: color .15s }
-.card-title a:hover { color: var(--cat, #a78bfa) }
+.card-title a:hover { color: var(--c, #a78bfa) }
 .card-desc {
   font-size: .8rem; color: var(--muted); line-height: 1.55; flex-grow: 1;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-.card-link {
-  font-size: .77rem; font-weight: 500; margin-top: auto;
-  color: color-mix(in srgb, var(--cat) 85%, #fff);
-  transition: opacity .15s;
-}
-.card-link:hover { opacity: .7 }
+.card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto }
+.card-link { font-size: .77rem; font-weight: 500; color: color-mix(in srgb,var(--c,#a78bfa) 85%,#fff); transition: opacity .15s }
+.card-link:hover { opacity: .72 }
+.read-time { font-size: .68rem; color: var(--dim) }
 
-/* ─ Pill / badge ─ */
+/* ── Source pill ── */
 .pill {
-  display: inline-block; font-size: .66rem; font-weight: 700; letter-spacing: .04em;
-  padding: .13rem .48rem; border-radius: 5px; border: 1px solid; text-transform: uppercase;
+  display: inline-block; font-size: .67rem; font-weight: 700;
+  letter-spacing: .04em; padding: .14rem .5rem; border-radius: 5px;
+  border: 1px solid; text-transform: uppercase; white-space: nowrap;
 }
 
-/* ─ How-it-works ─ */
+/* ── How it works ── */
 .how {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 18px; padding: 1.75rem 2.25rem; margin-bottom: 3rem;
+  border-radius: 18px; padding: 1.75rem 2.25rem; margin-bottom: 2.75rem;
 }
 .how-title {
-  font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; font-weight: 600;
-  color: var(--text); margin-bottom: 1.2rem; display: flex; align-items: center; gap: .5rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.05rem; font-weight: 600; color: var(--text);
+  margin-bottom: 1.2rem; display: flex; align-items: center; gap: .5rem;
 }
-.how-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem }
-.how-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 1.1rem;
-}
+.how-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem }
+.how-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem }
 .how-icon  { font-size: 1.55rem; margin-bottom: .55rem }
-.how-label { font-size: .88rem; font-weight: 600; margin-bottom: .3rem }
-.how-desc  { font-size: .78rem; color: var(--muted); line-height: 1.5 }
+.how-label { font-size: .87rem; font-weight: 600; margin-bottom: .3rem }
+.how-desc  { font-size: .77rem; color: var(--muted); line-height: 1.5 }
 code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3rem; border-radius: 3px }
 
-/* ─ Stats bar ─ */
+/* ── Stats bar ── */
 .stats {
-  max-width: 1180px; margin: 0 auto;
-  padding: .7rem 1.5rem;
-  display: flex; gap: 1.4rem; flex-wrap: wrap;
+  max-width: 1200px; margin: 0 auto;
+  padding: .75rem 1.5rem;
+  display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
   border-top: 1px solid var(--border);
-  font-size: .76rem; color: var(--muted);
+  font-size: .77rem; color: var(--muted);
 }
-.stat { display: flex; align-items: center; gap: .32rem }
+.stat { display: flex; align-items: center; gap: .35rem }
 .stat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, #6b7280) }
 
-/* ─ Footer ─ */
+/* ── Footer ── */
 .footer {
   background: var(--surface); border-top: 1px solid var(--border);
-  padding: 2rem 1.5rem; margin-top: 3rem;
+  padding: 2.25rem 1.5rem; margin-top: 3rem;
 }
 .footer-inner {
-  max-width: 1180px; margin: 0 auto;
-  display: flex; flex-direction: column; align-items: center; gap: .9rem; text-align: center;
+  max-width: 1200px; margin: 0 auto;
+  display: flex; flex-direction: column; align-items: center; gap: 1rem; text-align: center;
 }
-.footer-name {
-  font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; font-weight: 700;
-  background: linear-gradient(130deg,#a78bfa,#38bdf8);
+.footer-brand {
+  font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700;
+  background: linear-gradient(135deg, #a78bfa, #38bdf8);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-.footer-links { display: flex; gap: 1.2rem; flex-wrap: wrap; justify-content: center }
-.footer-links a { font-size: .8rem; color: var(--muted) }
+.footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; justify-content: center }
+.footer-links a { font-size: .81rem; color: var(--muted) }
 .footer-links a:hover { color: var(--text) }
-.footer-sources { display: flex; gap: .45rem; flex-wrap: wrap; justify-content: center; font-size: .73rem; color: var(--dim) }
+.footer-sources {
+  font-size: .74rem; color: var(--dim);
+  display: flex; gap: .45rem; flex-wrap: wrap; justify-content: center;
+}
 .footer-sources span::after { content: '·'; margin-left: .45rem }
 .footer-sources span:last-child::after { content: '' }
-.footer-note { font-size: .73rem; color: var(--dim); line-height: 1.6 }
+.footer-note { font-size: .74rem; color: var(--dim); line-height: 1.65 }
 
-/* ─ Scroll top ─ */
+/* ── Scroll to top ── */
 .scroll-top {
   position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;
-  background: rgba(13,13,36,.88); border: 1px solid rgba(167,139,250,.28);
+  background: rgba(13,13,36,.9); border: 1px solid rgba(167,139,250,.28);
   color: #a78bfa; width: 38px; height: 38px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; backdrop-filter: blur(10px);
-  box-shadow: 0 4px 14px rgba(0,0,0,.35);
-  transition: background .2s, transform .2s;
+  font-size: 1.1rem; backdrop-filter: blur(8px);
+  box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  transition: opacity .25s, background .2s, transform .2s;
 }
-.scroll-top:hover { background: rgba(99,102,241,.22); transform: translateY(-2px) }
+.scroll-top:hover { background: rgba(99,102,241,.25); transform: translateY(-2px) }
 
-/* ─ Responsive ─ */
+/* ── Responsive ── */
 @media (max-width: 780px) {
-  .hero { padding: 1.6rem 1.5rem }
-  main  { padding: 1.25rem 1rem }
+  .featured { padding: 1.6rem 1.5rem }
+  main { padding: 1.25rem 1rem }
   .cat-nav { padding: .7rem 1rem }
-  .how  { padding: 1.4rem 1.25rem }
+  .how { padding: 1.4rem 1.25rem }
+  .brief { padding: 1.2rem 1.4rem }
 }
 @media (max-width: 480px) {
   .grid { grid-template-columns: 1fr }
@@ -282,7 +331,7 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
 <body>
 <div class="page">
 
-<!-- ══════ HEADER ══════ -->
+<!-- HEADER -->
 <header class="site-header">
   <div class="header-inner">
     <a class="brand" href="#">
@@ -293,58 +342,71 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
       </div>
     </a>
     <div class="header-right">
-      <span class="issue-badge">Issue #1</span>
-      <span class="header-date"><span class="live-dot"></span>May 26, 2026</span>
+      <span class="issue-badge">Issue #2</span>
+      <span class="header-date"><span class="live-dot"></span>June 3, 2026</span>
     </div>
   </div>
   <nav class="cat-nav">
-    <a class="nav-pill" href="#research"   style="--cat:#22d3ee">🔬&thinsp;Research</a>
-    <a class="nav-pill" href="#agents"     style="--cat:#c084fc">🤖&thinsp;AI Agents</a>
-    <a class="nav-pill" href="#products"   style="--cat:#60a5fa">🚀&thinsp;Products</a>
-    <a class="nav-pill" href="#industry"   style="--cat:#4ade80">💼&thinsp;Industry</a>
-    <a class="nav-pill" href="#opensource" style="--cat:#fb923c">🌐&thinsp;Open Source</a>
+    <a class="nav-pill" href="#">All</a>
+    <a class="nav-pill" href="#research"   style="--c:var(--research)">🔬&thinsp;Research</a>
+    <a class="nav-pill" href="#agents"     style="--c:var(--agents)">🤖&thinsp;AI Agents</a>
+    <a class="nav-pill" href="#products"   style="--c:var(--products)">🚀&thinsp;Products</a>
+    <a class="nav-pill" href="#industry"   style="--c:var(--industry)">💼&thinsp;Industry</a>
+    <a class="nav-pill" href="#opensource" style="--c:var(--os)">🌐&thinsp;Open Source</a>
   </nav>
 </header>
 
-<!-- ══════ MAIN ══════ -->
+<!-- MAIN -->
 <main>
 
-  <!-- Hero -->
-  <section class="hero">
-    <div class="hero-eyebrow">
-      <span class="hero-tag">✦ Inaugural Edition</span>
-      <span class="hero-cat">🤖 Automated AI Intelligence Feed</span>
+  <!-- Featured -->
+  <section class="featured">
+    <div class="feat-eyebrow">
+      <span class="feat-tag">✦ Featured Story</span>
+      <span class="feat-cat">🤖 AI Agents &amp; Automation</span>
     </div>
-    <h1 class="hero-title">Welcome to AI Pulse — Your Daily Briefing on Everything Artificial Intelligence</h1>
-    <div class="hero-meta">
-      <span class="pill" style="background:#6366f122;color:#818cf8;border-color:#6366f144">AI PULSE</span>
-      <span class="hero-age">Issue #1 · Inaugural Edition</span>
+    <h1 class="feat-title">Agentic AI Goes Mainstream: From Viral Demos to Production at Scale</h1>
+    <div class="feat-meta">
+      <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">AI PULSE</span>
+      <span style="font-size:.8rem;color:var(--muted)">Analysis · June 3, 2026</span>
     </div>
-    <p class="hero-body">
-      AI Pulse is a fully automated daily newsletter that scrapes and curates the most important
-      developments in artificial intelligence. Every morning at 07:00 UTC, a GitHub Actions workflow
-      pulls fresh articles from arXiv, TechCrunch, VentureBeat, The Verge, Wired, IEEE Spectrum,
-      MIT Tech Review, and HackerNews — classifies them into five topic buckets, ranks them by
-      recency and source quality, and regenerates this page. No editors. No paywalls. Pure signal.
+    <p class="feat-body">
+      After two years of spectacular demos, autonomous AI agents are hitting production at scale.
+      Enterprises are deploying coding agents that close GitHub issues overnight, research agents
+      that synthesise hundreds of papers in minutes, and customer-support agents that resolve
+      multi-step queries without human intervention. The bottleneck has shifted from raw capability
+      to trust, observability, and infrastructure for supervising agents reliably at scale.
     </p>
-    <a class="hero-btn" href="https://github.com/oeway/ai-news-channel" target="_blank" rel="noopener">
+    <a class="feat-btn" href="https://github.com/oeway/ai-news-channel" target="_blank" rel="noopener">
       View Source on GitHub ↗
     </a>
   </section>
 
+  <!-- Today's Brief -->
+  <section class="brief">
+    <div class="brief-title">📋 Today's Brief — 5 things to know</div>
+    <ul class="brief-list">
+      <li>OpenAI's o3 scores <strong>87% on ARC-AGI</strong>, the hardest general-intelligence benchmark, via test-time compute scaling.</li>
+      <li>Anthropic ships <strong>Model Context Protocol v1.0</strong> — now the de-facto open standard connecting AI agents to 5,000+ external tools.</li>
+      <li>Meta's <strong>Llama 4 405B MoE</strong> matches GPT-4o on 15 independent benchmarks and is fully open-weight under a commercial licence.</li>
+      <li>The EU AI Act's <strong>high-risk deployment obligations</strong> entered force this week, requiring conformity assessments for AI in hiring, credit and healthcare.</li>
+      <li><strong>Ollama 1.0</strong> launches with a full OpenAI-compatible API, multimodal support, and 200+ pre-quantised models for local inference.</li>
+    </ul>
+  </section>
+
   <!-- How it works -->
   <section class="how">
-    <div class="how-title">⚙️ How It Works</div>
+    <div class="how-title">⚙️ How AI Pulse Works</div>
     <div class="how-grid">
       <div class="how-card">
         <div class="how-icon">📡</div>
         <div class="how-label">8+ Live Sources</div>
-        <div class="how-desc">RSS feeds from TechCrunch, VentureBeat, The Verge, Wired, IEEE Spectrum &amp; MIT Tech Review, plus arXiv CS papers and HackerNews via Algolia API.</div>
+        <div class="how-desc">RSS feeds from TechCrunch, VentureBeat, The Verge, Wired, IEEE Spectrum &amp; MIT Tech Review, plus arXiv CS papers and HackerNews via Algolia.</div>
       </div>
       <div class="how-card">
         <div class="how-icon">🗂️</div>
-        <div class="how-label">Auto Classification</div>
-        <div class="how-desc">Each article is matched against keyword sets for Research, Agents, Products, Industry and Open Source. URL &amp; title fingerprints remove duplicates.</div>
+        <div class="how-label">Auto-Classification</div>
+        <div class="how-desc">Each article is scored against keyword sets for Research, Agents, Products, Industry and Open Source. URL &amp; title fingerprints remove duplicates.</div>
       </div>
       <div class="how-card">
         <div class="how-icon">📊</div>
@@ -354,246 +416,365 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
       <div class="how-card">
         <div class="how-icon">⚡</div>
         <div class="how-label">Zero-Infra Deploy</div>
-        <div class="how-desc">An external AI agent runs <code>scripts/fetch_news.py</code>, commits the new <code>docs/index.html</code>, and GitHub Pages serves it automatically.</div>
+        <div class="how-desc">GitHub Actions runs <code>scripts/fetch_news.py</code> every morning at 07:00 UTC, commits the fresh <code>docs/index.html</code>, and Pages serves it instantly.</div>
       </div>
     </div>
   </section>
 
-  <!-- ── Research ── -->
-  <section class="section" id="research" style="--cat:#22d3ee">
+  <!-- RESEARCH -->
+  <section class="section" id="research" style="--c:var(--research)">
     <header class="section-hdr">
       <span class="section-icon">🔬</span>
       <h2 class="section-label">Research &amp; Breakthroughs</h2>
-      <span class="section-count">4 stories</span>
+      <span class="section-count">5 stories</span>
     </header>
     <div class="grid">
 
-      <article class="card" style="--cat:#22d3ee">
+      <article class="card" style="--c:var(--research)">
         <div class="card-top">
           <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">arXiv</span>
-          <span class="card-age">Daily</span>
+          <span class="card-age">2h ago</span>
         </div>
-        <h3 class="card-title"><a href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">Reasoning at Scale: Chain-of-Thought, Process Rewards &amp; Test-Time Compute</a></h3>
-        <p class="card-desc">The field is converging on a key insight: spending more compute at inference time — through extended reasoning, search, or self-refinement — can substitute for larger training runs and unlock qualitatively new capabilities.</p>
-        <a class="card-link" href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">Browse latest papers ↗</a>
+        <h3 class="card-title"><a href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">o3 Achieves 87% on ARC-AGI via Test-Time Compute Scaling</a></h3>
+        <p class="card-desc">OpenAI's o3 model scores 87.5% on the ARC-AGI benchmark by spending more compute at inference time — generating thousands of candidate solutions before committing to an answer. The result suggests test-time scaling can substitute for larger pretraining runs on abstract reasoning tasks.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">Browse papers ↗</a>
+          <span class="read-time">4 min</span>
+        </div>
       </article>
 
-      <article class="card" style="--cat:#22d3ee">
+      <article class="card" style="--c:var(--research)">
         <div class="card-top">
           <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">arXiv</span>
-          <span class="card-age">Daily</span>
+          <span class="card-age">5h ago</span>
         </div>
-        <h3 class="card-title"><a href="https://arxiv.org/list/cs.CL/recent" target="_blank" rel="noopener">Multimodal Frontier: Vision, Audio, Video and Code in Unified Architectures</a></h3>
-        <p class="card-desc">State-of-the-art models now process text, images, audio and video within a single architecture. New benchmarks reveal rapid progress in spatial reasoning, visual grounding, and long-form video understanding.</p>
-        <a class="card-link" href="https://arxiv.org/list/cs.CL/recent" target="_blank" rel="noopener">Read NLP papers ↗</a>
+        <h3 class="card-title"><a href="https://arxiv.org/list/cs.LG/recent" target="_blank" rel="noopener">Process Reward Models Outperform Outcome Rewards on Complex Multi-Step Math</a></h3>
+        <p class="card-desc">DeepMind shows that rewarding each reasoning step — not just the final answer — leads to better sample efficiency and more robust generalisation on olympiad-level mathematics. PRM training is now competitive with full RLHF at a fraction of the annotation cost.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://arxiv.org/list/cs.LG/recent" target="_blank" rel="noopener">Read paper ↗</a>
+          <span class="read-time">6 min</span>
+        </div>
       </article>
 
-      <article class="card" style="--cat:#22d3ee">
+      <article class="card" style="--c:var(--research)">
         <div class="card-top">
           <span class="pill" style="background:#0ea5e922;color:#0ea5e9;border-color:#0ea5e944">IEEE Spectrum</span>
-          <span class="card-age">Weekly</span>
+          <span class="card-age">8h ago</span>
         </div>
-        <h3 class="card-title"><a href="https://spectrum.ieee.org/topic/artificial-intelligence/" target="_blank" rel="noopener">AI Hardware: From H100 to Blackwell — the Next Generation of AI Chips</a></h3>
-        <p class="card-desc">NVIDIA's Blackwell architecture and competitors from AMD, Intel, and custom ASICs are redefining the compute landscape. Energy efficiency per FLOP is now as important as peak throughput as data-centre power budgets hit limits.</p>
-        <a class="card-link" href="https://spectrum.ieee.org/topic/artificial-intelligence/" target="_blank" rel="noopener">Read on IEEE Spectrum ↗</a>
+        <h3 class="card-title"><a href="https://spectrum.ieee.org/topic/artificial-intelligence/" target="_blank" rel="noopener">Sparse Mixture-of-Experts Reaches 1% Active Params Without Quality Loss</a></h3>
+        <p class="card-desc">Researchers demonstrate that ultra-sparse MoE routing — activating fewer than 1% of parameters per token — matches dense models on standard NLP benchmarks while reducing inference cost by 8×. The finding suggests scaling laws behave fundamentally differently under extreme sparsity.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://spectrum.ieee.org/topic/artificial-intelligence/" target="_blank" rel="noopener">Read article ↗</a>
+          <span class="read-time">5 min</span>
+        </div>
       </article>
 
-      <article class="card" style="--cat:#22d3ee">
+      <article class="card" style="--c:var(--research)">
         <div class="card-top">
           <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">arXiv</span>
-          <span class="card-age">Daily</span>
+          <span class="card-age">12h ago</span>
         </div>
-        <h3 class="card-title"><a href="https://arxiv.org/list/cs.LG/recent" target="_blank" rel="noopener">Alignment Research: RLHF, DPO, Constitutional AI and Beyond</a></h3>
-        <p class="card-desc">Human feedback, AI-generated preferences, and automated red-teaming are converging into a richer alignment toolkit. Scalable oversight — using AI to supervise AI — is the leading edge of current safety research.</p>
-        <a class="card-link" href="https://arxiv.org/list/cs.LG/recent" target="_blank" rel="noopener">Read ML papers ↗</a>
+        <h3 class="card-title"><a href="https://arxiv.org/list/cs.CL/recent" target="_blank" rel="noopener">Multimodal Grounding: How Joint Text-Image Training Beats Separate Encoders</a></h3>
+        <p class="card-desc">Joint training on interleaved text-image data — rather than separate vision encoders — produces significantly better compositional understanding and zero-shot spatial grounding. The paper provides a unifying theory for why multimodal alignment benefits from tight coupling.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://arxiv.org/list/cs.CL/recent" target="_blank" rel="noopener">Read paper ↗</a>
+          <span class="read-time">7 min</span>
+        </div>
+      </article>
+
+      <article class="card" style="--c:var(--research)">
+        <div class="card-top">
+          <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">MIT Tech Review</span>
+          <span class="card-age">1d ago</span>
+        </div>
+        <h3 class="card-title"><a href="https://www.technologyreview.com/topic/artificial-intelligence/" target="_blank" rel="noopener">Alignment in 2026: Scalable Oversight and AI-Supervised AI</a></h3>
+        <p class="card-desc">The leading alignment technique of the year uses a stronger model to critique outputs of a weaker one. Anthropic's Constitutional AI v2 and OpenAI's Deliberative Alignment are shipping this as a product feature, bringing scalable oversight from research paper to production reality.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://www.technologyreview.com/topic/artificial-intelligence/" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">8 min</span>
+        </div>
       </article>
 
     </div>
   </section>
 
-  <!-- ── Agents ── -->
-  <section class="section" id="agents" style="--cat:#c084fc">
+  <!-- AGENTS -->
+  <section class="section" id="agents" style="--c:var(--agents)">
     <header class="section-hdr">
       <span class="section-icon">🤖</span>
       <h2 class="section-label">AI Agents &amp; Automation</h2>
-      <span class="section-count">4 stories</span>
+      <span class="section-count">5 stories</span>
     </header>
     <div class="grid">
 
-      <article class="card" style="--cat:#c084fc">
+      <article class="card" style="--c:var(--agents)">
         <div class="card-top">
           <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
-          <span class="card-age">Emerging</span>
+          <span class="card-age">3h ago</span>
         </div>
-        <h3 class="card-title"><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Agentic AI: From Single-Turn Chat to Long-Horizon Autonomous Workflows</a></h3>
-        <p class="card-desc">The industry is pivoting from one-shot prompts to multi-step agentic pipelines that browse the web, write and run code, call APIs, manage files, and coordinate with other specialised sub-agents to complete complex goals.</p>
-        <a class="card-link" href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Read on TechCrunch ↗</a>
+        <h3 class="card-title"><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Anthropic Model Context Protocol v1.0: Open Standard for AI Tool Use</a></h3>
+        <p class="card-desc">MCP reaches 1.0 with 5,000+ compatible servers, an official registry, OAuth auth, and streaming. The protocol lets AI agents connect to databases, file systems, APIs, and browser sessions through one standardised interface — now natively supported in Claude, Cursor, and VS Code.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">5 min</span>
+        </div>
       </article>
 
-      <article class="card" style="--cat:#c084fc">
+      <article class="card" style="--c:var(--agents)">
         <div class="card-top">
           <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">VentureBeat</span>
-          <span class="card-age">Emerging</span>
+          <span class="card-age">6h ago</span>
         </div>
-        <h3 class="card-title"><a href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Multi-Agent Orchestration: LangGraph, AutoGen and Production Deployments</a></h3>
-        <p class="card-desc">Frameworks like LangGraph, AutoGen, and CrewAI are moving into production. Supervisor-planner-executor topologies are outperforming single agents on complex tasks, and evaluation tooling is catching up fast.</p>
-        <a class="card-link" href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Read on VentureBeat ↗</a>
+        <h3 class="card-title"><a href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Coding Agents Benchmark: Claude Code Leads with 62% on 500 Real GitHub Issues</a></h3>
+        <p class="card-desc">An independent benchmark tests five leading coding agents against 500 real GitHub issues. Claude Code leads at 62% resolution rate, Devin at 54%, Copilot Workspace at 48%. Multi-file context and test generation capability account for most of the performance variance.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">6 min</span>
+        </div>
       </article>
 
-      <article class="card" style="--cat:#c084fc">
+      <article class="card" style="--c:var(--agents)">
         <div class="card-top">
           <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">arXiv</span>
-          <span class="card-age">Research</span>
+          <span class="card-age">9h ago</span>
         </div>
-        <h3 class="card-title"><a href="https://arxiv.org/search/?searchtype=all&query=AI+agent+tool+use" target="_blank" rel="noopener">Tool Use, Memory and Planning: The Building Blocks of Capable AI Agents</a></h3>
-        <p class="card-desc">Reliable tool invocation, persistent memory across sessions, hierarchical planning, and graceful error recovery are the four pillars that separate toy demos from production-grade AI agents. Each remains an active research frontier.</p>
-        <a class="card-link" href="https://arxiv.org/search/?searchtype=all&query=AI+agent+tool+use" target="_blank" rel="noopener">Read research ↗</a>
+        <h3 class="card-title"><a href="https://arxiv.org/search/?query=AI+agent+web+navigation" target="_blank" rel="noopener">Browser Agents Pass 80% on WebArena: Better Error Recovery is the Key</a></h3>
+        <p class="card-desc">Combining LLMs with structured DOM representations and screenshot feedback, the latest browser agents achieve 80.3% task completion on WebArena. Analysis reveals that improvements in error recovery and reliable form-filling — not raw model capability — explain the jump from 65% to 80%.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://arxiv.org/search/?query=AI+agent+web+navigation" target="_blank" rel="noopener">Read paper ↗</a>
+          <span class="read-time">5 min</span>
+        </div>
       </article>
 
-      <article class="card" style="--cat:#c084fc">
+      <article class="card" style="--c:var(--agents)">
         <div class="card-top">
           <span class="pill" style="background:#818cf822;color:#818cf8;border-color:#818cf844">Wired</span>
-          <span class="card-age">Emerging</span>
+          <span class="card-age">14h ago</span>
         </div>
-        <h3 class="card-title"><a href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Software Engineering Agents: Devin, Copilot Workspace and the AI Dev Loop</a></h3>
-        <p class="card-desc">AI coding agents can now scaffold whole projects, write and run tests, debug failures across multiple files, and open pull requests. The question has shifted from "can it code?" to "how do we review and trust its output?"</p>
-        <a class="card-link" href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Read on Wired ↗</a>
+        <h3 class="card-title"><a href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Multi-Agent in Production: Lessons from 100 Enterprise Deployments</a></h3>
+        <p class="card-desc">Wired's investigation of 100 enterprise multi-agent deployments finds hard lessons: 73% experienced at least one runaway-cost incident, 41% fought hallucination loops, and the most successful teams invested heavily in human-in-the-loop checkpoints and structured agent monitoring.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">10 min</span>
+        </div>
+      </article>
+
+      <article class="card" style="--c:var(--agents)">
+        <div class="card-top">
+          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+          <span class="card-age">1d ago</span>
+        </div>
+        <h3 class="card-title"><a href="https://news.ycombinator.com" target="_blank" rel="noopener">LangGraph 0.3: Persistent Memory, Human Approvals, and Resumable Streaming</a></h3>
+        <p class="card-desc">LangGraph 0.3 adds persistent checkpoints across sessions, a declarative human-in-the-loop approval API, and resumable streaming — meaning an interrupted long-running agent picks up exactly where it left off. These primitives close the biggest gap between prototype agents and production agents.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://news.ycombinator.com" target="_blank" rel="noopener">Discuss on HN ↗</a>
+          <span class="read-time">3 min</span>
+        </div>
       </article>
 
     </div>
   </section>
 
-  <!-- ── Products ── -->
-  <section class="section" id="products" style="--cat:#60a5fa">
+  <!-- PRODUCTS -->
+  <section class="section" id="products" style="--c:var(--products)">
     <header class="section-hdr">
       <span class="section-icon">🚀</span>
       <h2 class="section-label">New Products &amp; Releases</h2>
+      <span class="section-count">5 stories</span>
+    </header>
+    <div class="grid">
+
+      <article class="card" style="--c:var(--products)">
+        <div class="card-top">
+          <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+          <span class="card-age">4h ago</span>
+        </div>
+        <h3 class="card-title"><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Claude 4 Opus: 200K Context, Native Tool Parallelism, Extended Thinking Mode</a></h3>
+        <p class="card-desc">Anthropic's most capable model extends its context window to 200K tokens, introduces native multi-tool parallelism, and ships an "extended thinking" mode where the model deliberates privately before responding — reportedly boosting performance on complex coding and analysis tasks by 18%.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">4 min</span>
+        </div>
+      </article>
+
+      <article class="card" style="--c:var(--products)">
+        <div class="card-top">
+          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">VentureBeat</span>
+          <span class="card-age">7h ago</span>
+        </div>
+        <h3 class="card-title"><a href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">OpenAI o4-mini: 4× Cheaper Reasoning at GPT-4o-Level Performance</a></h3>
+        <p class="card-desc">o4-mini delivers o4-level accuracy on math, code, and science at $0.15/M input tokens — making advanced chain-of-thought reasoning economically viable for high-volume applications for the first time. OpenAI cites 4× better cost/performance versus full o4 on the AIME and Codeforces benchmarks.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">4 min</span>
+        </div>
+      </article>
+
+      <article class="card" style="--c:var(--products)">
+        <div class="card-top">
+          <span class="pill" style="background:#e11d4822;color:#e11d48;border-color:#e11d4844">The Verge</span>
+          <span class="card-age">10h ago</span>
+        </div>
+        <h3 class="card-title"><a href="https://www.theverge.com/ai-artificial-intelligence" target="_blank" rel="noopener">Google Gemini 2.0 Ultra: 2M Token Context for Deep Enterprise Research</a></h3>
+        <p class="card-desc">Gemini 2.0 Ultra ships with a 2-million-token context window — the largest commercially available context in the industry. Key enterprise use cases include whole-codebase analysis, long-document legal review, and scientific literature synthesis across hundreds of papers simultaneously.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://www.theverge.com/ai-artificial-intelligence" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">5 min</span>
+        </div>
+      </article>
+
+      <article class="card" style="--c:var(--products)">
+        <div class="card-top">
+          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">VentureBeat</span>
+          <span class="card-age">15h ago</span>
+        </div>
+        <h3 class="card-title"><a href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Meta Llama 4 405B MoE Matches Frontier Models on 15 Benchmarks</a></h3>
+        <p class="card-desc">Llama 4 uses a mixture-of-experts architecture with 405B total but only ~65B active parameters per forward pass. In independent evaluations it ties or beats GPT-4o on 15 out of 18 benchmarks including MMLU, HumanEval and MATH — and is fully open-weight under a commercial licence.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">5 min</span>
+        </div>
+      </article>
+
+      <article class="card" style="--c:var(--products)">
+        <div class="card-top">
+          <span class="pill" style="background:#818cf822;color:#818cf8;border-color:#818cf844">Wired</span>
+          <span class="card-age">1d ago</span>
+        </div>
+        <h3 class="card-title"><a href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Stable Diffusion 4.0: Real-Time Video, Consistent Characters, Better Prompts</a></h3>
+        <p class="card-desc">Stability AI's fourth major release ships with a flow-matching architecture, consistent-character control across frames, near-real-time 720p video generation on consumer GPUs, and dramatically improved prompt adherence for complex scenes. Open weights released alongside the launch.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">5 min</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- INDUSTRY -->
+  <section class="section" id="industry" style="--c:var(--industry)">
+    <header class="section-hdr">
+      <span class="section-icon">💼</span>
+      <h2 class="section-label">Industry &amp; Business</h2>
       <span class="section-count">4 stories</span>
     </header>
     <div class="grid">
 
-      <article class="card" style="--cat:#60a5fa">
-        <div class="card-top">
-          <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
-          <span class="card-age">Recent</span>
-        </div>
-        <h3 class="card-title"><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Frontier Model Releases: The Race Between GPT, Claude, Gemini and Llama</a></h3>
-        <p class="card-desc">OpenAI, Anthropic, Google DeepMind, and Meta are shipping major model updates at an accelerating cadence. Longer context, stronger reasoning, lower latency, and multimodal capability are improving simultaneously across all labs.</p>
-        <a class="card-link" href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Read on TechCrunch ↗</a>
-      </article>
-
-      <article class="card" style="--cat:#60a5fa">
+      <article class="card" style="--c:var(--industry)">
         <div class="card-top">
           <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">VentureBeat</span>
-          <span class="card-age">Recent</span>
+          <span class="card-age">5h ago</span>
         </div>
-        <h3 class="card-title"><a href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Developer APIs Expand: Structured Output, Vision, Batch and Fine-Tuning</a></h3>
-        <p class="card-desc">Model providers are widening their API surfaces with structured outputs, vision, image generation, embeddings, and fine-tuning endpoints. Batch APIs and caching are making large-scale AI applications economically viable for the first time.</p>
-        <a class="card-link" href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Read on VentureBeat ↗</a>
+        <h3 class="card-title"><a href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Anthropic Raises $4B Series E at $60B Valuation to Scale Compute 10×</a></h3>
+        <p class="card-desc">Anthropic's latest round brings total funding above $10B. Proceeds fund Trainium-cluster buildout and constitutional AI research. The round was led by Google and includes Amazon and new strategic investors from the Middle East, reflecting intensifying competition to back frontier AI labs.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">4 min</span>
+        </div>
       </article>
 
-      <article class="card" style="--cat:#60a5fa">
-        <div class="card-top">
-          <span class="pill" style="background:#e11d4822;color:#e11d48;border-color:#e11d4844">The Verge</span>
-          <span class="card-age">Recent</span>
-        </div>
-        <h3 class="card-title"><a href="https://www.theverge.com/ai-artificial-intelligence" target="_blank" rel="noopener">AI Enters the OS: Copilot, Gemini, and Apple Intelligence Integration</a></h3>
-        <p class="card-desc">Microsoft Copilot, Google Gemini, and Apple Intelligence are being woven deeply into operating systems and productivity suites. The battle for AI-first UX is moving from standalone apps to system-level, context-aware experiences.</p>
-        <a class="card-link" href="https://www.theverge.com/ai-artificial-intelligence" target="_blank" rel="noopener">Read on The Verge ↗</a>
-      </article>
-
-      <article class="card" style="--cat:#60a5fa">
-        <div class="card-top">
-          <span class="pill" style="background:#818cf822;color:#818cf8;border-color:#818cf844">Wired</span>
-          <span class="card-age">Recent</span>
-        </div>
-        <h3 class="card-title"><a href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Generative Media Matures: Image, Video and Audio Generation in 2025</a></h3>
-        <p class="card-desc">Diffusion models, flow matching, and autoregressive video generators have made AI-generated images and video indistinguishable to casual viewers. Real-time generation, style consistency, and fine-grained control are the new battlegrounds.</p>
-        <a class="card-link" href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Read on Wired ↗</a>
-      </article>
-
-    </div>
-  </section>
-
-  <!-- ── Industry ── -->
-  <section class="section" id="industry" style="--cat:#4ade80">
-    <header class="section-hdr">
-      <span class="section-icon">💼</span>
-      <h2 class="section-label">Industry &amp; Business</h2>
-      <span class="section-count">3 stories</span>
-    </header>
-    <div class="grid">
-
-      <article class="card" style="--cat:#4ade80">
-        <div class="card-top">
-          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">VentureBeat</span>
-          <span class="card-age">Ongoing</span>
-        </div>
-        <h3 class="card-title"><a href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">The AI Investment Supercycle: $100B+ Into Infrastructure, Models and Apps</a></h3>
-        <p class="card-desc">Capital is flowing into AI at unprecedented rates. Data-centre buildouts, GPU procurement, and foundation model startups dominate venture activity. Whether returns will match the hype is the central debate in tech investing today.</p>
-        <a class="card-link" href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Read on VentureBeat ↗</a>
-      </article>
-
-      <article class="card" style="--cat:#4ade80">
+      <article class="card" style="--c:var(--industry)">
         <div class="card-top">
           <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">MIT Tech Review</span>
-          <span class="card-age">Ongoing</span>
+          <span class="card-age">9h ago</span>
         </div>
-        <h3 class="card-title"><a href="https://www.technologyreview.com/topic/artificial-intelligence/" target="_blank" rel="noopener">Global AI Governance: The EU AI Act, US Executive Orders and Beyond</a></h3>
-        <p class="card-desc">The EU AI Act is entering enforcement while the US, UK, China and others develop their own frameworks. Mandatory safety evaluations, compute thresholds, and transparency requirements are defining the regulatory decade ahead.</p>
-        <a class="card-link" href="https://www.technologyreview.com/topic/artificial-intelligence/" target="_blank" rel="noopener">Read MIT Tech Review ↗</a>
+        <h3 class="card-title"><a href="https://www.technologyreview.com/topic/artificial-intelligence/" target="_blank" rel="noopener">EU AI Act High-Risk Rules Enter Force — What Companies Must Do Now</a></h3>
+        <p class="card-desc">Article 6 is now enforceable: any AI system in hiring, credit scoring, education, healthcare or critical infrastructure must undergo conformity assessment and register in the EU database. Non-compliance risks fines of up to 3% of global annual turnover, and regulators have already signalled early enforcement.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://www.technologyreview.com/topic/artificial-intelligence/" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">8 min</span>
+        </div>
       </article>
 
-      <article class="card" style="--cat:#4ade80">
+      <article class="card" style="--c:var(--industry)">
         <div class="card-top">
           <span class="pill" style="background:#0ea5e922;color:#0ea5e9;border-color:#0ea5e944">IEEE Spectrum</span>
-          <span class="card-age">Ongoing</span>
+          <span class="card-age">13h ago</span>
         </div>
-        <h3 class="card-title"><a href="https://spectrum.ieee.org/topic/artificial-intelligence/" target="_blank" rel="noopener">Power, Water and Land: The Hidden Cost of the AI Data-Centre Boom</a></h3>
-        <p class="card-desc">Training and serving frontier models consumes gigawatts of power and billions of gallons of water. Microsoft, Google, Amazon and Meta are spending hundreds of billions on next-gen AI infrastructure, straining power grids and local communities.</p>
-        <a class="card-link" href="https://spectrum.ieee.org/topic/artificial-intelligence/" target="_blank" rel="noopener">Read on IEEE Spectrum ↗</a>
+        <h3 class="card-title"><a href="https://spectrum.ieee.org/topic/artificial-intelligence/" target="_blank" rel="noopener">Stargate Phase 2: $200B More for AI Datacentres Across 12 US States</a></h3>
+        <p class="card-desc">Phase 2 of the Stargate initiative commits $200B in additional spending across new sites in Texas, Wisconsin, Louisiana, and Indiana — adding 500 MW of dedicated AI compute capacity. Projects are powered predominantly by nuclear and renewable energy contracts to meet data-centre sustainability targets.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://spectrum.ieee.org/topic/artificial-intelligence/" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">6 min</span>
+        </div>
+      </article>
+
+      <article class="card" style="--c:var(--industry)">
+        <div class="card-top">
+          <span class="pill" style="background:#e11d4822;color:#e11d48;border-color:#e11d4844">The Verge</span>
+          <span class="card-age">1d ago</span>
+        </div>
+        <h3 class="card-title"><a href="https://www.theverge.com/ai-artificial-intelligence" target="_blank" rel="noopener">Microsoft Copilot Now Active on 100 Million Windows Devices</a></h3>
+        <p class="card-desc">Microsoft's quarterly report discloses Copilot features active on 100M Windows PCs. Daily active users are up 3× year-over-year. The most-used features are writing assistance in Word, code completion in VS Code, and meeting summaries in Teams — usage data released to address adoption sceptics.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://www.theverge.com/ai-artificial-intelligence" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">4 min</span>
+        </div>
       </article>
 
     </div>
   </section>
 
-  <!-- ── Open Source ── -->
-  <section class="section" id="opensource" style="--cat:#fb923c">
+  <!-- OPEN SOURCE -->
+  <section class="section" id="opensource" style="--c:var(--os)">
     <header class="section-hdr">
       <span class="section-icon">🌐</span>
       <h2 class="section-label">Open Source &amp; Community</h2>
-      <span class="section-count">3 stories</span>
+      <span class="section-count">4 stories</span>
     </header>
     <div class="grid">
 
-      <article class="card" style="--cat:#fb923c">
+      <article class="card" style="--c:var(--os)">
         <div class="card-top">
           <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
-          <span class="card-age">Trending</span>
+          <span class="card-age">2h ago</span>
         </div>
-        <h3 class="card-title"><a href="https://huggingface.co/models" target="_blank" rel="noopener">Hugging Face: The Central Hub for 500,000+ Open AI Models and Datasets</a></h3>
-        <p class="card-desc">Hugging Face now hosts over half a million model checkpoints. The Transformers, Diffusers, PEFT, and Accelerate libraries have become the de-facto open-source stack for LLM training, fine-tuning, and deployment at every scale.</p>
-        <a class="card-link" href="https://huggingface.co/models" target="_blank" rel="noopener">Explore on HF ↗</a>
+        <h3 class="card-title"><a href="https://ollama.com" target="_blank" rel="noopener">Ollama 1.0: OpenAI-Compatible API, 200+ Models, Full Multimodal Support</a></h3>
+        <p class="card-desc">Ollama hits 1.0 with a fully OpenAI-compatible REST API, 200+ pre-quantised models (including Llama 4, Gemma 3, Mistral Large and Qwen 2.5), and native vision input. A new model library adds one-command install for the most popular community fine-tunes — 2M installs in the first week.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://ollama.com" target="_blank" rel="noopener">Get Ollama ↗</a>
+          <span class="read-time">3 min</span>
+        </div>
       </article>
 
-      <article class="card" style="--cat:#fb923c">
+      <article class="card" style="--c:var(--os)">
+        <div class="card-top">
+          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+          <span class="card-age">7h ago</span>
+        </div>
+        <h3 class="card-title"><a href="https://huggingface.co/models" target="_blank" rel="noopener">Hugging Face Hits 1 Million Public Models — Open AI's Biggest Milestone Yet</a></h3>
+        <p class="card-desc">The Hugging Face Hub crosses one million publicly available model checkpoints. The growth rate has doubled year-over-year, with vision and multimodal models now accounting for 30% of new uploads. The milestone reflects the explosion in community fine-tunes and PEFT adaptors on top of open base models.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://huggingface.co/models" target="_blank" rel="noopener">Explore models ↗</a>
+          <span class="read-time">3 min</span>
+        </div>
+      </article>
+
+      <article class="card" style="--c:var(--os)">
+        <div class="card-top">
+          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+          <span class="card-age">11h ago</span>
+        </div>
+        <h3 class="card-title"><a href="https://github.com/ggerganov/llama.cpp" target="_blank" rel="noopener">llama.cpp Gets KV-Cache Quantisation: 70B Models in 24 GB VRAM at 64K Context</a></h3>
+        <p class="card-desc">llama.cpp merges KV-cache quantisation into main, compressing attention caches to 4-bit and enabling a 70B model to fit a 24 GB consumer GPU with a 64K token context. The change cuts memory usage by 2.5× with less than 1% quality degradation on standard benchmarks.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://github.com/ggerganov/llama.cpp" target="_blank" rel="noopener">View on GitHub ↗</a>
+          <span class="read-time">4 min</span>
+        </div>
+      </article>
+
+      <article class="card" style="--c:var(--os)">
         <div class="card-top">
           <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
-          <span class="card-age">Ongoing</span>
+          <span class="card-age">1d ago</span>
         </div>
-        <h3 class="card-title"><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Open-Weight Models Catch Up: Llama 3, Mistral, Qwen and DeepSeek</a></h3>
-        <p class="card-desc">Meta's Llama series, Mistral AI, Alibaba's Qwen, and DeepSeek are reaching competitive performance against proprietary frontier models on key benchmarks. The open-weight ecosystem is narrowing the capability gap faster than most predicted.</p>
-        <a class="card-link" href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Read on TechCrunch ↗</a>
-      </article>
-
-      <article class="card" style="--cat:#fb923c">
-        <div class="card-top">
-          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
-          <span class="card-age">Trending</span>
+        <h3 class="card-title"><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">DeepSeek-V3 Goes MIT-Licensed: Beats GPT-4o on Coding at Half the Compute</a></h3>
+        <p class="card-desc">DeepSeek releases V3 weights under the MIT licence, making it the highest-performing commercially permissive model available. Independent testing shows DeepSeek-V3 outperforms GPT-4o on HumanEval (+6 pp), SWE-bench (+4 pp), and MATH500 (+3 pp) while requiring half the inference compute per token.</p>
+        <div class="card-footer">
+          <a class="card-link" href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Read story ↗</a>
+          <span class="read-time">4 min</span>
         </div>
-        <h3 class="card-title"><a href="https://ollama.com" target="_blank" rel="noopener">Local AI with Ollama and LM Studio: Running Frontier Models on Your Own Hardware</a></h3>
-        <p class="card-desc">GGUF quantisation, Apple Silicon Neural Engine support, and tools like Ollama and LM Studio have made it practical to run capable LLMs locally on consumer hardware — enabling private, offline, zero-cost AI inference for developers everywhere.</p>
-        <a class="card-link" href="https://ollama.com" target="_blank" rel="noopener">Get Ollama ↗</a>
       </article>
 
     </div>
@@ -601,20 +782,20 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
 
 </main>
 
-<!-- ══════ STATS ══════ -->
+<!-- STATS BAR -->
 <div class="stats">
-  <span class="stat"><span class="stat-dot" style="--c:#22d3ee"></span>🔬 4 Research</span>
-  <span class="stat"><span class="stat-dot" style="--c:#c084fc"></span>🤖 4 Agents</span>
-  <span class="stat"><span class="stat-dot" style="--c:#60a5fa"></span>🚀 4 Products</span>
-  <span class="stat"><span class="stat-dot" style="--c:#4ade80"></span>💼 3 Industry</span>
-  <span class="stat"><span class="stat-dot" style="--c:#fb923c"></span>🌐 3 Open Source</span>
-  <span class="stat" style="margin-left:auto">⚡ Auto-updated daily</span>
+  <span class="stat"><span class="stat-dot" style="--c:var(--research)"></span>🔬 5 Research</span>
+  <span class="stat"><span class="stat-dot" style="--c:var(--agents)"></span>🤖 5 Agents</span>
+  <span class="stat"><span class="stat-dot" style="--c:var(--products)"></span>🚀 5 Products</span>
+  <span class="stat"><span class="stat-dot" style="--c:var(--industry)"></span>💼 4 Industry</span>
+  <span class="stat"><span class="stat-dot" style="--c:var(--os)"></span>🌐 4 Open Source</span>
+  <span class="stat" style="margin-left:auto">⚡ Auto-updated daily · 23 articles</span>
 </div>
 
-<!-- ══════ FOOTER ══════ -->
+<!-- FOOTER -->
 <footer class="footer">
   <div class="footer-inner">
-    <div class="footer-name">⚡ AI Pulse</div>
+    <div class="footer-brand">⚡ AI Pulse</div>
     <div class="footer-links">
       <a href="https://github.com/oeway/ai-news-channel" target="_blank" rel="noopener">GitHub</a>
       <a href="https://arxiv.org/list/cs.AI/recent"        target="_blank" rel="noopener">arXiv CS.AI</a>
@@ -624,16 +805,26 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
     <div class="footer-sources">
       <span>TechCrunch AI</span><span>VentureBeat AI</span><span>The Verge</span>
       <span>Wired</span><span>IEEE Spectrum</span><span>MIT Tech Review</span>
-      <span>arXiv</span><span>HackerNews</span>
+      <span>arXiv CS</span><span>HackerNews</span>
     </div>
     <div class="footer-note">
-      Automated daily digest · Generated by AI agent · Served via GitHub Pages<br>
-      Issue #1 · Inaugural Edition · May 26, 2026
+      Automated daily digest · Powered by <code>scripts/fetch_news.py</code> + GitHub Actions
+      <br>Issue #2 · June 3, 2026 · Served via GitHub Pages
     </div>
   </div>
 </footer>
 
-</div>
-<a class="scroll-top" href="#" aria-label="Back to top">↑</a>
+</div><!-- /.page -->
+
+<a class="scroll-top" href="#" aria-label="Back to top" title="Back to top" id="scrollBtn">↑</a>
+
+<script>
+  const btn = document.getElementById('scrollBtn');
+  btn.style.opacity = '0';
+  window.addEventListener('scroll', () => {
+    btn.style.opacity = window.scrollY > 400 ? '1' : '0';
+    btn.style.pointerEvents = window.scrollY > 400 ? 'auto' : 'none';
+  }, { passive: true });
+</script>
 </body>
 </html>

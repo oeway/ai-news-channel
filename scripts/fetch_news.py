@@ -868,6 +868,12 @@ def main() -> None:
 
     # ── Render ──
     print("\n[4/4] Rendering HTML…", flush=True)
+
+    if total == 0 and OUTPUT.exists():
+        print("  ⚠️  Zero articles fetched — keeping existing docs/index.html unchanged.", flush=True)
+        print(f"\n⏭  Skipped write (no articles). Issue counter not incremented.", flush=True)
+        return
+
     generated = datetime.now(timezone.utc)
     html_out  = full_page(featured, sections, issue, generated)
     OUTPUT.write_text(html_out, encoding="utf-8")

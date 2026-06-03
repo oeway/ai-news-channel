@@ -1,0 +1,75 @@
+name: Fetch & Publish AI News
+
+on:
+  schedule:
+    # Run every day at 07:00 UTC
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force regenerate even if no new articles'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install feedparser requests
+
+      - name: Fetch latest AI news
+        run: python scripts/fetch_news.py
+
+      - name: Commit updated newsletter to main
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if git diff --staged --quiet; then
+            echo "No article changes — skipping commit."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            ISSUE=$(python -c "import json,sys; d=json.load(open('docs/state.json')); print(d.get('issue',0))" 2>/dev/null || echo "?")
+            git commit -m "chore: AI Pulse Issue #${ISSUE} — $(date -u +'%Y-%m-%d')"
+            git push origin main
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy to GitHub Pages (gh-pages branch)
+        run: |
+          # Stash docs so we can switch branches safely
+          cp -r docs /tmp/newsletter-deploy
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create a fresh orphan branch for gh-pages
+          git checkout --orphan gh-pages-new
+          git rm -rf . --quiet
+
+          # Populate with docs content
+          cp -r /tmp/newsletter-deploy/. .
+
+          git add -A
+          git commit -m "deploy: AI Pulse $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push origin HEAD:gh-pages --force
+
+          echo "✅ Deployed to GitHub Pages (gh-pages branch)"
