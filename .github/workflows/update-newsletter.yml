@@ -1,0 +1,56 @@
+name: Update AI Newsletter
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # daily at 07:00 UTC
+  workflow_dispatch:        # manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install feedparser requests
+
+      - name: Generate newsletter
+        run: python scripts/fetch_news.py
+
+      - name: Commit updated docs to main
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if git diff --cached --quiet; then
+            echo "No changes — skipping commit"
+          else
+            git commit -m "📰 AI Pulse — $(date -u +'%B %d, %Y')"
+            git push origin main
+          fi
+
+      - name: Deploy to GitHub Pages (gh-pages branch)
+        run: |
+          # Snapshot docs before switching branches
+          DEPLOY=$(mktemp -d)
+          cp -r docs/. "$DEPLOY/"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan gh-pages-deploy
+          git rm -rf . --quiet
+          cp -r "$DEPLOY/." .
+          git add -A
+          git commit -m "🌐 Deploy $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push origin HEAD:gh-pages --force
