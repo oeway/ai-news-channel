@@ -1,0 +1,45 @@
+name: Update AI News Newsletter
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # Daily at 07:00 UTC
+  workflow_dispatch:        # Manual trigger from Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch latest AI news
+        run: python scripts/fetch_news.py
+        timeout-minutes: 10
+
+      - name: Commit updated newsletter
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html docs/state.json 2>/dev/null || git add docs/index.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit — newsletter already up to date."
+          else
+            ISSUE=$(date -u '+Issue #%Y%m%d')
+            git commit -m "newsletter: auto-update ${ISSUE} ($(date -u '+%Y-%m-%d %H:%M UTC'))"
+            git push origin HEAD:main
+          fi
