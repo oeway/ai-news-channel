@@ -1,0 +1,37 @@
+name: Generate Newsletter
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # 07:00 UTC daily
+  workflow_dispatch:       # manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install feedparser requests
+
+      - name: Generate newsletter
+        run: python scripts/fetch_news.py
+
+      - name: Commit updated newsletter
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git diff --cached --quiet && echo "No changes — skipping commit." || \
+            git commit -m "newsletter: auto-update $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push

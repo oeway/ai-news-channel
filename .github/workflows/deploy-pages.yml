@@ -8,21 +8,46 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to gh-pages branch
+      # ── Try GitHub Actions native Pages deployment first ──────────────────
+      - name: Configure Pages
+        id: config
+        uses: actions/configure-pages@v5
+        continue-on-error: true
+
+      - name: Upload Pages artifact
+        if: steps.config.outcome == 'success'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+      - name: Deploy via Actions Pages
+        id: pages
+        if: steps.config.outcome == 'success'
+        uses: actions/deploy-pages@v4
+
+      # ── Fallback: push to gh-pages branch ────────────────────────────────
+      - name: Deploy via gh-pages branch (fallback)
+        if: steps.config.outcome != 'success'
         run: |
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout --orphan gh-pages-tmp
           git rm -rf .
-          cp -r docs/* .
-          cp docs/.nojekyll . 2>/dev/null || true
+          cp -r docs/. .
+          cp docs/.nojekyll . 2>/dev/null || touch .nojekyll
           git add -A
-          git commit -m "Deploy docs to GitHub Pages"
+          git commit -m "deploy: GitHub Pages $(date -u '+%Y-%m-%d %H:%M UTC')"
           git push origin HEAD:gh-pages --force
