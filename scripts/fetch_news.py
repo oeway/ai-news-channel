@@ -2,6 +2,7 @@
 """
 AI Pulse Newsletter Generator
 Fetches the latest AI news from multiple sources and generates a beautiful static HTML newsletter.
+No third-party dependencies required — uses only the Python standard library.
 """
 
 import os
@@ -18,12 +19,6 @@ from typing import List, Dict, Any, Optional
 import urllib.parse
 import urllib.request
 import urllib.error
-
-try:
-    import feedparser
-except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -131,16 +126,32 @@ MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
 
-UA = "AI-Pulse-Newsletter/2.0 (+https://github.com/oeway/ai-news-channel)"
+UA = ("Mozilla/5.0 (compatible; AI-Pulse/2.0; +https://github.com/oeway/ai-news-channel)"
+      " Gecko/20100101 Firefox/125.0")
 
-def fetch(url: str, timeout: int = 20) -> Optional[str]:
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            return r.read().decode("utf-8", errors="replace")
-    except Exception as e:
-        print(f"  [!] fetch {url[:70]}: {e}", file=sys.stderr)
-        return None
+_HEADERS = {
+    "User-Agent":      UA,
+    "Accept":          "application/rss+xml,application/atom+xml,text/xml,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Cache-Control":   "no-cache",
+}
+
+def fetch(url: str, timeout: int = 25) -> Optional[str]:
+    for attempt in range(2):
+        try:
+            req = urllib.request.Request(url, headers=_HEADERS)
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return r.read().decode("utf-8", errors="replace")
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt == 0:
+                time.sleep(4)
+                continue
+            print(f"  [!] fetch {url[:70]}: HTTP {e.code}", file=sys.stderr)
+            return None
+        except Exception as e:
+            print(f"  [!] fetch {url[:70]}: {e}", file=sys.stderr)
+            return None
+    return None
 
 # ─── Date helpers ────────────────────────────────────────────────────────────
 
@@ -179,32 +190,69 @@ def long_date(dt: Optional[datetime]) -> str:
 
 # ─── Fetchers ────────────────────────────────────────────────────────────────
 
+def _xml_text(el: Optional[ET.Element]) -> str:
+    if el is None: return ""
+    parts = [el.text or ""]
+    for child in el:
+        parts.append(child.text or "")
+        parts.append(child.tail or "")
+    return " ".join(parts).strip()
+
+def _strip_html(text: str) -> str:
+    text = re.sub(r"<[^>]+>", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+_RSS_NS  = {"content": "http://purl.org/rss/1.0/modules/content/",
+            "dc":      "http://purl.org/dc/elements/1.1/"}
+_ATOM_NS = "http://www.w3.org/2005/Atom"
+
 def fetch_rss(cfg: Dict) -> List[Dict]:
     print(f"  RSS  {cfg['source']}…", flush=True)
     raw = fetch(cfg["url"])
     if not raw: return []
     try:
-        feed     = feedparser.parse(raw)
+        root     = ET.fromstring(raw)
         articles = []
-        for e in feed.entries[:20]:
-            desc = ""
-            for attr in ("summary", "description", "content"):
-                val = getattr(e, attr, None)
-                if isinstance(val, list): val = val[0].get("value", "") if val else ""
-                if val:
-                    desc = re.sub(r"<[^>]+>", " ", val)
-                    desc = re.sub(r"\s+", " ", desc).strip()[:400]
-                    break
-            dt = None
-            for attr in ("published_parsed", "updated_parsed", "created_parsed"):
-                dt = to_dt(getattr(e, attr, None))
-                if dt: break
-            title = getattr(e, "title", "").strip()
-            url   = getattr(e, "link",  "").strip()
-            if not title or not url: continue
-            articles.append({"title": title, "url": url, "desc": desc,
-                              "source": cfg["source"], "source_color": cfg["color"],
-                              "date": dt, "category": None})
+        tag      = root.tag.lower()
+
+        if "atom" in tag or root.tag == f"{{{_ATOM_NS}}}feed":
+            ns  = {"a": _ATOM_NS}
+            for e in root.findall("a:entry", ns)[:20]:
+                title = _xml_text(e.find("a:title", ns))
+                url   = ""
+                for lnk in e.findall("a:link", ns):
+                    rel = lnk.get("rel", "alternate")
+                    if rel in ("alternate", ""):
+                        url = lnk.get("href", "")
+                        break
+                if not url:
+                    url = _xml_text(e.find("a:id", ns))
+                desc_el = e.find("a:summary", ns) or e.find("a:content", ns)
+                desc    = _strip_html(_xml_text(desc_el))[:400]
+                pub     = _xml_text(e.find("a:published", ns)) or _xml_text(e.find("a:updated", ns))
+                dt      = to_dt(pub)
+                if not title or not url: continue
+                articles.append({"title": title, "url": url, "desc": desc,
+                                  "source": cfg["source"], "source_color": cfg["color"],
+                                  "date": dt, "category": None})
+        else:
+            channel = root.find("channel") or root
+            for e in channel.findall("item")[:20]:
+                title = _xml_text(e.find("title"))
+                url   = _xml_text(e.find("link"))
+                if not url:
+                    url = (e.find("guid") or ET.Element("x")).get("isPermaLink","true")
+                    if url == "true": url = _xml_text(e.find("guid"))
+                desc_el = (e.find("{%s}encoded" % _RSS_NS["content"])
+                           or e.find("description"))
+                desc    = _strip_html(_xml_text(desc_el))[:400]
+                pub     = _xml_text(e.find("pubDate")) or _xml_text(e.find("dc:date", _RSS_NS))
+                dt      = to_dt(pub)
+                if not title or not url: continue
+                articles.append({"title": title, "url": url, "desc": desc,
+                                  "source": cfg["source"], "source_color": cfg["color"],
+                                  "date": dt, "category": None})
+
         print(f"     → {len(articles)} items", flush=True)
         return articles
     except Exception as ex:

@@ -1,2 +1,2 @@
-feedparser>=6.0.0
-requests>=2.31.0
+# No third-party dependencies required — fetch_news.py uses only the Python standard library.
+# requests is only needed if you add features that use it directly.

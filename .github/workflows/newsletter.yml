@@ -1,0 +1,84 @@
+name: Fetch AI News & Publish
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # Daily at 07:00 UTC
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'          # Avoid re-triggering on the commit made by this workflow
+      - '.github/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          if [ -s requirements.txt ] && grep -vE '^\s*#' requirements.txt | grep -q .; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Fetch latest AI news
+        run: python scripts/fetch_news.py
+
+      - name: Commit updated newsletter
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            ISSUE=$(python3 -c "import json,pathlib; f=pathlib.Path('docs/state.json'); print(json.loads(f.read_text())['issue'] if f.exists() else '?')")
+            git commit -m "📰 AI Pulse — Issue #${ISSUE} [skip ci]"
+            git push
+          fi
+
+      - name: Deploy to gh-pages
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Copy docs to a temp directory outside the repo
+          cp -r docs /tmp/deploy-docs
+
+          # Switch to gh-pages branch (create orphan if needed)
+          if git ls-remote --exit-code origin gh-pages > /dev/null 2>&1; then
+            git checkout gh-pages
+            git pull origin gh-pages --ff-only || true
+          else
+            git checkout --orphan gh-pages
+            git rm -rf .
+          fi
+
+          # Replace content with docs/ output
+          find . -mindepth 1 -maxdepth 1 \
+            ! -name '.git' ! -name '.nojekyll' \
+            -exec rm -rf {} +
+          cp -r /tmp/deploy-docs/. .
+          touch .nojekyll
+
+          git add -A
+          if git diff --staged --quiet; then
+            echo "gh-pages already up to date."
+          else
+            git commit -m "Deploy AI Pulse newsletter"
+            git push origin gh-pages --force
+          fi
