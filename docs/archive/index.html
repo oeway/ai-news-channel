@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>AI Pulse — Archive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#07071a;--surface:#0d0d24;--card:#111128;--card-h:#16163a;
+  --border:rgba(255,255,255,0.06);--text:#e8eaf6;--muted:#64748b;--dim:#334155;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh}
+a{color:inherit;text-decoration:none}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 65% 45% at 15% 5%,rgba(99,102,241,.09) 0%,transparent 65%);}
+.page{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:3rem 1.5rem}
+.back{font-size:.82rem;color:#a78bfa;display:inline-flex;align-items:center;gap:.4rem;margin-bottom:2rem}
+.back:hover{opacity:.8}
+h1{font-family:'Space Grotesk',sans-serif;font-size:1.75rem;font-weight:700;
+  background:linear-gradient(130deg,#a78bfa,#38bdf8);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.5rem;}
+.sub{color:var(--muted);margin-bottom:2.5rem;font-size:.9rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.8rem}
+.item{background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:1.1rem 1.25rem;display:flex;flex-direction:column;gap:.3rem;
+  transition:border-color .15s,background .15s;}
+.item:hover{background:var(--card-h);border-color:rgba(167,139,250,.3)}
+.item-issue{font-size:.7rem;font-weight:700;color:#a78bfa}
+.item-date{font-size:.9rem;font-weight:600;color:var(--text)}
+.item-count{font-size:.76rem;color:var(--muted)}
+</style>
+</head>
+<body><div class="page">
+  <a class="back" href="../">← Back to latest</a>
+  <h1>📚 Newsletter Archive</h1>
+  <p class="sub">1 issue published</p>
+  <div class="grid"><a class="item" href="2026-06-08-issue-1.html"><span class="item-issue">Issue #1</span><span class="item-date">June 08, 2026</span><span class="item-count">22 articles</span></a></div>
+</div></body></html>
