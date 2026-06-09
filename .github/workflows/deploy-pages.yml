@@ -1,9 +1,8 @@
-name: Deploy to GitHub Pages
+name: Deploy docs to GitHub Pages (manual)
 
+# This workflow is kept as a manual escape-hatch.
+# Automatic daily publishing is handled by ai-news.yml.
 on:
-  push:
-    branches: [main]
-    paths: ['docs/**']
   workflow_dispatch:
 
 permissions:
