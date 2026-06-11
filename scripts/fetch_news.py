@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 AI Pulse Newsletter Generator
-Fetches the latest AI news from multiple sources and generates a beautiful static HTML newsletter.
+Fetches the latest AI news from multiple sources and generates a static HTML newsletter.
 """
 
 import os
@@ -37,24 +37,32 @@ STATE_FILE = DOCS_DIR / "state.json"
 
 RSS_FEEDS = [
     {"url": "https://techcrunch.com/category/artificial-intelligence/feed/",
-     "source": "TechCrunch",   "color": "#22c55e"},
+     "source": "TechCrunch",     "color": "#22c55e"},
     {"url": "https://venturebeat.com/category/ai/feed/",
-     "source": "VentureBeat",  "color": "#f97316"},
+     "source": "VentureBeat",    "color": "#f97316"},
     {"url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
-     "source": "The Verge",    "color": "#e11d48"},
+     "source": "The Verge",      "color": "#e11d48"},
     {"url": "https://www.wired.com/feed/category/artificial-intelligence/latest/rss",
-     "source": "Wired",        "color": "#818cf8"},
+     "source": "Wired",          "color": "#818cf8"},
     {"url": "https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss",
-     "source": "IEEE Spectrum", "color": "#0ea5e9"},
+     "source": "IEEE Spectrum",  "color": "#0ea5e9"},
     {"url": "https://www.technologyreview.com/feed/",
-     "source": "MIT Tech Review", "color": "#a78bfa"},
+     "source": "MIT Tech Review","color": "#a78bfa"},
+    {"url": "https://huggingface.co/blog/feed.xml",
+     "source": "Hugging Face",   "color": "#fbbf24"},
+    {"url": "https://openai.com/blog/rss.xml",
+     "source": "OpenAI",         "color": "#10b981"},
+    {"url": "https://simonwillison.net/atom/posts/",
+     "source": "Simon Willison", "color": "#f472b6"},
+    {"url": "https://blog.google/technology/ai/rss/",
+     "source": "Google AI",      "color": "#4285f4"},
 ]
 
 HN_API  = "https://hn.algolia.com/api/v1/search_by_date"
-HN_TAGS = ["artificial intelligence", "AI agent", "large language model", "machine learning", "LLM"]
+HN_TAGS = ["artificial intelligence", "AI agent", "large language model", "machine learning"]
 
 ARXIV_API   = "https://export.arxiv.org/api/query"
-ARXIV_QUERY = "cat:cs.AI+OR+cat:cs.LG+OR+cat:cs.CL+OR+cat:cs.NE"
+ARXIV_QUERY = "cat:cs.AI+OR+cat:cs.LG+OR+cat:cs.CL+OR+cat:cs.NE+OR+cat:cs.RO"
 
 # ─── Categories ─────────────────────────────────────────────────────────────
 
@@ -64,12 +72,13 @@ CATEGORIES: Dict[str, Dict] = {
         "icon":  "🔬",
         "color": "#22d3ee",
         "bg":    "rgba(34,211,238,0.07)",
-        "glow":  "rgba(34,211,238,0.12)",
+        "glow":  "rgba(34,211,238,0.15)",
         "keywords": [
             "paper", "arxiv", "research", "study", "benchmark", "dataset", "training",
             "pretrain", "fine-tun", "neural", "transformer", "diffusion", "multimodal",
             "evaluation", "algorithm", "architecture", "inference", "reasoning",
-            "capability", "scaling", "emergent", "alignment", "rlhf", "reward model"
+            "capability", "scaling", "emergent", "alignment", "rlhf", "reward model",
+            "test-time", "chain-of-thought", "attention", "tokenizer", "embeddings"
         ]
     },
     "agents": {
@@ -77,12 +86,13 @@ CATEGORIES: Dict[str, Dict] = {
         "icon":  "🤖",
         "color": "#c084fc",
         "bg":    "rgba(192,132,252,0.07)",
-        "glow":  "rgba(192,132,252,0.12)",
+        "glow":  "rgba(192,132,252,0.15)",
         "keywords": [
             "agent", "autonomous", "agentic", "multi-agent", "planning", "memory",
             "tool use", "function call", "workflow", "automation", "copilot",
             "computer use", "browse", "execute", "retrieval", "rag", "orchestrat",
-            "self-improv", "task complet", "action"
+            "self-improv", "task complet", "action", "mcp", "model context protocol",
+            "crew", "langgraph", "autogen", "devin", "cursor", "operator"
         ]
     },
     "products": {
@@ -90,12 +100,12 @@ CATEGORIES: Dict[str, Dict] = {
         "icon":  "🚀",
         "color": "#60a5fa",
         "bg":    "rgba(96,165,250,0.07)",
-        "glow":  "rgba(96,165,250,0.12)",
+        "glow":  "rgba(96,165,250,0.15)",
         "keywords": [
             "launch", "release", "introduc", "announc", "unveil", "new", "gpt",
             "claude", "gemini", "llama", "mistral", "update", "feature", "api",
             "version", "preview", "beta", "availab", "product", "app", "platform",
-            "service", "plugin", "integrat"
+            "service", "plugin", "integrat", "model", "chatbot", "assistant"
         ]
     },
     "industry": {
@@ -103,12 +113,12 @@ CATEGORIES: Dict[str, Dict] = {
         "icon":  "💼",
         "color": "#4ade80",
         "bg":    "rgba(74,222,128,0.07)",
-        "glow":  "rgba(74,222,128,0.12)",
+        "glow":  "rgba(74,222,128,0.15)",
         "keywords": [
             "funding", "million", "billion", "acqui", "ceo", "hire", "policy",
             "regulat", "invest", "startup", "openai", "google", "microsoft", "meta",
             "nvidia", "amazon", "apple", "partnership", "deal", "market", "revenue",
-            "valuat", "ipo", "lawsuit", "safety", "govern"
+            "valuat", "ipo", "lawsuit", "safety", "govern", "antitrust", "xai", "sam altman"
         ]
     },
     "open_source": {
@@ -116,22 +126,23 @@ CATEGORIES: Dict[str, Dict] = {
         "icon":  "🌐",
         "color": "#fb923c",
         "bg":    "rgba(251,146,60,0.07)",
-        "glow":  "rgba(251,146,60,0.12)",
+        "glow":  "rgba(251,146,60,0.15)",
         "keywords": [
             "open source", "open-source", "github", "hugging face", "huggingface",
             "llama", "open weight", "open model", "community", "contrib", "fork",
-            "mit license", "apache", "open access", "weights", "permissive", "ollama"
+            "mit license", "apache", "open access", "weights", "permissive", "ollama",
+            "mistral", "deepseek", "qwen", "phi", "gemma", "falcon"
         ]
     }
 }
 
-DEFAULT_CATEGORY    = "industry"
-MAX_PER_CATEGORY    = 6
-MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
+DEFAULT_CATEGORY   = "industry"
+MAX_PER_CATEGORY   = 8
+MAX_FEATURED_AGE_H = 72
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
 
-UA = "AI-Pulse-Newsletter/2.0 (+https://github.com/oeway/ai-news-channel)"
+UA = "AI-Pulse-Newsletter/3.0 (+https://github.com/oeway/ai-news-channel)"
 
 def fetch(url: str, timeout: int = 20) -> Optional[str]:
     try:
@@ -172,6 +183,10 @@ def age_str(dt: Optional[datetime]) -> str:
     if delta.days == 1: return "Yesterday"
     if delta.days < 7:  return f"{delta.days}d ago"
     return dt.strftime("%b %d, %Y")
+
+def is_new(dt: Optional[datetime], hours: int = 12) -> bool:
+    if dt is None: return False
+    return (datetime.now(timezone.utc) - dt).total_seconds() < hours * 3600
 
 def long_date(dt: Optional[datetime]) -> str:
     if dt is None: return ""
@@ -234,7 +249,8 @@ def fetch_hn() -> List[Dict]:
                 dt    = to_dt(hit.get("created_at_i"))
                 articles.append({"title": title, "url": story_url, "desc": desc,
                                   "source": "HackerNews", "source_color": "#f97316",
-                                  "date": dt, "category": None})
+                                  "date": dt, "category": None,
+                                  "hn_points": pts})
         except Exception as ex:
             print(f"  [!] HN parse: {ex}", file=sys.stderr)
         time.sleep(0.3)
@@ -288,11 +304,26 @@ def score(a: Dict) -> float:
     dt   = a.get("date")
     if dt:
         age = (datetime.now(timezone.utc) - dt).total_seconds() / 3600
-        s  += max(0, 10 - age * 0.08)          # decay over ~5 days
-    source_bonus = {"arXiv": 2.5, "IEEE Spectrum": 2.0, "MIT Tech Review": 1.8,
-                    "TechCrunch": 1.5, "VentureBeat": 1.3, "Wired": 1.3,
-                    "The Verge": 1.2, "HackerNews": 0.8}
+        s  += max(0, 12 - age * 0.06)          # decay over ~8 days
+    source_bonus = {
+        "arXiv":          2.5,
+        "IEEE Spectrum":  2.0,
+        "MIT Tech Review":1.8,
+        "OpenAI":         1.7,
+        "Google AI":      1.6,
+        "Hugging Face":   1.6,
+        "TechCrunch":     1.5,
+        "VentureBeat":    1.3,
+        "Wired":          1.3,
+        "The Verge":      1.2,
+        "Simon Willison": 1.2,
+        "HackerNews":     0.8,
+    }
     s += source_bonus.get(a.get("source",""), 1.0)
+    # HN points bonus
+    pts = a.get("hn_points", 0)
+    if pts > 100: s += 1.5
+    elif pts > 50: s += 0.8
     tl = len(a.get("title",""))
     if 40 < tl < 130: s += 0.4
     return s
@@ -336,6 +367,10 @@ SOURCE_COLORS: Dict[str, str] = {
     "MIT Tech Review":"#a78bfa",
     "arXiv":          "#a78bfa",
     "HackerNews":     "#f97316",
+    "Hugging Face":   "#fbbf24",
+    "OpenAI":         "#10b981",
+    "Google AI":      "#4285f4",
+    "Simon Willison": "#f472b6",
 }
 
 def source_pill(source: str, color: str = "") -> str:
@@ -350,10 +385,15 @@ def card_html(a: Dict, cat_color: str) -> str:
     src     = a.get("source","")
     src_c   = a.get("source_color","") or SOURCE_COLORS.get(src,"#6b7280")
     age     = age_str(a.get("date"))
+    fresh   = is_new(a.get("date"))
+    new_badge = '<span class="new-badge">NEW</span>' if fresh else ""
     return f'''
     <article class="card" style="--cat:{cat_color}">
       <div class="card-top">
-        {source_pill(src, src_c)}
+        <div class="card-top-left">
+          {source_pill(src, src_c)}
+          {new_badge}
+        </div>
         <span class="card-age">{h(age)}</span>
       </div>
       <h3 class="card-title"><a href="{url}" target="_blank" rel="noopener">{title}</a></h3>
@@ -421,19 +461,34 @@ def nav_html(sections_with_content: List[str]) -> str:
         )
     return f'<nav class="cat-nav">{"".join(links)}</nav>'
 
+def stats_overview_html(sections: Dict[str, List[Dict]], total: int) -> str:
+    items = []
+    for cat, arts in sections.items():
+        if not arts: continue
+        cfg = CATEGORIES[cat]
+        items.append(
+            f'<div class="stat-item">'
+            f'<span class="stat-dot" style="--c:{cfg["color"]}"></span>'
+            f'<span>{cfg["icon"]} {len(arts)} {h(cfg["label"])}</span>'
+            f'</div>'
+        )
+    if not items: return ""
+    return f'<div class="stats-bar">{"".join(items)}<span class="stat-total">{total} articles total</span></div>'
+
 # ─── Full page ───────────────────────────────────────────────────────────────
 
 PAGE_CSS = r"""
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 
 :root {
-  --bg:        #07071a;
-  --surface:   #0d0d24;
-  --card:      #111128;
-  --card-h:    #16163a;
-  --border:    rgba(255,255,255,0.06);
-  --border-h:  rgba(255,255,255,0.12);
+  --bg:        #06061a;
+  --surface:   #0c0c22;
+  --card:      #10102a;
+  --card-h:    #14143a;
+  --border:    rgba(255,255,255,0.065);
+  --border-h:  rgba(255,255,255,0.13);
   --text:      #e8eaf6;
+  --sub:       #94a3b8;
   --muted:     #64748b;
   --dim:       #334155;
   font-size: 15px;
@@ -449,267 +504,303 @@ body {
   min-height: 100vh;
 }
 
-a { color: inherit; }
+a { color: inherit; text-decoration: none; }
 
-/* ── Background radial glows ── */
+/* ── Background ── */
 body::before {
   content: '';
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background:
-    radial-gradient(ellipse 60% 40% at 20% 10%,  rgba(99,102,241,.08) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 40% at 80% 80%,  rgba(6,182,212,.06)  0%, transparent 70%);
+    radial-gradient(ellipse 70% 50% at 10% 5%,  rgba(99,102,241,.10) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 45% at 85% 85%,  rgba(6,182,212,.07)  0%, transparent 65%),
+    radial-gradient(ellipse 40% 30% at 55% 45%,  rgba(139,92,246,.04) 0%, transparent 55%);
 }
-
 .page { position: relative; z-index: 1; }
 
 /* ── Header ── */
 .site-header {
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(13,13,36,.98) 0%, rgba(7,7,26,.9) 100%);
-  backdrop-filter: blur(12px);
+  background: rgba(6,6,26,.95);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   position: sticky; top: 0; z-index: 100;
 }
 .header-inner {
-  max-width: 1160px; margin: 0 auto;
-  padding: .9rem 1.5rem;
+  max-width: 1200px; margin: 0 auto;
+  padding: .85rem 1.5rem;
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
 }
-.brand { display: flex; align-items: center; gap: .75rem; text-decoration: none }
-.brand-logo { font-size: 1.7rem; line-height: 1 }
+.brand { display: flex; align-items: center; gap: .75rem; }
+.brand-logo { font-size: 1.8rem; line-height: 1; filter: drop-shadow(0 0 8px rgba(167,139,250,.5)) }
+.brand-text {}
 .brand-name {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.35rem; font-weight: 700;
+  font-size: 1.38rem; font-weight: 700;
   background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.brand-sub { font-size: .72rem; color: var(--muted); margin-top: 1px }
+.brand-sub { font-size: .7rem; color: var(--muted); margin-top: 1px; letter-spacing: .03em }
 
 .header-right { display: flex; align-items: center; gap: .75rem; flex-shrink: 0 }
 .issue-badge {
-  font-size: .72rem; font-weight: 700; letter-spacing: .07em;
-  background: linear-gradient(135deg, rgba(167,139,250,.15), rgba(56,189,248,.15));
-  border: 1px solid rgba(167,139,250,.3);
-  color: #a78bfa; padding: .25rem .7rem; border-radius: 20px;
+  font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  background: linear-gradient(135deg, rgba(167,139,250,.18), rgba(56,189,248,.14));
+  border: 1px solid rgba(167,139,250,.32);
+  color: #a78bfa; padding: .24rem .72rem; border-radius: 20px;
 }
-.header-date { font-size: .8rem; color: var(--muted) }
+.header-date { font-size: .78rem; color: var(--muted) }
 .live-dot {
   display: inline-block; width: 7px; height: 7px; border-radius: 50%;
-  background: #22c55e; margin-right: .3rem;
+  background: #22c55e; margin-right: .32rem;
   animation: pulse-dot 2.5s ease-in-out infinite;
 }
 @keyframes pulse-dot {
-  0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,.4) }
-  50%      { opacity: .7; box-shadow: 0 0 0 5px rgba(34,197,94,0) }
+  0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,.5) }
+  50%      { opacity: .65; box-shadow: 0 0 0 6px rgba(34,197,94,0) }
 }
 
 /* ── Category nav ── */
 .cat-nav {
-  max-width: 1160px; margin: 0 auto;
-  padding: .9rem 1.5rem;
-  display: flex; gap: .5rem; flex-wrap: wrap;
+  max-width: 1200px; margin: 0 auto;
+  padding: .75rem 1.5rem;
+  display: flex; gap: .45rem; flex-wrap: wrap;
   border-bottom: 1px solid var(--border);
 }
 .nav-pill {
-  font-size: .78rem; font-weight: 500;
-  padding: .3rem .75rem; border-radius: 20px;
-  border: 1px solid color-mix(in srgb, var(--cat) 30%, transparent);
-  color: var(--cat); text-decoration: none;
-  transition: background .15s, transform .15s;
+  font-size: .76rem; font-weight: 500;
+  padding: .28rem .72rem; border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--cat) 28%, transparent);
+  color: var(--cat);
+  transition: background .15s, transform .15s, box-shadow .15s;
   white-space: nowrap;
 }
 .nav-pill:hover {
-  background: color-mix(in srgb, var(--cat) 12%, transparent);
+  background: color-mix(in srgb, var(--cat) 10%, transparent);
   transform: translateY(-1px);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--cat) 20%, transparent);
 }
 
 /* ── Main ── */
-main { max-width: 1160px; margin: 0 auto; padding: 2rem 1.5rem }
+main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.5rem }
 
 /* ── Featured ── */
-.featured-wrap { margin-bottom: 2.5rem }
+.featured-wrap { margin-bottom: 3rem }
 .featured-card {
-  background: linear-gradient(135deg, #14103a 0%, #0e0e28 60%, #0a1428 100%);
-  border: 1px solid rgba(167,139,250,.22);
-  border-radius: 18px; padding: 2rem 2.5rem;
+  background: linear-gradient(140deg, #12103d 0%, #0d0d28 55%, #091420 100%);
+  border: 1px solid rgba(167,139,250,.25);
+  border-radius: 20px; padding: 2.25rem 2.75rem;
   position: relative; overflow: hidden;
+  box-shadow: 0 0 60px rgba(99,102,241,.06), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.featured-card::before {
+  content: ''; position: absolute; top: -120px; right: -100px;
+  width: 450px; height: 450px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,.13) 0%, transparent 68%);
+  pointer-events: none;
 }
 .featured-card::after {
-  content: ''; position: absolute; top: -80px; right: -80px;
-  width: 350px; height: 350px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(99,102,241,.12) 0%, transparent 70%);
+  content: ''; position: absolute; bottom: -60px; left: 15%;
+  width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(6,182,212,.06) 0%, transparent 65%);
   pointer-events: none;
 }
 .featured-eyebrow {
-  display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1.1rem; position: relative; z-index: 1;
 }
 .featured-badge {
-  font-size: .72rem; font-weight: 700; letter-spacing: .1em;
-  color: #a78bfa; text-transform: uppercase;
+  font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: #a78bfa;
+  background: rgba(167,139,250,.1); border: 1px solid rgba(167,139,250,.25);
+  padding: .2rem .6rem; border-radius: 12px;
 }
-.featured-cat { font-size: .78rem; font-weight: 500 }
+.featured-cat { font-size: .78rem; font-weight: 500; color: var(--sub) }
 .featured-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(1.3rem,3vw,1.9rem); font-weight: 700;
-  line-height: 1.3; margin-bottom: 1rem;
+  font-size: clamp(1.4rem, 3.2vw, 2.1rem); font-weight: 700;
+  line-height: 1.28; margin-bottom: 1rem; position: relative; z-index: 1;
 }
-.featured-meta { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem }
+.featured-meta { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.1rem; position: relative; z-index: 1; }
 .featured-age  { font-size: .8rem; color: var(--muted) }
-.featured-body { color: #94a3b8; line-height: 1.7; margin-bottom: 1.5rem; max-width: 680px }
+.featured-body { color: var(--sub); line-height: 1.75; margin-bottom: 1.75rem; max-width: 700px; position: relative; z-index: 1; }
 .featured-btn {
-  display: inline-flex; align-items: center; gap: .4rem;
+  display: inline-flex; align-items: center; gap: .45rem;
   background: linear-gradient(135deg, #6d28d9, #4f46e5);
-  color: #fff; text-decoration: none;
-  padding: .6rem 1.3rem; border-radius: 9px;
+  color: #fff;
+  padding: .65rem 1.4rem; border-radius: 10px;
   font-size: .88rem; font-weight: 600;
-  transition: opacity .2s, transform .15s;
-  box-shadow: 0 4px 14px rgba(99,102,241,.35);
+  transition: opacity .2s, transform .15s, box-shadow .2s;
+  box-shadow: 0 4px 18px rgba(99,102,241,.4);
+  position: relative; z-index: 1;
 }
-.featured-btn:hover { opacity: .88; transform: translateY(-1px) }
+.featured-btn:hover { opacity: .88; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,.5); }
 
-/* ── Category section ── */
-.cat-section { margin-bottom: 3rem }
+/* ── Section ── */
+.cat-section { margin-bottom: 3.5rem; position: relative }
 .section-hdr {
   display: flex; align-items: center; gap: .6rem;
-  margin-bottom: 1.25rem; padding-bottom: .75rem;
+  margin-bottom: 1.35rem; padding-bottom: .75rem;
   border-bottom: 1px solid var(--border);
+  position: relative;
 }
-.section-icon  { font-size: 1.25rem }
+.section-hdr::after {
+  content: ''; position: absolute; bottom: -1px; left: 0;
+  width: 60px; height: 2px;
+  background: linear-gradient(90deg, var(--cat), transparent);
+  border-radius: 2px;
+}
+.section-icon  { font-size: 1.3rem }
 .section-title {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 1.1rem; font-weight: 600; color: var(--cat);
 }
 .section-count {
-  margin-left: auto; font-size: .72rem; color: var(--muted);
+  margin-left: auto; font-size: .7rem; color: var(--muted);
   background: var(--card); border: 1px solid var(--border);
-  padding: .15rem .55rem; border-radius: 12px;
+  padding: .14rem .55rem; border-radius: 12px;
 }
 
 /* ── Cards ── */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.1rem;
 }
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px; padding: 1.15rem 1.25rem;
-  display: flex; flex-direction: column; gap: .6rem;
-  transition: border-color .2s, background .2s, transform .2s, box-shadow .2s;
+  border-radius: 15px; padding: 1.2rem 1.3rem;
+  display: flex; flex-direction: column; gap: .65rem;
+  transition: border-color .22s, background .22s, transform .22s, box-shadow .22s;
   position: relative; overflow: hidden;
 }
 .card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--cat, #8b5cf6); opacity: 0; transition: opacity .2s;
+  background: linear-gradient(90deg, var(--cat), transparent);
+  opacity: 0; transition: opacity .22s;
 }
 .card:hover {
-  border-color: color-mix(in srgb, var(--cat) 40%, transparent);
+  border-color: color-mix(in srgb, var(--cat) 38%, transparent);
   background: var(--card-h);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(0,0,0,.35), 0 0 0 1px color-mix(in srgb,var(--cat) 15%,transparent);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 35px rgba(0,0,0,.4),
+              0 0 0 1px color-mix(in srgb, var(--cat) 15%, transparent),
+              0 0 20px color-mix(in srgb, var(--cat) 5%, transparent);
 }
 .card:hover::before { opacity: 1 }
 
-.card-top  { display: flex; align-items: center; justify-content: space-between }
-.card-age  { font-size: .72rem; color: var(--muted) }
-.card-title {
-  font-size: .93rem; font-weight: 600; line-height: 1.45;
-}
-.card-title a {
-  text-decoration: none; color: var(--text);
-  transition: color .15s;
-}
+.card-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem }
+.card-top-left { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap }
+.card-age  { font-size: .7rem; color: var(--muted); flex-shrink: 0 }
+.card-title { font-size: .94rem; font-weight: 600; line-height: 1.45 }
+.card-title a { color: var(--text); transition: color .15s }
 .card-title a:hover { color: var(--cat, #a78bfa) }
 .card-desc {
-  font-size: .81rem; color: var(--muted); line-height: 1.55;
+  font-size: .81rem; color: var(--muted); line-height: 1.58;
   flex-grow: 1;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
-  overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
 }
 .card-link {
-  font-size: .78rem; font-weight: 500;
-  color: color-mix(in srgb, var(--cat) 90%, #fff);
-  text-decoration: none; margin-top: auto;
-  transition: opacity .15s;
+  font-size: .77rem; font-weight: 600; margin-top: auto;
+  color: color-mix(in srgb, var(--cat) 88%, #fff);
+  transition: opacity .15s, gap .15s;
+  display: inline-flex; align-items: center; gap: .25rem;
 }
-.card-link:hover { opacity: .75 }
+.card-link:hover { opacity: .72 }
 
 /* ── Source pill ── */
 .pill {
-  display: inline-block;
-  font-size: .68rem; font-weight: 700; letter-spacing: .04em;
-  padding: .15rem .5rem; border-radius: 5px; border: 1px solid;
-  text-transform: uppercase;
+  display: inline-block; flex-shrink: 0;
+  font-size: .67rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  padding: .14rem .5rem; border-radius: 5px; border: 1px solid;
+}
+.new-badge {
+  display: inline-block; flex-shrink: 0;
+  font-size: .6rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  padding: .12rem .42rem; border-radius: 5px;
+  background: rgba(34,197,94,.15); color: #22c55e; border: 1px solid rgba(34,197,94,.32);
+  animation: pulse-new 2s ease-in-out infinite;
+}
+@keyframes pulse-new {
+  0%,100% { opacity: 1 }
+  50%      { opacity: .6 }
 }
 
 /* ── Stats bar ── */
 .stats-bar {
-  max-width: 1160px; margin: 0 auto 0;
-  padding: .75rem 1.5rem;
-  display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+  max-width: 1200px; margin: 0 auto;
+  padding: .8rem 1.5rem;
+  display: flex; align-items: center; gap: 1.6rem; flex-wrap: wrap;
   border-top: 1px solid var(--border);
   font-size: .78rem; color: var(--muted);
 }
-.stat-item { display: flex; align-items: center; gap: .35rem }
-.stat-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--c, #6b7280) }
+.stat-item { display: flex; align-items: center; gap: .38rem }
+.stat-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--c, #6b7280); flex-shrink: 0 }
+.stat-total { margin-left: auto; font-size: .72rem; color: var(--dim) }
 
 /* ── Footer ── */
 .site-footer {
   background: var(--surface);
   border-top: 1px solid var(--border);
-  padding: 2rem 1.5rem; margin-top: 3rem;
+  padding: 2.5rem 1.5rem; margin-top: 3rem;
 }
 .footer-inner {
-  max-width: 1160px; margin: 0 auto;
+  max-width: 1200px; margin: 0 auto;
   display: flex; flex-direction: column; align-items: center;
-  gap: 1rem; text-align: center;
+  gap: 1.1rem; text-align: center;
 }
 .footer-brand {
-  font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; font-weight: 700;
   background: linear-gradient(135deg,#a78bfa,#38bdf8);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-.footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; justify-content: center }
-.footer-links a { font-size: .82rem; color: var(--muted); text-decoration: none }
+.footer-links { display: flex; gap: 1.35rem; flex-wrap: wrap; justify-content: center }
+.footer-links a { font-size: .82rem; color: var(--muted); transition: color .15s }
 .footer-links a:hover { color: var(--text) }
-.footer-note { font-size: .75rem; color: var(--dim) }
+.footer-note { font-size: .75rem; color: var(--dim); line-height: 1.7 }
 .footer-sources {
-  font-size: .75rem; color: var(--dim);
+  font-size: .73rem; color: var(--dim);
   display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center;
 }
-.footer-sources span::after { content: '·'; margin-left: .5rem }
+.footer-sources span::after { content: '·'; margin-left: .5rem; opacity: .5 }
 .footer-sources span:last-child::after { content: '' }
 
 /* ── Empty state ── */
 .empty-state {
-  text-align: center; padding: 3rem 1rem; color: var(--muted);
+  text-align: center; padding: 4rem 1rem; color: var(--muted);
 }
-.empty-icon { font-size: 3rem; margin-bottom: 1rem }
+.empty-icon { font-size: 3.5rem; margin-bottom: 1.2rem }
+.empty-state p { font-size: .95rem }
+
+/* ── Scroll-to-top ── */
+.scroll-top {
+  position: fixed; bottom: 1.75rem; right: 1.75rem; z-index: 200;
+  background: rgba(10,10,30,.92); border: 1px solid rgba(167,139,250,.32);
+  color: #a78bfa; width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; cursor: pointer;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  transition: background .2s, transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 14px rgba(0,0,0,.4);
+}
+.scroll-top:hover {
+  background: rgba(99,102,241,.28);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99,102,241,.3);
+}
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .header-inner { flex-wrap: wrap }
-  .featured-card { padding: 1.5rem }
-  main { padding: 1.25rem 1rem }
-  .cat-nav { padding: .75rem 1rem }
+  .featured-card { padding: 1.6rem 1.5rem }
+  main { padding: 1.75rem 1rem }
+  .cat-nav { padding: .65rem 1rem }
 }
-@media (max-width: 500px) {
+@media (max-width: 520px) {
   .card-grid { grid-template-columns: 1fr }
   .header-date { display: none }
+  .featured-card { padding: 1.35rem 1.25rem }
 }
-
-/* ── Scroll-to-top ── */
-.scroll-top {
-  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;
-  background: rgba(13,13,36,.9); border: 1px solid rgba(167,139,250,.3);
-  color: #a78bfa; width: 38px; height: 38px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; cursor: pointer; text-decoration: none;
-  backdrop-filter: blur(8px); transition: background .2s, transform .2s;
-  box-shadow: 0 4px 12px rgba(0,0,0,.3);
-}
-.scroll-top:hover { background: rgba(99,102,241,.25); transform: translateY(-2px) }
 """
 
 def full_page(featured: Optional[Dict],
@@ -722,33 +813,22 @@ def full_page(featured: Optional[Dict],
     total    = sum(len(v) for v in sections.values())
     src_set  = sorted({a["source"] for v in sections.values() for a in v})
 
-    featured_block = ""
-    if featured:
-        featured_block = featured_html(featured)
+    featured_block = featured_html(featured) if featured else ""
 
-    cat_order       = list(CATEGORIES.keys())
-    sections_html   = ""
-    active_cats     = [c for c in cat_order if sections.get(c)]
-    for cat in active_cats:
-        sections_html += section_html(cat, sections[cat])
+    cat_order     = list(CATEGORIES.keys())
+    active_cats   = [c for c in cat_order if sections.get(c)]
+    sections_html = "".join(section_html(cat, sections[cat]) for cat in active_cats)
 
     if not featured_block and not sections_html:
         sections_html = '''
   <div class="empty-state">
     <div class="empty-icon">🤖</div>
-    <p>No articles fetched yet. The workflow will populate this soon.</p>
+    <p>No articles fetched yet — the workflow will populate this on its next run.</p>
   </div>'''
 
-    nav_block  = nav_html(active_cats) if active_cats else ""
-
-    stats_items = "".join(
-        f'<span class="stat-item"><span class="stat-dot" style="--c:{CATEGORIES[c]["color"]}"></span>'
-        f'{h(CATEGORIES[c]["icon"])} {len(sections.get(c,[]))} {h(CATEGORIES[c]["label"])}</span>'
-        for c in active_cats if sections.get(c)
-    )
-    stats_block = f'<div class="stats-bar">{stats_items}</div>' if stats_items else ""
-
-    sources_pills = "".join(f'<span>{h(s)}</span>' for s in src_set[:12])
+    nav_block   = nav_html(active_cats) if active_cats else ""
+    stats_block = stats_overview_html(sections, total)
+    sources_pills = "".join(f'<span>{h(s)}</span>' for s in src_set[:14])
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -756,9 +836,9 @@ def full_page(featured: Optional[Dict],
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Pulse — Daily AI News Digest · Issue #{issue}</title>
-  <meta name="description" content="Daily curated AI news: research, agents, products, and industry — Issue #{issue}, {now_str}">
+  <meta name="description" content="Daily curated AI news covering research breakthroughs, AI agents, new products, and industry — Issue #{issue}, {now_str}.">
   <meta property="og:title"       content="AI Pulse — Issue #{issue} · {now_str}">
-  <meta property="og:description" content="Daily curated AI news digest covering research breakthroughs, AI agents, new products, and industry.">
+  <meta property="og:description" content="Curated AI news: research, agents, products, industry and open source. Auto-refreshed every morning.">
   <meta property="og:type"        content="website">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -773,7 +853,7 @@ def full_page(featured: Optional[Dict],
     <div class="header-inner">
       <a class="brand" href="#">
         <span class="brand-logo">⚡</span>
-        <div>
+        <div class="brand-text">
           <div class="brand-name">AI Pulse</div>
           <div class="brand-sub">Daily AI News Digest</div>
         </div>
@@ -800,24 +880,26 @@ def full_page(featured: Optional[Dict],
         <a href="https://github.com/oeway/ai-news-channel" target="_blank" rel="noopener">GitHub</a>
         <a href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">arXiv CS.AI</a>
         <a href="https://news.ycombinator.com" target="_blank" rel="noopener">HackerNews</a>
+        <a href="https://huggingface.co/blog" target="_blank" rel="noopener">Hugging Face Blog</a>
       </div>
       <div class="footer-sources">{sources_pills}</div>
       <div class="footer-note">
-        Auto-generated from {len(src_set)} sources · {total} articles · Last updated {now_str}
+        Auto-generated from {len(src_set)} sources · {total} articles · Updated {now_str}
         <br>Generated at <time datetime="{gen_iso}">{gen_iso}</time>
+        <br>Refreshed daily at 07:00 UTC via GitHub Actions
       </div>
     </div>
   </footer>
 
 </div>
-<a class="scroll-top" href="#" aria-label="Back to top">↑</a>
+<a class="scroll-top" href="#" aria-label="Back to top" title="Back to top">↑</a>
 </body>
 </html>"""
 
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    print("⚡ AI Pulse Newsletter Generator", flush=True)
+    print("⚡ AI Pulse Newsletter Generator v3", flush=True)
     print("─" * 50, flush=True)
 
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
