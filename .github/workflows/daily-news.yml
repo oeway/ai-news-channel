@@ -1,0 +1,76 @@
+name: Daily AI News Update
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # Every day at 07:00 UTC
+  workflow_dispatch:       # Manual trigger from GitHub Actions UI
+
+concurrency:
+  group: ai-news-update
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  generate-and-deploy:
+    name: Fetch → Render → Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate newsletter
+        run: python scripts/fetch_news.py
+
+      - name: Commit updated docs to main
+        id: commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if git diff --staged --quiet; then
+            echo "No changes — skipping commit"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "newsletter: auto-update $(date -u +'%Y-%m-%d')"
+            git push origin HEAD:main
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy to GitHub Pages (gh-pages branch)
+        if: steps.commit.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          # Snapshot the docs folder before switching branches
+          STAGING=$(mktemp -d)
+          cp -r docs/. "$STAGING/"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create a fresh orphan branch and populate it with docs content
+          git checkout --orphan _gh_deploy
+          git rm -rf . --quiet
+
+          cp -r "$STAGING"/. .
+          touch .nojekyll
+
+          git add -A
+          git commit -m "deploy: $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push origin HEAD:gh-pages --force
+
+          echo "✅ Deployed to gh-pages branch"

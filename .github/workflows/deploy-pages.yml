@@ -1,28 +1,48 @@
 name: Deploy to GitHub Pages
 
+# Triggered when docs are manually pushed to main (e.g. during development).
+# The primary automated flow runs via daily-news.yml which fetches, commits, and deploys.
 on:
   push:
     branches: [main]
     paths: ['docs/**']
   workflow_dispatch:
 
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
 jobs:
   deploy:
+    name: Deploy docs → gh-pages
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    timeout-minutes: 10
 
-      - name: Deploy to gh-pages branch
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Deploy docs to gh-pages branch
         run: |
-          git config user.name "github-actions[bot]"
+          STAGING=$(mktemp -d)
+          cp -r docs/. "$STAGING/"
+
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout --orphan gh-pages-tmp
-          git rm -rf .
-          cp -r docs/* .
-          cp docs/.nojekyll . 2>/dev/null || true
+
+          git checkout --orphan _gh_deploy_$(date +%s)
+          git rm -rf . --quiet
+
+          cp -r "$STAGING"/. .
+          touch .nojekyll
+
           git add -A
-          git commit -m "Deploy docs to GitHub Pages"
+          git commit -m "deploy: $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push origin HEAD:gh-pages --force
+
+          echo "✅ Deployed to gh-pages"
