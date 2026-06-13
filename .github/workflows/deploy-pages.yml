@@ -15,14 +15,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to gh-pages branch
+      - name: Deploy docs/ to gh-pages branch
         run: |
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout --orphan gh-pages-tmp
-          git rm -rf .
-          cp -r docs/* .
-          cp docs/.nojekyll . 2>/dev/null || true
+
+          # Stash the docs content
+          TMPDIR=$(mktemp -d)
+          cp -r docs/. "$TMPDIR/"
+
+          # Switch to / create gh-pages branch
+          git fetch origin gh-pages 2>/dev/null || true
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git checkout gh-pages
+          else
+            git checkout --orphan gh-pages
+          fi
+
+          # Wipe tree and restore docs content
+          git rm -rf . --quiet || true
+          cp -r "$TMPDIR"/. .
+
+          # Ensure Jekyll bypass is present
+          touch .nojekyll
+
           git add -A
-          git commit -m "Deploy docs to GitHub Pages"
-          git push origin HEAD:gh-pages --force
+          git diff --staged --quiet && echo "Nothing to deploy" && exit 0
+          git commit -m "Deploy to GitHub Pages [skip ci]"
+          git push origin gh-pages --force
