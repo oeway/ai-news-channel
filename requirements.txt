@@ -1,2 +1,4 @@
-feedparser>=6.0.0
-requests>=2.31.0
+# No external dependencies required — fetch_news.py uses Python stdlib only.
+# Install extras only if you want to run other tools locally:
+# feedparser>=6.0.0   # optional, not used by the script
+# requests>=2.31.0    # optional, not used by the script
