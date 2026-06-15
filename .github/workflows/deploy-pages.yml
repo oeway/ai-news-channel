@@ -12,17 +12,30 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Deploy to gh-pages branch
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy docs/ to gh-pages branch
         run: |
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout --orphan gh-pages-tmp
-          git rm -rf .
-          cp -r docs/* .
-          cp docs/.nojekyll . 2>/dev/null || true
-          git add -A
-          git commit -m "Deploy docs to GitHub Pages"
-          git push origin HEAD:gh-pages --force
+
+          # Create an isolated worktree for the gh-pages branch
+          git fetch origin gh-pages 2>/dev/null || true
+          git worktree add /tmp/gh-pages gh-pages 2>/dev/null \
+            || (git worktree add --orphan -B gh-pages /tmp/gh-pages && git -C /tmp/gh-pages rm -rf . 2>/dev/null || true)
+
+          # Sync docs/ into the worktree root
+          rsync -a --delete docs/ /tmp/gh-pages/
+          touch /tmp/gh-pages/.nojekyll
+
+          # Commit and push only if something changed
+          git -C /tmp/gh-pages add -A
+          if git -C /tmp/gh-pages diff --staged --quiet; then
+            echo "gh-pages is already up to date"
+          else
+            git -C /tmp/gh-pages commit -m "deploy: $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git -C /tmp/gh-pages push origin gh-pages
+          fi

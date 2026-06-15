@@ -19,12 +19,6 @@ import urllib.parse
 import urllib.request
 import urllib.error
 
-try:
-    import feedparser
-except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
-
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -179,32 +173,77 @@ def long_date(dt: Optional[datetime]) -> str:
 
 # ─── Fetchers ────────────────────────────────────────────────────────────────
 
+def _strip_tags(text: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", text)).strip()
+
+def _rss_text(el: Optional[ET.Element], tag: str, ns: dict = {}) -> str:
+    if el is None:
+        return ""
+    child = el.find(tag, ns) if ns else el.find(tag)
+    return (child.text or "").strip() if child is not None else ""
+
 def fetch_rss(cfg: Dict) -> List[Dict]:
     print(f"  RSS  {cfg['source']}…", flush=True)
     raw = fetch(cfg["url"])
-    if not raw: return []
+    if not raw:
+        return []
     try:
-        feed     = feedparser.parse(raw)
-        articles = []
-        for e in feed.entries[:20]:
-            desc = ""
-            for attr in ("summary", "description", "content"):
-                val = getattr(e, attr, None)
-                if isinstance(val, list): val = val[0].get("value", "") if val else ""
-                if val:
-                    desc = re.sub(r"<[^>]+>", " ", val)
-                    desc = re.sub(r"\s+", " ", desc).strip()[:400]
-                    break
-            dt = None
-            for attr in ("published_parsed", "updated_parsed", "created_parsed"):
-                dt = to_dt(getattr(e, attr, None))
-                if dt: break
-            title = getattr(e, "title", "").strip()
-            url   = getattr(e, "link",  "").strip()
-            if not title or not url: continue
-            articles.append({"title": title, "url": url, "desc": desc,
-                              "source": cfg["source"], "source_color": cfg["color"],
-                              "date": dt, "category": None})
+        root = ET.fromstring(raw)
+        articles: List[Dict] = []
+
+        # Detect feed type: RSS 2.0 vs Atom
+        tag = root.tag.lower()
+        atom_ns = {"a": "http://www.w3.org/2005/Atom"}
+        dc_ns   = "http://purl.org/dc/elements/1.1/"
+
+        if "atom" in tag or root.find("{http://www.w3.org/2005/Atom}entry") is not None:
+            # Atom feed
+            entries = root.findall("{http://www.w3.org/2005/Atom}entry")[:20]
+            for e in entries:
+                title = _rss_text(e, "{http://www.w3.org/2005/Atom}title")
+                # Atom <link> can be <link href="..."/> or <link>url</link>
+                link_el = e.find("{http://www.w3.org/2005/Atom}link")
+                url = ""
+                if link_el is not None:
+                    url = link_el.get("href", "") or (link_el.text or "")
+                # description from summary or content
+                desc = ""
+                for dtag in ("{http://www.w3.org/2005/Atom}summary",
+                             "{http://www.w3.org/2005/Atom}content"):
+                    d = e.find(dtag)
+                    if d is not None and d.text:
+                        desc = _strip_tags(d.text)[:400]
+                        break
+                pub = _rss_text(e, "{http://www.w3.org/2005/Atom}published") or \
+                      _rss_text(e, "{http://www.w3.org/2005/Atom}updated")
+                if title and url:
+                    articles.append({"title": title, "url": url.strip(), "desc": desc,
+                                     "source": cfg["source"], "source_color": cfg["color"],
+                                     "date": to_dt(pub), "category": None})
+        else:
+            # RSS 2.0 (or RSS 1.0)
+            items = root.findall(".//item")[:20]
+            for e in items:
+                title = _rss_text(e, "title")
+                url   = _rss_text(e, "link")
+                if not url:
+                    # Try <guid isPermaLink="true">
+                    g = e.find("guid")
+                    if g is not None and g.get("isPermaLink", "true").lower() != "false":
+                        url = (g.text or "").strip()
+                desc = ""
+                for dtag in ("description", "summary", f"{{{dc_ns}}}description"):
+                    d = e.find(dtag)
+                    if d is not None and d.text:
+                        desc = _strip_tags(d.text)[:400]
+                        break
+                pub = _rss_text(e, "pubDate") or _rss_text(e, "published") or \
+                      _rss_text(e, f"{{{dc_ns}}}date")
+                if title and url:
+                    articles.append({"title": title.strip(), "url": url.strip(), "desc": desc,
+                                     "source": cfg["source"], "source_color": cfg["color"],
+                                     "date": to_dt(pub), "category": None})
+
         print(f"     → {len(articles)} items", flush=True)
         return articles
     except Exception as ex:
