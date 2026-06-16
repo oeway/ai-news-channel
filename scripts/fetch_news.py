@@ -19,11 +19,6 @@ import urllib.parse
 import urllib.request
 import urllib.error
 
-try:
-    import feedparser
-except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -179,32 +174,85 @@ def long_date(dt: Optional[datetime]) -> str:
 
 # ─── Fetchers ────────────────────────────────────────────────────────────────
 
+def _strip_html(raw: str) -> str:
+    text = re.sub(r"<[^>]+>", " ", raw)
+    return re.sub(r"\s+", " ", text).strip()
+
+def _parse_rss_atom(raw: str) -> List[Dict]:
+    """Parse both RSS 2.0 and Atom 1.0 using stdlib xml."""
+    # Atom namespace
+    ATOM = "http://www.w3.org/2005/Atom"
+    CONTENT = "http://purl.org/rss/1.0/modules/content/"
+    entries = []
+    try:
+        root = ET.fromstring(raw)
+        tag = root.tag.lower()
+
+        if "feed" in tag:  # Atom
+            ns = {"a": ATOM, "content": CONTENT}
+            for entry in root.findall("a:entry", ns):
+                title = (entry.findtext("a:title", "", ns) or "").strip()
+                link  = ""
+                for lel in entry.findall("a:link", ns):
+                    rel = lel.get("rel", "alternate")
+                    if rel in ("alternate", ""):
+                        link = lel.get("href", "")
+                        break
+                    if not link:
+                        link = lel.get("href", "")
+                desc = ""
+                for tag_name in ("a:summary", "a:content", "content:encoded"):
+                    val = entry.findtext(tag_name, "", ns)
+                    if val:
+                        desc = _strip_html(val)[:400]
+                        break
+                pub = entry.findtext("a:published", "", ns) or entry.findtext("a:updated", "", ns)
+                entries.append({"title": title, "url": link, "desc": desc, "pub": pub})
+        else:  # RSS 2.0
+            channel = root.find("channel") or root
+            for item in channel.findall("item")[:20]:
+                title = (item.findtext("title") or "").strip()
+                link  = (item.findtext("link")  or "").strip()
+                desc  = ""
+                for tag_name in ("description", f"{{{CONTENT}}}encoded"):
+                    val = item.findtext(tag_name)
+                    if val:
+                        desc = _strip_html(val)[:400]
+                        break
+                pub   = item.findtext("pubDate") or item.findtext("dc:date", namespaces={"dc": "http://purl.org/dc/elements/1.1/"})
+                entries.append({"title": title, "url": link, "desc": desc, "pub": pub})
+    except ET.ParseError:
+        # Try cleaning up namespace issues and retry
+        clean = re.sub(r'xmlns[^"]*"[^"]*"', '', raw)
+        try:
+            root = ET.fromstring(clean)
+            for item in (root.findall(".//item") or root.findall(".//entry"))[:20]:
+                title = (item.findtext("title") or "").strip()
+                link  = (item.findtext("link") or "").strip()
+                desc  = _strip_html(item.findtext("description") or item.findtext("summary") or "")[:400]
+                pub   = item.findtext("pubDate") or item.findtext("published") or ""
+                entries.append({"title": title, "url": link, "desc": desc, "pub": pub})
+        except Exception:
+            pass
+    return entries
+
 def fetch_rss(cfg: Dict) -> List[Dict]:
     print(f"  RSS  {cfg['source']}…", flush=True)
     raw = fetch(cfg["url"])
     if not raw: return []
     try:
-        feed     = feedparser.parse(raw)
+        entries  = _parse_rss_atom(raw)
         articles = []
-        for e in feed.entries[:20]:
-            desc = ""
-            for attr in ("summary", "description", "content"):
-                val = getattr(e, attr, None)
-                if isinstance(val, list): val = val[0].get("value", "") if val else ""
-                if val:
-                    desc = re.sub(r"<[^>]+>", " ", val)
-                    desc = re.sub(r"\s+", " ", desc).strip()[:400]
-                    break
-            dt = None
-            for attr in ("published_parsed", "updated_parsed", "created_parsed"):
-                dt = to_dt(getattr(e, attr, None))
-                if dt: break
-            title = getattr(e, "title", "").strip()
-            url   = getattr(e, "link",  "").strip()
+        for e in entries[:20]:
+            title = e.get("title","").strip()
+            url   = e.get("url","").strip()
             if not title or not url: continue
-            articles.append({"title": title, "url": url, "desc": desc,
-                              "source": cfg["source"], "source_color": cfg["color"],
-                              "date": dt, "category": None})
+            articles.append({
+                "title": title, "url": url,
+                "desc":  e.get("desc",""),
+                "source": cfg["source"], "source_color": cfg["color"],
+                "date":  to_dt(e.get("pub")), "category": None,
+            })
         print(f"     → {len(articles)} items", flush=True)
         return articles
     except Exception as ex:
