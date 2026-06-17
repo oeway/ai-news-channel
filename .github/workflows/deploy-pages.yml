@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
     paths: ['docs/**']
+  schedule:
+    # Refresh the newsletter every Monday morning at 07:00 UTC
+    - cron: '0 7 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -24,5 +27,5 @@ jobs:
           cp -r docs/* .
           cp docs/.nojekyll . 2>/dev/null || true
           git add -A
-          git commit -m "Deploy docs to GitHub Pages"
+          git commit -m "Deploy docs to GitHub Pages [$(date -u '+%Y-%m-%d %H:%M UTC')]"
           git push origin HEAD:gh-pages --force

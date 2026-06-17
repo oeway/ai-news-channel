@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Pulse — Daily AI News Digest</title>
-  <meta name="description" content="Daily curated AI news: research breakthroughs, AI agents, new products, and industry. Automated digest updated every morning.">
-  <meta property="og:title"       content="AI Pulse — Daily AI News Digest">
-  <meta property="og:description" content="Curated AI news covering research, agents, products, industry and open source — refreshed every morning automatically.">
+  <title>AI Pulse — Weekly AI News Digest · Issue #2 · June 17, 2026</title>
+  <meta name="description" content="Weekly curated AI news for June 17, 2026: Claude Fable 5, Apple WWDC 2026, Microsoft Build, agentic breakthroughs, open-source models and industry funding.">
+  <meta property="og:title"       content="AI Pulse — Weekly AI News Digest · June 17, 2026">
+  <meta property="og:description" content="The biggest AI stories this week: Claude Fable 5 releases, Apple WWDC26 AI overhaul, Microsoft MAI models, agentic enterprise adoption explodes, MiniMax M3 at $0.53/1M tokens.">
   <meta property="og:type"        content="website">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,7 +42,7 @@ body::before {
 }
 .page { position: relative; z-index: 1 }
 
-/* ─ Header ─ */
+/* ── Header ── */
 .site-header {
   border-bottom: 1px solid var(--border);
   background: linear-gradient(180deg, rgba(13,13,36,.98) 0%, rgba(7,7,26,.92) 100%);
@@ -80,7 +80,7 @@ body::before {
   50%      { opacity:.6; box-shadow: 0 0 0 5px rgba(34,197,94,0) }
 }
 
-/* ─ Category nav ─ */
+/* ── Category nav ── */
 .cat-nav {
   max-width: 1180px; margin: 0 auto; padding: .8rem 1.5rem;
   display: flex; gap: .45rem; flex-wrap: wrap;
@@ -93,14 +93,58 @@ body::before {
 }
 .nav-pill:hover { background: color-mix(in srgb, var(--cat) 11%, transparent); transform: translateY(-1px) }
 
-/* ─ Main ─ */
+/* ── Ticker / Trending bar ── */
+.ticker-bar {
+  background: linear-gradient(90deg, rgba(99,102,241,.12) 0%, rgba(6,182,212,.08) 100%);
+  border-bottom: 1px solid rgba(167,139,250,.15);
+  padding: .42rem 1.5rem; overflow: hidden;
+}
+.ticker-inner {
+  max-width: 1180px; margin: 0 auto;
+  display: flex; align-items: center; gap: 1rem;
+}
+.ticker-label {
+  font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+  color: #a78bfa; white-space: nowrap; text-transform: uppercase;
+  background: rgba(167,139,250,.14); border: 1px solid rgba(167,139,250,.28);
+  padding: .15rem .5rem; border-radius: 4px;
+}
+.ticker-items {
+  display: flex; gap: 1.8rem; overflow-x: auto; scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.ticker-items::-webkit-scrollbar { display: none }
+.ticker-item {
+  font-size: .73rem; color: var(--sub); white-space: nowrap;
+  display: flex; align-items: center; gap: .35rem;
+}
+.ticker-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--tc,#a78bfa); flex-shrink: 0 }
+
+/* ── Main ── */
 main { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem }
 
-/* ─ Hero / Featured ─ */
+/* ── Stats Chips ── */
+.stat-chips {
+  display: flex; gap: .65rem; flex-wrap: wrap; margin-bottom: 2rem;
+}
+.stat-chip {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: .65rem 1rem; display: flex; flex-direction: column; gap: .2rem;
+  flex: 1; min-width: 130px;
+}
+.stat-chip-val {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.35rem; font-weight: 700;
+  background: linear-gradient(135deg, var(--c1,#a78bfa), var(--c2,#38bdf8));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.stat-chip-label { font-size: .7rem; color: var(--muted) }
+
+/* ── Hero / Featured ── */
 .hero {
   background: linear-gradient(135deg, #140f3c 0%, #0e0e2c 55%, #091428 100%);
   border: 1px solid rgba(167,139,250,.2); border-radius: 20px;
-  padding: 2.25rem 2.75rem; margin-bottom: 2.75rem;
+  padding: 2.25rem 2.75rem; margin-bottom: 2.5rem;
   position: relative; overflow: hidden;
 }
 .hero::before {
@@ -113,7 +157,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem }
   width: 250px; height: 250px; border-radius: 50%; pointer-events: none;
   background: radial-gradient(circle, rgba(6,182,212,.07) 0%, transparent 65%);
 }
-.hero-eyebrow { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.1rem }
+.hero-eyebrow { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.1rem; flex-wrap: wrap }
 .hero-tag {
   font-size: .7rem; font-weight: 700; letter-spacing: .11em; color: #a78bfa;
   text-transform: uppercase;
@@ -122,22 +166,31 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem }
 .hero-title {
   font-family: 'Space Grotesk', sans-serif;
   font-size: clamp(1.35rem, 3.5vw, 2rem); font-weight: 700; line-height: 1.28;
-  margin-bottom: 1rem;
+  margin-bottom: 1rem; position: relative; z-index: 1;
 }
 .hero-meta { display: flex; align-items: center; gap: .7rem; margin-bottom: 1.1rem; flex-wrap: wrap }
 .hero-age  { font-size: .78rem; color: var(--muted) }
 .hero-body { color: var(--sub); line-height: 1.75; margin-bottom: 1.6rem; max-width: 700px; position: relative; z-index: 1 }
+.hero-actions { display: flex; gap: .75rem; flex-wrap: wrap; position: relative; z-index: 1 }
 .hero-btn {
   display: inline-flex; align-items: center; gap: .4rem;
   background: linear-gradient(135deg, #6d28d9, #4f46e5);
   color: #fff; padding: .62rem 1.35rem; border-radius: 9px;
   font-size: .87rem; font-weight: 600;
   box-shadow: 0 4px 18px rgba(99,102,241,.38);
-  transition: opacity .2s, transform .15s; position: relative; z-index: 1;
+  transition: opacity .2s, transform .15s;
 }
 .hero-btn:hover { opacity: .86; transform: translateY(-1px) }
+.hero-btn-ghost {
+  display: inline-flex; align-items: center; gap: .4rem;
+  border: 1px solid rgba(167,139,250,.3); color: #a78bfa;
+  padding: .6rem 1.2rem; border-radius: 9px;
+  font-size: .87rem; font-weight: 500;
+  transition: background .2s, transform .15s;
+}
+.hero-btn-ghost:hover { background: rgba(167,139,250,.1); transform: translateY(-1px) }
 
-/* ─ Section ─ */
+/* ── Section ── */
 .section { margin-bottom: 3rem }
 .section-hdr {
   display: flex; align-items: center; gap: .55rem;
@@ -154,15 +207,24 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem }
   background: var(--card); border: 1px solid var(--border);
   padding: .13rem .52rem; border-radius: 12px;
 }
+.section-desc {
+  font-size: .8rem; color: var(--muted); margin-bottom: 1.1rem; line-height: 1.6;
+  max-width: 720px;
+}
 
-/* ─ Card grid ─ */
+/* ── Card grid ── */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1rem;
 }
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
 
-/* ─ Card ─ */
+/* ── Card ── */
 .card {
   background: var(--card); border: 1px solid var(--border); border-radius: 14px;
   padding: 1.1rem 1.2rem;
@@ -187,6 +249,9 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem }
 .card-title a:hover { color: var(--cat, #a78bfa) }
 .card-desc {
   font-size: .8rem; color: var(--muted); line-height: 1.55; flex-grow: 1;
+}
+.card-desc-clamp {
+  font-size: .8rem; color: var(--muted); line-height: 1.55; flex-grow: 1;
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
 }
 .card-link {
@@ -195,14 +260,67 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem }
   transition: opacity .15s;
 }
 .card-link:hover { opacity: .7 }
+.card-highlight {
+  font-size: .73rem; color: #22c55e; font-weight: 500; margin-top: .1rem;
+  display: flex; align-items: center; gap: .3rem;
+}
+.card-highlight::before { content: '▲'; font-size: .6rem }
 
-/* ─ Pill / badge ─ */
+/* ── Featured big card ── */
+.card-featured {
+  grid-column: span 2;
+  background: linear-gradient(135deg, #0f0f2e 0%, #111128 100%);
+  border-color: rgba(167,139,250,.18);
+}
+@media (max-width: 700px) { .card-featured { grid-column: span 1 } }
+
+/* ── Pill / badge ── */
 .pill {
   display: inline-block; font-size: .66rem; font-weight: 700; letter-spacing: .04em;
   padding: .13rem .48rem; border-radius: 5px; border: 1px solid; text-transform: uppercase;
 }
+.pill-hot {
+  display: inline-block; font-size: .62rem; font-weight: 700; letter-spacing: .06em;
+  padding: .1rem .4rem; border-radius: 4px; text-transform: uppercase;
+  background: rgba(239,68,68,.14); color: #f87171; border: 1px solid rgba(239,68,68,.28);
+}
+.pill-new {
+  display: inline-block; font-size: .62rem; font-weight: 700; letter-spacing: .06em;
+  padding: .1rem .4rem; border-radius: 4px; text-transform: uppercase;
+  background: rgba(34,197,94,.14); color: #4ade80; border: 1px solid rgba(34,197,94,.28);
+}
 
-/* ─ How-it-works ─ */
+/* ── Leaderboard table ── */
+.lb-table {
+  width: 100%; border-collapse: collapse; font-size: .82rem;
+  background: var(--card); border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.lb-table th {
+  text-align: left; padding: .6rem .9rem; font-size: .7rem; font-weight: 600;
+  color: var(--muted); text-transform: uppercase; letter-spacing: .05em;
+  background: rgba(255,255,255,.03); border-bottom: 1px solid var(--border);
+}
+.lb-table td { padding: .6rem .9rem; border-bottom: 1px solid rgba(255,255,255,.03); vertical-align: middle }
+.lb-table tr:last-child td { border-bottom: none }
+.lb-table tr:hover td { background: rgba(255,255,255,.02) }
+.lb-rank {
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: .9rem;
+  color: var(--muted); width: 2rem;
+}
+.lb-rank-1 { color: #fbbf24 }
+.lb-rank-2 { color: #94a3b8 }
+.lb-rank-3 { color: #fb923c }
+.lb-model { font-weight: 600; color: var(--text) }
+.lb-org   { font-size: .73rem; color: var(--muted) }
+.lb-score {
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: .9rem; color: #a78bfa;
+}
+.lb-bar-wrap { width: 90px; height: 6px; background: rgba(255,255,255,.07); border-radius: 3px; overflow: hidden }
+.lb-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg,#6d28d9,#38bdf8) }
+.lb-tag { font-size: .63rem; white-space: nowrap }
+
+/* ── How it works ── */
 .how {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 18px; padding: 1.75rem 2.25rem; margin-bottom: 3rem;
@@ -221,7 +339,12 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem }
 .how-desc  { font-size: .78rem; color: var(--muted); line-height: 1.5 }
 code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3rem; border-radius: 3px }
 
-/* ─ Stats bar ─ */
+/* ── Divider ── */
+.divider {
+  height: 1px; background: var(--border); margin: 2.5rem 0;
+}
+
+/* ── Stats bar ── */
 .stats {
   max-width: 1180px; margin: 0 auto;
   padding: .7rem 1.5rem;
@@ -232,7 +355,7 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
 .stat { display: flex; align-items: center; gap: .32rem }
 .stat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, #6b7280) }
 
-/* ─ Footer ─ */
+/* ── Footer ── */
 .footer {
   background: var(--surface); border-top: 1px solid var(--border);
   padding: 2rem 1.5rem; margin-top: 3rem;
@@ -254,7 +377,7 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
 .footer-sources span:last-child::after { content: '' }
 .footer-note { font-size: .73rem; color: var(--dim); line-height: 1.6 }
 
-/* ─ Scroll top ─ */
+/* ── Scroll top ── */
 .scroll-top {
   position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;
   background: rgba(13,13,36,.88); border: 1px solid rgba(167,139,250,.28);
@@ -266,16 +389,20 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
 }
 .scroll-top:hover { background: rgba(99,102,241,.22); transform: translateY(-2px) }
 
-/* ─ Responsive ─ */
+/* ── Responsive ── */
 @media (max-width: 780px) {
   .hero { padding: 1.6rem 1.5rem }
   main  { padding: 1.25rem 1rem }
   .cat-nav { padding: .7rem 1rem }
   .how  { padding: 1.4rem 1.25rem }
+  .stat-chips { gap: .5rem }
+  .stat-chip  { min-width: 110px }
 }
 @media (max-width: 480px) {
-  .grid { grid-template-columns: 1fr }
+  .grid  { grid-template-columns: 1fr }
+  .grid-2 { grid-template-columns: 1fr }
   .header-date { display: none }
+  .lb-bar-wrap { display: none }
 }
   </style>
 </head>
@@ -289,313 +416,608 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
       <span class="brand-logo">⚡</span>
       <div>
         <div class="brand-name">AI Pulse</div>
-        <div class="brand-sub">Daily AI News Digest</div>
+        <div class="brand-sub">Weekly AI News Digest</div>
       </div>
     </a>
     <div class="header-right">
-      <span class="issue-badge">Issue #1</span>
-      <span class="header-date"><span class="live-dot"></span>May 26, 2026</span>
+      <span class="issue-badge">Issue #2</span>
+      <span class="header-date"><span class="live-dot"></span>June 17, 2026</span>
     </div>
   </div>
   <nav class="cat-nav">
-    <a class="nav-pill" href="#research"   style="--cat:#22d3ee">🔬&thinsp;Research</a>
-    <a class="nav-pill" href="#agents"     style="--cat:#c084fc">🤖&thinsp;AI Agents</a>
-    <a class="nav-pill" href="#products"   style="--cat:#60a5fa">🚀&thinsp;Products</a>
-    <a class="nav-pill" href="#industry"   style="--cat:#4ade80">💼&thinsp;Industry</a>
+    <a class="nav-pill" href="#models"    style="--cat:#a78bfa">🧠&thinsp;Models</a>
+    <a class="nav-pill" href="#agents"    style="--cat:#c084fc">🤖&thinsp;AI Agents</a>
+    <a class="nav-pill" href="#products"  style="--cat:#60a5fa">🚀&thinsp;Products</a>
+    <a class="nav-pill" href="#research"  style="--cat:#22d3ee">🔬&thinsp;Research</a>
+    <a class="nav-pill" href="#industry"  style="--cat:#4ade80">💼&thinsp;Industry</a>
     <a class="nav-pill" href="#opensource" style="--cat:#fb923c">🌐&thinsp;Open Source</a>
   </nav>
 </header>
 
+<!-- ══════ TICKER ══════ -->
+<div class="ticker-bar">
+  <div class="ticker-inner">
+    <span class="ticker-label">🔥 Trending</span>
+    <div class="ticker-items">
+      <span class="ticker-item"><span class="ticker-dot" style="--tc:#a78bfa"></span>Claude Fable 5 released — free through June 22</span>
+      <span class="ticker-item"><span class="ticker-dot" style="--tc:#60a5fa"></span>Apple WWDC 2026 — iOS 27, Siri AI overhaul</span>
+      <span class="ticker-item"><span class="ticker-dot" style="--tc:#22d3ee"></span>Microsoft MAI-Thinking-1 debuts at BUILD 2026</span>
+      <span class="ticker-item"><span class="ticker-dot" style="--tc:#4ade80"></span>Anthropic valuation hits $965B</span>
+      <span class="ticker-item"><span class="ticker-dot" style="--tc:#fb923c"></span>MiniMax M3 — frontier performance at $0.53/1M tokens</span>
+      <span class="ticker-item"><span class="ticker-dot" style="--tc:#f87171"></span>Foxconn MoMClaw agents — 80% faster root-cause analysis</span>
+      <span class="ticker-item"><span class="ticker-dot" style="--tc:#34d399"></span>OpenCode crosses 160K GitHub stars</span>
+    </div>
+  </div>
+</div>
+
 <!-- ══════ MAIN ══════ -->
 <main>
+
+  <!-- Stats chips -->
+  <div class="stat-chips">
+    <div class="stat-chip">
+      <span class="stat-chip-val" style="--c1:#a78bfa;--c2:#818cf8">61.4</span>
+      <span class="stat-chip-label">Claude Fable 5 — AI Analysis Score</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-chip-val" style="--c1:#38bdf8;--c2:#06b6d4">$0.53</span>
+      <span class="stat-chip-label">MiniMax M3 per 1M tokens</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-chip-val" style="--c1:#4ade80;--c2:#22c55e">$965B</span>
+      <span class="stat-chip-label">Anthropic valuation (record)</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-chip-val" style="--c1:#fb923c;--c2:#f97316">2.4B</span>
+      <span class="stat-chip-label">Weekly multi-agent API calls (Q1)</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-chip-val" style="--c1:#f472b6;--c2:#ec4899">~2 days</span>
+      <span class="stat-chip-label">Average interval between new model releases</span>
+    </div>
+  </div>
 
   <!-- Hero -->
   <section class="hero">
     <div class="hero-eyebrow">
-      <span class="hero-tag">✦ Inaugural Edition</span>
-      <span class="hero-cat">🤖 Automated AI Intelligence Feed</span>
+      <span class="hero-tag">✦ Cover Story</span>
+      <span class="hero-cat">🧠 Models · Products · Agents</span>
     </div>
-    <h1 class="hero-title">Welcome to AI Pulse — Your Daily Briefing on Everything Artificial Intelligence</h1>
+    <h1 class="hero-title">The June 2026 AI Surge: Claude Fable 5, Apple's Siri Reboot, Microsoft's In-House Models &amp; the Agentic Enterprise Wave</h1>
     <div class="hero-meta">
-      <span class="pill" style="background:#6366f122;color:#818cf8;border-color:#6366f144">AI PULSE</span>
-      <span class="hero-age">Issue #1 · Inaugural Edition</span>
+      <span class="pill" style="background:#6366f122;color:#818cf8;border-color:#6366f144">WEEK OF JUNE 16</span>
+      <span class="hero-age">Issue #2 · June 17, 2026</span>
     </div>
     <p class="hero-body">
-      AI Pulse is a fully automated daily newsletter that scrapes and curates the most important
-      developments in artificial intelligence. Every morning at 07:00 UTC, a GitHub Actions workflow
-      pulls fresh articles from arXiv, TechCrunch, VentureBeat, The Verge, Wired, IEEE Spectrum,
-      MIT Tech Review, and HackerNews — classifies them into five topic buckets, ranks them by
-      recency and source quality, and regenerates this page. No editors. No paywalls. Pure signal.
+      This week delivered an unprecedented cluster of major AI milestones. Anthropic's Claude Fable 5 launched as its most powerful model yet — available for free through June 22 — and immediately topped the Artificial Analysis Intelligence Index at 61.4, the first model ever to break 60. Apple unveiled a sweeping Siri AI overhaul at WWDC 2026. Microsoft debuted seven in-house AI models at BUILD 2026, including MAI-Thinking-1 (a reasoning model trained without OpenAI), breaking its dependency on a single vendor. And quietly, agentic AI crossed a landmark threshold: enterprises processed 2.4 billion multi-agent API calls in a single week in Q1 2026. The age of autonomous AI is no longer a future state — it's now.
     </p>
-    <a class="hero-btn" href="https://github.com/oeway/ai-news-channel" target="_blank" rel="noopener">
-      View Source on GitHub ↗
-    </a>
-  </section>
-
-  <!-- How it works -->
-  <section class="how">
-    <div class="how-title">⚙️ How It Works</div>
-    <div class="how-grid">
-      <div class="how-card">
-        <div class="how-icon">📡</div>
-        <div class="how-label">8+ Live Sources</div>
-        <div class="how-desc">RSS feeds from TechCrunch, VentureBeat, The Verge, Wired, IEEE Spectrum &amp; MIT Tech Review, plus arXiv CS papers and HackerNews via Algolia API.</div>
-      </div>
-      <div class="how-card">
-        <div class="how-icon">🗂️</div>
-        <div class="how-label">Auto Classification</div>
-        <div class="how-desc">Each article is matched against keyword sets for Research, Agents, Products, Industry and Open Source. URL &amp; title fingerprints remove duplicates.</div>
-      </div>
-      <div class="how-card">
-        <div class="how-icon">📊</div>
-        <div class="how-label">Recency Ranking</div>
-        <div class="how-desc">A composite score weighs freshness (exponential decay over 5 days), source authority, and title quality to surface the most impactful stories first.</div>
-      </div>
-      <div class="how-card">
-        <div class="how-icon">⚡</div>
-        <div class="how-label">Zero-Infra Deploy</div>
-        <div class="how-desc">An external AI agent runs <code>scripts/fetch_news.py</code>, commits the new <code>docs/index.html</code>, and GitHub Pages serves it automatically.</div>
-      </div>
+    <div class="hero-actions">
+      <a class="hero-btn" href="https://github.com/oeway/ai-news-channel" target="_blank" rel="noopener">View on GitHub ↗</a>
+      <a class="hero-btn-ghost" href="#models">Jump to Models ↓</a>
     </div>
   </section>
 
-  <!-- ── Research ── -->
-  <section class="section" id="research" style="--cat:#22d3ee">
+  <!-- ══════ MODEL LEADERBOARD ══════ -->
+  <section class="section" id="models" style="--cat:#a78bfa">
     <header class="section-hdr">
-      <span class="section-icon">🔬</span>
-      <h2 class="section-label">Research &amp; Breakthroughs</h2>
-      <span class="section-count">4 stories</span>
+      <span class="section-icon">🧠</span>
+      <h2 class="section-label">Frontier Model Leaderboard — June 2026</h2>
+      <span class="section-count">Ranked</span>
     </header>
-    <div class="grid">
+    <p class="section-desc">The Artificial Analysis Intelligence Index scores models on a composite of reasoning, coding, knowledge, and multimodal benchmarks. New models are shipping every ~2 days. Chinese open-weight models dominate the top-5 open-source tier.</p>
 
-      <article class="card" style="--cat:#22d3ee">
-        <div class="card-top">
-          <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">arXiv</span>
-          <span class="card-age">Daily</span>
-        </div>
-        <h3 class="card-title"><a href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">Reasoning at Scale: Chain-of-Thought, Process Rewards &amp; Test-Time Compute</a></h3>
-        <p class="card-desc">The field is converging on a key insight: spending more compute at inference time — through extended reasoning, search, or self-refinement — can substitute for larger training runs and unlock qualitatively new capabilities.</p>
-        <a class="card-link" href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">Browse latest papers ↗</a>
-      </article>
-
-      <article class="card" style="--cat:#22d3ee">
-        <div class="card-top">
-          <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">arXiv</span>
-          <span class="card-age">Daily</span>
-        </div>
-        <h3 class="card-title"><a href="https://arxiv.org/list/cs.CL/recent" target="_blank" rel="noopener">Multimodal Frontier: Vision, Audio, Video and Code in Unified Architectures</a></h3>
-        <p class="card-desc">State-of-the-art models now process text, images, audio and video within a single architecture. New benchmarks reveal rapid progress in spatial reasoning, visual grounding, and long-form video understanding.</p>
-        <a class="card-link" href="https://arxiv.org/list/cs.CL/recent" target="_blank" rel="noopener">Read NLP papers ↗</a>
-      </article>
-
-      <article class="card" style="--cat:#22d3ee">
-        <div class="card-top">
-          <span class="pill" style="background:#0ea5e922;color:#0ea5e9;border-color:#0ea5e944">IEEE Spectrum</span>
-          <span class="card-age">Weekly</span>
-        </div>
-        <h3 class="card-title"><a href="https://spectrum.ieee.org/topic/artificial-intelligence/" target="_blank" rel="noopener">AI Hardware: From H100 to Blackwell — the Next Generation of AI Chips</a></h3>
-        <p class="card-desc">NVIDIA's Blackwell architecture and competitors from AMD, Intel, and custom ASICs are redefining the compute landscape. Energy efficiency per FLOP is now as important as peak throughput as data-centre power budgets hit limits.</p>
-        <a class="card-link" href="https://spectrum.ieee.org/topic/artificial-intelligence/" target="_blank" rel="noopener">Read on IEEE Spectrum ↗</a>
-      </article>
-
-      <article class="card" style="--cat:#22d3ee">
-        <div class="card-top">
-          <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">arXiv</span>
-          <span class="card-age">Daily</span>
-        </div>
-        <h3 class="card-title"><a href="https://arxiv.org/list/cs.LG/recent" target="_blank" rel="noopener">Alignment Research: RLHF, DPO, Constitutional AI and Beyond</a></h3>
-        <p class="card-desc">Human feedback, AI-generated preferences, and automated red-teaming are converging into a richer alignment toolkit. Scalable oversight — using AI to supervise AI — is the leading edge of current safety research.</p>
-        <a class="card-link" href="https://arxiv.org/list/cs.LG/recent" target="_blank" rel="noopener">Read ML papers ↗</a>
-      </article>
-
-    </div>
+    <table class="lb-table" style="margin-bottom:1.25rem">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Model</th>
+          <th>Score</th>
+          <th>Context</th>
+          <th>Price (1M out)</th>
+          <th style="width:100px">Strength</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="lb-rank lb-rank-1">1</td>
+          <td><div class="lb-model">Claude Fable 5</div><div class="lb-org">Anthropic</div></td>
+          <td class="lb-score">61.4</td>
+          <td style="font-size:.78rem;color:var(--muted)">1M</td>
+          <td style="font-size:.78rem;color:var(--muted)">API pricing TBA</td>
+          <td><div class="lb-bar-wrap"><div class="lb-bar" style="width:100%"></div></div></td>
+          <td><span class="pill-new">NEW</span></td>
+        </tr>
+        <tr>
+          <td class="lb-rank lb-rank-2">2</td>
+          <td><div class="lb-model">Claude Opus 4.8</div><div class="lb-org">Anthropic</div></td>
+          <td class="lb-score">61.4</td>
+          <td style="font-size:.78rem;color:var(--muted)">1M</td>
+          <td style="font-size:.78rem;color:var(--muted)">$75/M</td>
+          <td><div class="lb-bar-wrap"><div class="lb-bar" style="width:100%"></div></div></td>
+          <td><span class="pill-hot">TOP</span></td>
+        </tr>
+        <tr>
+          <td class="lb-rank lb-rank-3">3</td>
+          <td><div class="lb-model">Grok 4.20</div><div class="lb-org">xAI</div></td>
+          <td class="lb-score">~58</td>
+          <td style="font-size:.78rem;color:var(--muted)">2M</td>
+          <td style="font-size:.78rem;color:var(--muted)">—</td>
+          <td><div class="lb-bar-wrap"><div class="lb-bar" style="width:94%"></div></div></td>
+          <td><span class="lb-tag" style="color:var(--muted)">78% non-hallucination</span></td>
+        </tr>
+        <tr>
+          <td class="lb-rank">4</td>
+          <td><div class="lb-model">Gemini 3.1 Ultra</div><div class="lb-org">Google DeepMind</div></td>
+          <td class="lb-score">~57</td>
+          <td style="font-size:.78rem;color:var(--muted)">2M</td>
+          <td style="font-size:.78rem;color:var(--muted)">—</td>
+          <td><div class="lb-bar-wrap"><div class="lb-bar" style="width:92%"></div></div></td>
+          <td><span class="lb-tag" style="color:var(--muted)">77.1% ARC-AGI-2</span></td>
+        </tr>
+        <tr>
+          <td class="lb-rank">5</td>
+          <td><div class="lb-model">GPT-5.5 Pro</div><div class="lb-org">OpenAI</div></td>
+          <td class="lb-score">~55</td>
+          <td style="font-size:.78rem;color:var(--muted)">1M</td>
+          <td style="font-size:.78rem;color:var(--muted)">—</td>
+          <td><div class="lb-bar-wrap"><div class="lb-bar" style="width:89%"></div></div></td>
+          <td><span class="lb-tag" style="color:var(--muted)">GA via MS Foundry</span></td>
+        </tr>
+        <tr>
+          <td class="lb-rank">6</td>
+          <td><div class="lb-model">Gemini 3.5 Flash</div><div class="lb-org">Google</div></td>
+          <td class="lb-score">55</td>
+          <td style="font-size:.78rem;color:var(--muted)">1M</td>
+          <td style="font-size:.78rem;color:var(--muted)">$9/M</td>
+          <td><div class="lb-bar-wrap"><div class="lb-bar" style="width:89%"></div></div></td>
+          <td><span class="lb-tag" style="color:#4ade80">284 tok/s</span></td>
+        </tr>
+        <tr>
+          <td class="lb-rank">7</td>
+          <td><div class="lb-model">MiniMax M3 (Open)</div><div class="lb-org">MiniMax</div></td>
+          <td class="lb-score">~53</td>
+          <td style="font-size:.78rem;color:var(--muted)">1M</td>
+          <td style="font-size:.78rem;color:var(--muted)">$0.53/M</td>
+          <td><div class="lb-bar-wrap"><div class="lb-bar" style="width:86%"></div></div></td>
+          <td><span class="pill-new">OPEN</span></td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
-  <!-- ── Agents ── -->
+  <!-- ── Key model stories ── -->
+  <div class="grid" style="margin-bottom:3rem">
+
+    <article class="card card-featured" style="--cat:#a78bfa">
+      <div class="card-top">
+        <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">Anthropic</span>
+        <span class="card-age">June 9, 2026</span>
+      </div>
+      <h3 class="card-title" style="font-size:1.05rem"><a href="https://www.anthropic.com" target="_blank" rel="noopener">Claude Fable 5 — Anthropic's Most Powerful Model Debuts at No. 1</a></h3>
+      <p class="card-desc">Claude Fable 5 launched on June 9, 2026 as Anthropic's highest-tier model — a full tier above Claude Opus 4.8 — and immediately seized the #1 position on the Artificial Analysis Intelligence Index with a score of 61.4, the first model ever to break the 60 threshold by a clean margin. The model excels at coding, long-horizon agentic tasks, and computer use, with a default 1M token context window. Anthropic is making Fable 5 available at no extra cost on all Claude plans through June 22 to mark the launch — after which premium pricing will apply. Claude Opus 4.1 is scheduled for retirement on August 5. Notably, Anthropic's valuation simultaneously crossed $965 billion, making it the world's most valuable AI startup.</p>
+      <div class="card-highlight">First model to score above 60 on the AI Analysis Intelligence Index</div>
+      <a class="card-link" href="https://tygartmedia.com/claude-updates-june-2026/" target="_blank" rel="noopener">Read full release notes ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#a78bfa">
+      <div class="card-top">
+        <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">Moonshot AI</span>
+        <span class="card-age">June 12, 2026</span>
+      </div>
+      <h3 class="card-title"><a href="https://llm-stats.com/llm-updates" target="_blank" rel="noopener">Kimi K2.7 Code — 90.5% on GPQA Diamond Benchmark</a></h3>
+      <p class="card-desc-clamp">Moonshot AI released Kimi K2.7 Code, built on their trillion-parameter MoE architecture, setting a new high-water mark of 90.5% on the rigorous GPQA Diamond science and reasoning benchmark. The model leads open evaluations on expert-level science questions and mathematical problem-solving.</p>
+      <a class="card-link" href="https://llm-stats.com/llm-updates" target="_blank" rel="noopener">View benchmarks ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#38bdf8">
+      <div class="card-top">
+        <span class="pill" style="background:#0ea5e922;color:#0ea5e9;border-color:#0ea5e944">MiniMax</span>
+        <span class="card-age">June 2026</span>
+      </div>
+      <h3 class="card-title"><a href="https://blog.mean.ceo/latest-ai-breakthroughs-news-june-2026/" target="_blank" rel="noopener">MiniMax M3 — Frontier AI at $0.53 / 1M Tokens</a></h3>
+      <p class="card-desc-clamp">Shanghai-based MiniMax dropped M3, an open-weight model that reduces per-token compute to 1/20th of previous models through breakthrough architecture efficiency — delivering 9× faster prefilling and 15× faster decoding on 1M-token contexts. At $0.53 per million output tokens, it's the most affordable frontier-class model ever released.</p>
+      <div class="card-highlight">20× compute reduction vs prior generation</div>
+      <a class="card-link" href="https://blog.mean.ceo/latest-ai-breakthroughs-news-june-2026/" target="_blank" rel="noopener">Read breakdown ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#a78bfa">
+      <div class="card-top">
+        <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">Alibaba</span>
+        <span class="card-age">June 15, 2026</span>
+      </div>
+      <h3 class="card-title"><a href="https://llm-stats.com/llm-updates" target="_blank" rel="noopener">Qwen 3 Coder Next Raises the Bar for Chinese Open-Weight Models</a></h3>
+      <p class="card-desc-clamp">Alibaba released Qwen 3 Coder Next, extending their already dominant Qwen 3 series which leads 2026 open-source frontier rankings. Four of the top five open-weight models now come from Chinese labs, with Qwen, MiniMax, and Kimi commanding the top positions.</p>
+      <a class="card-link" href="https://llm-stats.com/llm-updates" target="_blank" rel="noopener">View release ↗</a>
+    </article>
+
+  </div>
+
+  <!-- ══════ AGENTS ══════ -->
   <section class="section" id="agents" style="--cat:#c084fc">
     <header class="section-hdr">
       <span class="section-icon">🤖</span>
       <h2 class="section-label">AI Agents &amp; Automation</h2>
-      <span class="section-count">4 stories</span>
+      <span class="section-count">6 stories</span>
     </header>
+    <p class="section-desc">Enterprise agentic AI hit a landmark moment in Q1 2026: 2.4 billion multi-agent API calls in a single week. Gartner predicts 40% of enterprise apps will have task-specific agents by year-end. The race is on to govern, orchestrate, and deploy them at scale.</p>
     <div class="grid">
 
-      <article class="card" style="--cat:#c084fc">
+      <article class="card card-featured" style="--cat:#c084fc">
         <div class="card-top">
-          <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
-          <span class="card-age">Emerging</span>
+          <span class="pill" style="background:#c084fc22;color:#c084fc;border-color:#c084fc44">Microsoft</span>
+          <span class="card-age">June 2–3, 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Agentic AI: From Single-Turn Chat to Long-Horizon Autonomous Workflows</a></h3>
-        <p class="card-desc">The industry is pivoting from one-shot prompts to multi-step agentic pipelines that browse the web, write and run code, call APIs, manage files, and coordinate with other specialised sub-agents to complete complex goals.</p>
-        <a class="card-link" href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Read on TechCrunch ↗</a>
+        <h3 class="card-title" style="font-size:1.02rem"><a href="https://devblogs.microsoft.com/agent-framework/microsoft-agent-framework-at-build-2026/" target="_blank" rel="noopener">Microsoft Launches "Autopilot" Agents at BUILD 2026 — Scout Is Always On, Has Its Own Identity</a></h3>
+        <p class="card-desc">Microsoft introduced a new category of always-on autonomous agents called "Autopilots" at BUILD 2026 (June 2–3). The flagship is Microsoft Scout, an always-running agent powered by OpenClaw that has its own governed Entra identity, can monitor signals across your organization, and proactively surface insights without being asked. Alongside it, Microsoft released Work IQ APIs (June 16) offering MCP tools and semantic index capabilities, and launched MAI-Code-1-Flash — rolling out to all GitHub Copilot plans. The agent framework sessions covered multi-agent topology, observability, and enterprise governance for multi-agent deployments.</p>
+        <div class="card-highlight">Scout ships with a governed Entra identity — agents as first-class enterprise principals</div>
+        <a class="card-link" href="https://devblogs.microsoft.com/agent-framework/microsoft-agent-framework-at-build-2026/" target="_blank" rel="noopener">Explore Agent Framework ↗</a>
       </article>
 
       <article class="card" style="--cat:#c084fc">
         <div class="card-top">
-          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">VentureBeat</span>
-          <span class="card-age">Emerging</span>
+          <span class="pill" style="background:#c084fc22;color:#c084fc;border-color:#c084fc44">Foxconn</span>
+          <span class="card-age">June 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Multi-Agent Orchestration: LangGraph, AutoGen and Production Deployments</a></h3>
-        <p class="card-desc">Frameworks like LangGraph, AutoGen, and CrewAI are moving into production. Supervisor-planner-executor topologies are outperforming single agents on complex tasks, and evaluation tooling is catching up fast.</p>
-        <a class="card-link" href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Read on VentureBeat ↗</a>
+        <h3 class="card-title"><a href="https://www.prosus.com/news-insights/2026/state-of-ai-agents-2026-autonomy-is-here" target="_blank" rel="noopener">Foxconn MoMClaw — Multi-Agent System Cuts Factory Downtime by 80%</a></h3>
+        <p class="card-desc-clamp">Foxconn deployed MoMClaw, a multi-agent manufacturing system built on NVIDIA's FOX blueprint, across its facilities. MoMClaw achieved an 80% reduction in root-cause analysis time for equipment failures and a 10% reduction in machine failure rates, making it one of the most impressive real-world agentic AI deployments to date.</p>
+        <div class="card-highlight">80% faster root-cause analysis in production manufacturing</div>
+        <a class="card-link" href="https://www.prosus.com/news-insights/2026/state-of-ai-agents-2026-autonomy-is-here" target="_blank" rel="noopener">Read case study ↗</a>
       </article>
 
       <article class="card" style="--cat:#c084fc">
         <div class="card-top">
-          <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">arXiv</span>
-          <span class="card-age">Research</span>
+          <span class="pill" style="background:#c084fc22;color:#c084fc;border-color:#c084fc44">Nous Research</span>
+          <span class="card-age">June 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://arxiv.org/search/?searchtype=all&query=AI+agent+tool+use" target="_blank" rel="noopener">Tool Use, Memory and Planning: The Building Blocks of Capable AI Agents</a></h3>
-        <p class="card-desc">Reliable tool invocation, persistent memory across sessions, hierarchical planning, and graceful error recovery are the four pillars that separate toy demos from production-grade AI agents. Each remains an active research frontier.</p>
-        <a class="card-link" href="https://arxiv.org/search/?searchtype=all&query=AI+agent+tool+use" target="_blank" rel="noopener">Read research ↗</a>
+        <h3 class="card-title"><a href="https://blogs.nvidia.com/blog/rtx-ai-garage-hermes-agent-dgx-spark/" target="_blank" rel="noopener">Hermes Agent Tops 140K GitHub Stars — Self-Improving Agents on Local Hardware</a></h3>
+        <p class="card-desc-clamp">Nous Research's Hermes Agent framework crossed 140,000 GitHub stars in under three months. Running on NVIDIA RTX PCs and DGX Spark, Hermes supports autonomous self-improvement loops — an agent that can revise its own capabilities based on outcomes. It's leading a new wave of locally-deployable production-quality agentic systems.</p>
+        <a class="card-link" href="https://blogs.nvidia.com/blog/rtx-ai-garage-hermes-agent-dgx-spark/" target="_blank" rel="noopener">Explore Hermes ↗</a>
       </article>
 
       <article class="card" style="--cat:#c084fc">
         <div class="card-top">
-          <span class="pill" style="background:#818cf822;color:#818cf8;border-color:#818cf844">Wired</span>
-          <span class="card-age">Emerging</span>
+          <span class="pill" style="background:#c084fc22;color:#c084fc;border-color:#c084fc44">Thoughtworks</span>
+          <span class="card-age">June 16, 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Software Engineering Agents: Devin, Copilot Workspace and the AI Dev Loop</a></h3>
-        <p class="card-desc">AI coding agents can now scaffold whole projects, write and run tests, debug failures across multiple files, and open pull requests. The question has shifted from "can it code?" to "how do we review and trust its output?"</p>
-        <a class="card-link" href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Read on Wired ↗</a>
+        <h3 class="card-title"><a href="https://www.hpcwire.com/bigdatawire/this-just-in/thoughtworks-launches-agent-works-to-govern-and-run-enterprise-ai-agents-across-any-cloud/" target="_blank" rel="noopener">Thoughtworks Agent/works — A Control Plane for Enterprise Agent Sprawl</a></h3>
+        <p class="card-desc-clamp">Thoughtworks launched Agent/works, an enterprise platform providing a single control plane and governed runtime to manage agent sprawl, risk, and AI spend across any cloud. As enterprises deploy dozens to hundreds of autonomous agents, governance infrastructure is becoming as important as the agents themselves.</p>
+        <a class="card-link" href="https://www.hpcwire.com/bigdatawire/this-just-in/thoughtworks-launches-agent-works-to-govern-and-run-enterprise-ai-agents-across-any-cloud/" target="_blank" rel="noopener">Read launch ↗</a>
+      </article>
+
+      <article class="card" style="--cat:#c084fc">
+        <div class="card-top">
+          <span class="pill" style="background:#c084fc22;color:#c084fc;border-color:#c084fc44">Robinhood</span>
+          <span class="card-age">June 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://www.thestreet.com/investing/stocks/robinhood-hood-stock-ceo-launches-bold-agentic-ai-trading-feature" target="_blank" rel="noopener">Robinhood Agentic Trading — AI Executes Stock Trades &amp; Credit Card Purchases Autonomously</a></h3>
+        <p class="card-desc-clamp">Robinhood launched two bold agentic features: Agentic Trading (AI agents that execute stock trades on your behalf within user-defined parameters) and an Agentic Credit Card (a virtual card that lets AI agents make purchases autonomously with user-controlled spending limits). Finance joins manufacturing as an early adopter of real-money agentic AI.</p>
+        <a class="card-link" href="https://www.thestreet.com/investing/stocks/robinhood-hood-stock-ceo-launches-bold-agentic-ai-trading-feature" target="_blank" rel="noopener">Read announcement ↗</a>
+      </article>
+
+      <article class="card" style="--cat:#c084fc">
+        <div class="card-top">
+          <span class="pill" style="background:#c084fc22;color:#c084fc;border-color:#c084fc44">Anthropic</span>
+          <span class="card-age">June 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://codersera.com/blog/ai-agent-benchmarks-state-of-leaderboard-may-2026/" target="_blank" rel="noopener">Agentic Benchmarks: Claude Mythos 5 Hits 93.9% on SWE-Bench Verified</a></h3>
+        <p class="card-desc-clamp">The latest AI agent benchmarks reveal striking progress: Claude Mythos 5 scores 93.9% on SWE-bench Verified (real GitHub software engineering tasks), while the provisional agentic leaderboard has Claude Fable 5 and Mythos 5 tied at 100% on composite agentic tasks — far ahead of other labs. OSWorld desktop task success rates jumped from 12% to 66% in one year.</p>
+        <div class="card-highlight">SWE-bench Verified: 93.9% — real coding tasks on real repos</div>
+        <a class="card-link" href="https://codersera.com/blog/ai-agent-benchmarks-state-of-leaderboard-may-2026/" target="_blank" rel="noopener">View leaderboard ↗</a>
       </article>
 
     </div>
   </section>
 
-  <!-- ── Products ── -->
+  <!-- ══════ PRODUCTS ══════ -->
   <section class="section" id="products" style="--cat:#60a5fa">
     <header class="section-hdr">
       <span class="section-icon">🚀</span>
-      <h2 class="section-label">New Products &amp; Releases</h2>
-      <span class="section-count">4 stories</span>
+      <h2 class="section-label">New Products &amp; Platform Launches</h2>
+      <span class="section-count">7 stories</span>
     </header>
+    <p class="section-desc">June 2026 saw simultaneous platform announcements from Apple, Microsoft, Google, OpenAI, and Anthropic — a product cycle with no historical precedent in speed or breadth.</p>
     <div class="grid">
 
       <article class="card" style="--cat:#60a5fa">
         <div class="card-top">
-          <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
-          <span class="card-age">Recent</span>
+          <span class="pill" style="background:#60a5fa22;color:#60a5fa;border-color:#60a5fa44">Apple</span>
+          <span class="card-age">June 8–12, 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Frontier Model Releases: The Race Between GPT, Claude, Gemini and Llama</a></h3>
-        <p class="card-desc">OpenAI, Anthropic, Google DeepMind, and Meta are shipping major model updates at an accelerating cadence. Longer context, stronger reasoning, lower latency, and multimodal capability are improving simultaneously across all labs.</p>
-        <a class="card-link" href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Read on TechCrunch ↗</a>
+        <h3 class="card-title"><a href="https://techcrunch.com/2026/06/09/wwdc-2026-everything-announced-on-siri-ai-os-27-apple-intelligence-and-more/" target="_blank" rel="noopener">WWDC 2026 — iOS 27, Siri Overhaul, On-Device AI &amp; Third-Party Model Integration</a></h3>
+        <p class="card-desc-clamp">Apple's WWDC 2026 (June 8–12) delivered its most significant AI update in company history. Highlights: a long-awaited Siri overhaul with cross-app context awareness; iOS 27 and macOS 27 with deep Apple Intelligence integration; the Foundation Models framework now supports image input and Claude/Gemini via a Swift API; an AI Agent App Store integration category; free Apple Foundation Model access on Private Cloud Compute for developers; and MLX now supports Metal 4 with cross-Mac training via RDMA over Thunderbolt.</p>
+        <a class="card-link" href="https://techcrunch.com/2026/06/09/wwdc-2026-everything-announced-on-siri-ai-os-27-apple-intelligence-and-more/" target="_blank" rel="noopener">Full WWDC recap ↗</a>
       </article>
 
       <article class="card" style="--cat:#60a5fa">
         <div class="card-top">
-          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">VentureBeat</span>
-          <span class="card-age">Recent</span>
+          <span class="pill" style="background:#60a5fa22;color:#60a5fa;border-color:#60a5fa44">Microsoft</span>
+          <span class="card-age">June 2–3, 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Developer APIs Expand: Structured Output, Vision, Batch and Fine-Tuning</a></h3>
-        <p class="card-desc">Model providers are widening their API surfaces with structured outputs, vision, image generation, embeddings, and fine-tuning endpoints. Batch APIs and caching are making large-scale AI applications economically viable for the first time.</p>
-        <a class="card-link" href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Read on VentureBeat ↗</a>
+        <h3 class="card-title"><a href="https://www.cnbc.com/2026/06/02/microsoft-unveils-new-ai-models-lessen-reliance-on-openai-lower-costs.html" target="_blank" rel="noopener">Microsoft BUILD: 7 In-House AI Models, MAI-Thinking-1, Majorana 2 Quantum Chip</a></h3>
+        <p class="card-desc-clamp">Microsoft debuted seven in-house AI models at BUILD 2026, decisively reducing its dependence on OpenAI. Standouts: MAI-Thinking-1 (first reasoning model trained on clean, commercially licensed data — no OpenAI involvement); MAI-Code-1-Flash (rolling out to all GitHub Copilot plans); MAI-Image-2.5 (live in PowerPoint); and Project Solara (Android-based platform for agent-driven devices). Also previewed: Majorana 2, a quantum chip with 1,000× better qubit reliability targeting commercial use by 2029.</p>
+        <a class="card-link" href="https://www.cnbc.com/2026/06/02/microsoft-unveils-new-ai-models-lessen-reliance-on-openai-lower-costs.html" target="_blank" rel="noopener">Read on CNBC ↗</a>
       </article>
 
       <article class="card" style="--cat:#60a5fa">
         <div class="card-top">
-          <span class="pill" style="background:#e11d4822;color:#e11d48;border-color:#e11d4844">The Verge</span>
-          <span class="card-age">Recent</span>
+          <span class="pill" style="background:#60a5fa22;color:#60a5fa;border-color:#60a5fa44">OpenAI</span>
+          <span class="card-age">June 2, 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://www.theverge.com/ai-artificial-intelligence" target="_blank" rel="noopener">AI Enters the OS: Copilot, Gemini, and Apple Intelligence Integration</a></h3>
-        <p class="card-desc">Microsoft Copilot, Google Gemini, and Apple Intelligence are being woven deeply into operating systems and productivity suites. The battle for AI-first UX is moving from standalone apps to system-level, context-aware experiences.</p>
-        <a class="card-link" href="https://www.theverge.com/ai-artificial-intelligence" target="_blank" rel="noopener">Read on The Verge ↗</a>
+        <h3 class="card-title"><a href="https://techcrunch.com/2026/06/02/openai-launches-new-codex-tools-for-white-collar-work/" target="_blank" rel="noopener">OpenAI Codex — 5M+ Weekly Users, 6 New Vertical Plug-ins for White-Collar Work</a></h3>
+        <p class="card-desc-clamp">OpenAI's Codex now serves 5+ million weekly active users — a 6× increase since its February desktop launch. On June 2, OpenAI launched six new vertical plug-ins: data analytics, creative production, sales, product design, equity investing, and investment banking. GPT-5.5 also went generally available in Microsoft Foundry with an enhanced memory system for better context retention and preference following.</p>
+        <a class="card-link" href="https://techcrunch.com/2026/06/02/openai-launches-new-codex-tools-for-white-collar-work/" target="_blank" rel="noopener">Read on TechCrunch ↗</a>
       </article>
 
       <article class="card" style="--cat:#60a5fa">
         <div class="card-top">
-          <span class="pill" style="background:#818cf822;color:#818cf8;border-color:#818cf844">Wired</span>
-          <span class="card-age">Recent</span>
+          <span class="pill" style="background:#60a5fa22;color:#60a5fa;border-color:#60a5fa44">Anthropic</span>
+          <span class="card-age">June 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Generative Media Matures: Image, Video and Audio Generation in 2025</a></h3>
-        <p class="card-desc">Diffusion models, flow matching, and autoregressive video generators have made AI-generated images and video indistinguishable to casual viewers. Real-time generation, style consistency, and fine-grained control are the new battlegrounds.</p>
-        <a class="card-link" href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Read on Wired ↗</a>
+        <h3 class="card-title"><a href="https://releasebot.io/updates/anthropic/claude-developer-platform" target="_blank" rel="noopener">Claude API: Managed Agents, MCP Tunnels &amp; AWS Native Integration</a></h3>
+        <p class="card-desc-clamp">Anthropic expanded its developer platform significantly: agents can now update MCP server and tool configurations mid-session; large outputs over 100K tokens auto-spill to sandbox files; self-hosted sandboxes and MCP tunnels are in public beta; and the full Claude API is now natively available on AWS with IAM authentication and AWS billing. Cache diagnostics also launched in public beta.</p>
+        <a class="card-link" href="https://releasebot.io/updates/anthropic/claude-developer-platform" target="_blank" rel="noopener">View platform updates ↗</a>
+      </article>
+
+      <article class="card" style="--cat:#60a5fa">
+        <div class="card-top">
+          <span class="pill" style="background:#60a5fa22;color:#60a5fa;border-color:#60a5fa44">Google</span>
+          <span class="card-age">May–June 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://wavespeed.ai/blog/posts/june-2026-ai-launch-wave/" target="_blank" rel="noopener">Google I/O 2026 Wave — Gemini 3.5 Flash GA, Agentic Search, AI Chrome Integration</a></h3>
+        <p class="card-desc-clamp">Google's I/O 2026 announcements kept landing into June. Gemini 3.5 Flash went GA (May 19) at $1.50/$9 per million tokens with 284 tokens/second throughput. Gemini in Chrome on Android launched with auto-browse. Google's Agentic Booking extended to local services. The "Agentic Gemini Era" positions Google's entire search and productivity stack around autonomous AI actions. Managed Agents API is also now available in Gemini API.</p>
+        <a class="card-link" href="https://wavespeed.ai/blog/posts/june-2026-ai-launch-wave/" target="_blank" rel="noopener">Read the launch map ↗</a>
+      </article>
+
+      <article class="card" style="--cat:#60a5fa">
+        <div class="card-top">
+          <span class="pill" style="background:#60a5fa22;color:#60a5fa;border-color:#60a5fa44">Zoom</span>
+          <span class="card-age">June 1, 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://www.aiapps.com/blog/ai-news-breakthroughs-launches-trends-must-read/" target="_blank" rel="noopener">Zoom ZoomMate — AI That Connects Meeting Decisions to Your Enterprise Stack</a></h3>
+        <p class="card-desc-clamp">Zoom launched ZoomMate at $20/user/month, integrating an AI assistant directly into live meetings with connectors to Salesforce, Jira, ServiceNow, and Slack. Unlike simple meeting summaries, ZoomMate can trigger workflows, update CRM records, and create tickets in real time during the call.</p>
+        <a class="card-link" href="https://www.aiapps.com/blog/ai-news-breakthroughs-launches-trends-must-read/" target="_blank" rel="noopener">Product details ↗</a>
+      </article>
+
+      <article class="card" style="--cat:#60a5fa">
+        <div class="card-top">
+          <span class="pill" style="background:#60a5fa22;color:#60a5fa;border-color:#60a5fa44">OpenAI</span>
+          <span class="card-age">June 1, 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://www.buildfastwithai.com/blogs/ai-news-today-june-7-2026" target="_blank" rel="noopener">OpenAI Rosalind Biodefense — Trusted AI Access for Pandemic Preparedness</a></h3>
+        <p class="card-desc-clamp">OpenAI expanded trusted access to GPT-Rosalind specifically for biodefense and public health research, in a program called Rosalind Biodefense. Vetted developers and US government agencies working on pandemic preparedness, biosecurity threat identification, and epidemiology are eligible. It's OpenAI's first domain-specific government trust tier.</p>
+        <a class="card-link" href="https://www.buildfastwithai.com/blogs/ai-news-today-june-7-2026" target="_blank" rel="noopener">Read announcement ↗</a>
       </article>
 
     </div>
   </section>
 
-  <!-- ── Industry ── -->
+  <!-- ══════ RESEARCH ══════ -->
+  <section class="section" id="research" style="--cat:#22d3ee">
+    <header class="section-hdr">
+      <span class="section-icon">🔬</span>
+      <h2 class="section-label">Research &amp; Breakthroughs</h2>
+      <span class="section-count">5 stories</span>
+    </header>
+    <div class="grid">
+
+      <article class="card" style="--cat:#22d3ee">
+        <div class="card-top">
+          <span class="pill" style="background:#22d3ee22;color:#22d3ee;border-color:#22d3ee44">NVIDIA</span>
+          <span class="card-age">June 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://blog.mean.ceo/latest-ai-breakthroughs-news-june-2026/" target="_blank" rel="noopener">NVIDIA Cosmos 3 — The First Open "Omnimodel" for Physical AI</a></h3>
+        <p class="card-desc-clamp">NVIDIA unveiled Cosmos 3 at Computex, described as the first fully open "omnimodel" for physical AI — a unified mixture-of-transformers architecture that integrates vision reasoning, world simulation, and robotic action generation in a single model. Physical AI (AI that understands and acts in the real world) is emerging as the next major frontier after language and vision.</p>
+        <div class="card-highlight">World simulation + vision + robotics in one architecture</div>
+        <a class="card-link" href="https://blog.mean.ceo/latest-ai-breakthroughs-news-june-2026/" target="_blank" rel="noopener">Read breakdown ↗</a>
+      </article>
+
+      <article class="card" style="--cat:#22d3ee">
+        <div class="card-top">
+          <span class="pill" style="background:#22d3ee22;color:#22d3ee;border-color:#22d3ee44">Google · ICLR 2026</span>
+          <span class="card-age">ICLR 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://www.infoworld.com/article/4108092/6-ai-breakthroughs-that-will-define-2026.html" target="_blank" rel="noopener">TurboQuant — Google's Algorithm That Dramatically Shrinks KV Cache Memory</a></h3>
+        <p class="card-desc-clamp">Google researchers unveiled TurboQuant at ICLR 2026: a two-step algorithm combining PolarQuant vector rotation and Quantized Johnson-Lindenstrauss compression to dramatically reduce KV cache memory overhead — the leading bottleneck for deploying large models. Smaller KV caches mean longer effective context windows and lower serving costs across all deployment environments.</p>
+        <a class="card-link" href="https://www.infoworld.com/article/4108092/6-ai-breakthroughs-that-will-define-2026.html" target="_blank" rel="noopener">Read research ↗</a>
+      </article>
+
+      <article class="card" style="--cat:#22d3ee">
+        <div class="card-top">
+          <span class="pill" style="background:#22d3ee22;color:#22d3ee;border-color:#22d3ee44">UPenn · NeurIPS 2026</span>
+          <span class="card-age">June 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://blog.mean.ceo/latest-ai-breakthroughs-news-june-2026/" target="_blank" rel="noopener">Mollifier Layers — A Mathematical Breakthrough for Scientific AI (Genomics, Climate, Materials)</a></h3>
+        <p class="card-desc-clamp">Researchers at the University of Pennsylvania developed Mollifier Layers — a novel neural network technique integrating classical mathematical smoothing functions (mollifiers) to solve inverse partial differential equations with far greater numerical stability. With accepted papers in TMLR and a NeurIPS 2026 slot, the method is poised to accelerate AI applications in genomics, materials science, climate modeling, and chromatin biology.</p>
+        <a class="card-link" href="https://blog.mean.ceo/latest-ai-breakthroughs-news-june-2026/" target="_blank" rel="noopener">Read paper summary ↗</a>
+      </article>
+
+      <article class="card" style="--cat:#22d3ee">
+        <div class="card-top">
+          <span class="pill" style="background:#22d3ee22;color:#22d3ee;border-color:#22d3ee44">Google DeepMind · CVPR</span>
+          <span class="card-age">CVPR 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://cvpr.thecvf.com/Conferences/2026/News/Best_Papers" target="_blank" rel="noopener">CVPR 2026 Best Paper: D4RT — Dynamic 4D Scene Reconstruction from Video</a></h3>
+        <p class="card-desc-clamp">D4RT, from Google DeepMind, UCL, and Oxford, won a CVPR 2026 Best Paper award. The network reconstructs geometry and motion of dynamic 4D scenes directly from ordinary video, enabling highly accurate spatial understanding of moving objects — a capability critical for robotics, autonomous vehicles, and augmented reality.</p>
+        <a class="card-link" href="https://cvpr.thecvf.com/Conferences/2026/News/Best_Papers" target="_blank" rel="noopener">CVPR 2026 Best Papers ↗</a>
+      </article>
+
+      <article class="card" style="--cat:#22d3ee">
+        <div class="card-top">
+          <span class="pill" style="background:#22d3ee22;color:#22d3ee;border-color:#22d3ee44">Climate AI</span>
+          <span class="card-age">June 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://www.crescendo.ai/news/latest-ai-news-and-updates" target="_blank" rel="noopener">AI Climate Models Run 25× Faster by Combining Generative Methods with Physics</a></h3>
+        <p class="card-desc-clamp">A multi-institution research team published climate simulation models that run 25× faster by fusing physics-based constraints with generative AI methods. The hybrid approach maintains scientific fidelity while enabling researchers to run ensemble climate projections at unprecedented speed — potentially reshaping how climate impact scenarios are modeled in policy and engineering.</p>
+        <a class="card-link" href="https://www.crescendo.ai/news/latest-ai-news-and-updates" target="_blank" rel="noopener">Read summary ↗</a>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ══════ INDUSTRY ══════ -->
   <section class="section" id="industry" style="--cat:#4ade80">
     <header class="section-hdr">
       <span class="section-icon">💼</span>
-      <h2 class="section-label">Industry &amp; Business</h2>
-      <span class="section-count">3 stories</span>
+      <h2 class="section-label">Industry, Funding &amp; Regulation</h2>
+      <span class="section-count">6 stories</span>
     </header>
+    <p class="section-desc">Q1 2026 saw $300B+ in global venture investment — 33% flowing to AI. M&amp;A is up 47% YoY. Regulatory deadlines are arriving: Colorado AI Act enforcement begins June 30, EU AI Act on August 2.</p>
     <div class="grid">
 
       <article class="card" style="--cat:#4ade80">
         <div class="card-top">
-          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">VentureBeat</span>
-          <span class="card-age">Ongoing</span>
+          <span class="pill" style="background:#4ade8022;color:#4ade80;border-color:#4ade8044">Meta · Scale AI</span>
+          <span class="card-age">June 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">The AI Investment Supercycle: $100B+ Into Infrastructure, Models and Apps</a></h3>
-        <p class="card-desc">Capital is flowing into AI at unprecedented rates. Data-centre buildouts, GPU procurement, and foundation model startups dominate venture activity. Whether returns will match the hype is the central debate in tech investing today.</p>
-        <a class="card-link" href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Read on VentureBeat ↗</a>
+        <h3 class="card-title"><a href="https://news.crunchbase.com/venture/biggest-funding-rounds-june-5-2026/" target="_blank" rel="noopener">Meta's $14.3B Investment in Scale AI — The Biggest Data Infrastructure Bet in AI History</a></h3>
+        <p class="card-desc-clamp">Meta structured a $14.3B deal with Scale AI — part equity investment, part infrastructure partnership — making it one of the largest strategic AI data deals ever. The move underlines the critical importance of high-quality training data pipelines as frontier models hit the limits of publicly available information. Scale AI processes and curates the data that trains the world's most capable models.</p>
+        <div class="card-highlight">Largest data infrastructure investment in AI history</div>
+        <a class="card-link" href="https://news.crunchbase.com/venture/biggest-funding-rounds-june-5-2026/" target="_blank" rel="noopener">Read on Crunchbase ↗</a>
       </article>
 
       <article class="card" style="--cat:#4ade80">
         <div class="card-top">
-          <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">MIT Tech Review</span>
-          <span class="card-age">Ongoing</span>
+          <span class="pill" style="background:#4ade8022;color:#4ade80;border-color:#4ade8044">Cerebras</span>
+          <span class="card-age">May 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://www.technologyreview.com/topic/artificial-intelligence/" target="_blank" rel="noopener">Global AI Governance: The EU AI Act, US Executive Orders and Beyond</a></h3>
-        <p class="card-desc">The EU AI Act is entering enforcement while the US, UK, China and others develop their own frameworks. Mandatory safety evaluations, compute thresholds, and transparency requirements are defining the regulatory decade ahead.</p>
-        <a class="card-link" href="https://www.technologyreview.com/topic/artificial-intelligence/" target="_blank" rel="noopener">Read MIT Tech Review ↗</a>
+        <h3 class="card-title"><a href="https://www.cnbc.com/2026/02/25/global-ma-boom-surges-2026-ai-mega-deals-capital-squeeze-merger-and-acquisition.html" target="_blank" rel="noopener">Cerebras IPO — $5.55B Raised at $95B Market Cap</a></h3>
+        <p class="card-desc-clamp">AI chip maker Cerebras went public in May 2026, raising $5.55 billion at a $95 billion market cap — a record for an AI infrastructure IPO. Cerebras' wafer-scale engine delivers dramatically lower latency than GPU-based inference for certain model architectures. The IPO signals strong public market appetite for AI infrastructure bets beyond the hyperscalers.</p>
+        <a class="card-link" href="https://www.cnbc.com/2026/02/25/global-ma-boom-surges-2026-ai-mega-deals-capital-squeeze-merger-and-acquisition.html" target="_blank" rel="noopener">Read analysis ↗</a>
       </article>
 
       <article class="card" style="--cat:#4ade80">
         <div class="card-top">
-          <span class="pill" style="background:#0ea5e922;color:#0ea5e9;border-color:#0ea5e944">IEEE Spectrum</span>
-          <span class="card-age">Ongoing</span>
+          <span class="pill" style="background:#4ade8022;color:#4ade80;border-color:#4ade8044">IBM · Anthropic</span>
+          <span class="card-age">June 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://spectrum.ieee.org/topic/artificial-intelligence/" target="_blank" rel="noopener">Power, Water and Land: The Hidden Cost of the AI Data-Centre Boom</a></h3>
-        <p class="card-desc">Training and serving frontier models consumes gigawatts of power and billions of gallons of water. Microsoft, Google, Amazon and Meta are spending hundreds of billions on next-gen AI infrastructure, straining power grids and local communities.</p>
-        <a class="card-link" href="https://spectrum.ieee.org/topic/artificial-intelligence/" target="_blank" rel="noopener">Read on IEEE Spectrum ↗</a>
+        <h3 class="card-title"><a href="https://www.superhuman.ai/p/openai-google-and-anthropic-release-new-models" target="_blank" rel="noopener">IBM &amp; Anthropic Strike Strategic Partnership — Claude Enters IBM's Enterprise Software Stack</a></h3>
+        <p class="card-desc-clamp">IBM and Anthropic announced a strategic partnership integrating Claude models into IBM's enterprise software portfolio, accelerating AI deployment across IBM's massive installed base of corporate clients. The deal is notable as IBM has traditionally been cautious about embedding third-party AI models so directly. OpenAI also launched its Partner Network targeting 300,000 certified AI consultants by end of 2026.</p>
+        <a class="card-link" href="https://www.superhuman.ai/p/openai-google-and-anthropic-release-new-models" target="_blank" rel="noopener">Read more ↗</a>
+      </article>
+
+      <article class="card" style="--cat:#4ade80">
+        <div class="card-top">
+          <span class="pill" style="background:#4ade8022;color:#4ade80;border-color:#4ade8044">NVIDIA</span>
+          <span class="card-age">June 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://blogs.nvidia.com/blog/rtx-ai-garage-hermes-agent-dgx-spark/" target="_blank" rel="noopener">NVIDIA &amp; SK hynix Partner on Next-Gen AI Memory — Vera Rubin Supercomputers</a></h3>
+        <p class="card-desc-clamp">NVIDIA and SK hynix announced a multiyear technology partnership to co-develop next-generation memory optimized for AI workloads, covering Vera Rubin AI supercomputers and Jetson Thor robotics platforms. Meanwhile, NVIDIA signed a Sovereign AI Infrastructure deal with NAVER in Korea to deploy 55+ megawatts of DGX-powered compute supporting HyperCLOVA X models. NVIDIA's RTX Spark Superchip also began shipping, delivering 1 petaflop of AI compute to consumer workstations.</p>
+        <a class="card-link" href="https://blogs.nvidia.com/blog/rtx-ai-garage-hermes-agent-dgx-spark/" target="_blank" rel="noopener">Explore NVIDIA AI ↗</a>
+      </article>
+
+      <article class="card" style="--cat:#4ade80">
+        <div class="card-top">
+          <span class="pill" style="background:#4ade8022;color:#4ade80;border-color:#4ade8044">Regulation</span>
+          <span class="card-age">June 30 deadline</span>
+        </div>
+        <h3 class="card-title"><a href="https://www.wsgr.com/en/insights/2026-year-in-preview-ai-regulatory-developments-for-companies-to-watch-out-for.html" target="_blank" rel="noopener">Regulatory Wave Crests: Colorado AI Act, EU AI Act &amp; Japan's New AI Law All Hit in Q3 2026</a></h3>
+        <p class="card-desc-clamp">Three major AI regulatory frameworks hit enforcement simultaneously: Colorado's AI Act (June 30) mandates algorithmic discrimination prevention and risk management programs; the EU AI Act (August 2) requires transparency for high-risk AI systems; and Japan's Act on Promotion of AI Research &amp; Development entered into force in June. Companies must now navigate a patchwork of overlapping national AI compliance regimes.</p>
+        <a class="card-link" href="https://www.wsgr.com/en/insights/2026-year-in-preview-ai-regulatory-developments-for-companies-to-watch-out-for.html" target="_blank" rel="noopener">Read regulatory guide ↗</a>
+      </article>
+
+      <article class="card" style="--cat:#4ade80">
+        <div class="card-top">
+          <span class="pill" style="background:#4ade8022;color:#4ade80;border-color:#4ade8044">Cursor</span>
+          <span class="card-age">May–June 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://news.crunchbase.com/venture/biggest-funding-rounds-june-5-2026/" target="_blank" rel="noopener">Cursor Hits $3B Valuation — AI Coding Tools Are the Fastest-Growing Software Category</a></h3>
+        <p class="card-desc-clamp">Cursor, the AI-first code editor, reached a $3 billion valuation, cementing its position as one of the fastest-growing software companies in history. 70% of JavaScript developers now use AI coding assistants (up from 60% in 2025), saving an average of 3.6 hours per week. Teams using AI coding tools are merging 60% more pull requests. The developer AI tooling market is in full breakout.</p>
+        <div class="card-highlight">70% of JS devs now use AI coding assistants</div>
+        <a class="card-link" href="https://news.crunchbase.com/venture/biggest-funding-rounds-june-5-2026/" target="_blank" rel="noopener">Read on Crunchbase ↗</a>
       </article>
 
     </div>
   </section>
 
-  <!-- ── Open Source ── -->
+  <!-- ══════ OPEN SOURCE ══════ -->
   <section class="section" id="opensource" style="--cat:#fb923c">
     <header class="section-hdr">
       <span class="section-icon">🌐</span>
-      <h2 class="section-label">Open Source &amp; Community</h2>
-      <span class="section-count">3 stories</span>
+      <h2 class="section-label">Open Source &amp; Developer Tools</h2>
+      <span class="section-count">5 stories</span>
     </header>
+    <p class="section-desc">Chinese labs now dominate the open-weight leaderboard. MCP is becoming the universal tool-use standard. OpenCode has become the most-starred open-source coding agent in history.</p>
     <div class="grid">
 
       <article class="card" style="--cat:#fb923c">
         <div class="card-top">
-          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
-          <span class="card-age">Trending</span>
+          <span class="pill" style="background:#fb923c22;color:#fb923c;border-color:#fb923c44">Community</span>
+          <span class="card-age">June 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://huggingface.co/models" target="_blank" rel="noopener">Hugging Face: The Central Hub for 500,000+ Open AI Models and Datasets</a></h3>
-        <p class="card-desc">Hugging Face now hosts over half a million model checkpoints. The Transformers, Diffusers, PEFT, and Accelerate libraries have become the de-facto open-source stack for LLM training, fine-tuning, and deployment at every scale.</p>
-        <a class="card-link" href="https://huggingface.co/models" target="_blank" rel="noopener">Explore on HF ↗</a>
+        <h3 class="card-title"><a href="https://alicelabs.ai/en/insights/best-ai-agent-frameworks-2026" target="_blank" rel="noopener">OpenCode — 160K GitHub Stars, the Most-Adopted Open-Source AI Coding Agent</a></h3>
+        <p class="card-desc-clamp">OpenCode has become the most widely adopted open-source AI coding agent, crossing 160,000 GitHub stars. It supports 40+ LLM providers via the Model Context Protocol (MCP) and works directly in the terminal. MCP itself is emerging as the universal standard for connecting AI models to external tools, APIs, and data sources — with every major framework now offering native MCP support.</p>
+        <div class="card-highlight">160K GitHub stars — fastest-growing coding agent ever</div>
+        <a class="card-link" href="https://alicelabs.ai/en/insights/best-ai-agent-frameworks-2026" target="_blank" rel="noopener">View agent frameworks ↗</a>
       </article>
 
       <article class="card" style="--cat:#fb923c">
         <div class="card-top">
-          <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
-          <span class="card-age">Ongoing</span>
+          <span class="pill" style="background:#fb923c22;color:#fb923c;border-color:#fb923c44">GitHub</span>
+          <span class="card-age">June 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Open-Weight Models Catch Up: Llama 3, Mistral, Qwen and DeepSeek</a></h3>
-        <p class="card-desc">Meta's Llama series, Mistral AI, Alibaba's Qwen, and DeepSeek are reaching competitive performance against proprietary frontier models on key benchmarks. The open-weight ecosystem is narrowing the capability gap faster than most predicted.</p>
-        <a class="card-link" href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Read on TechCrunch ↗</a>
+        <h3 class="card-title"><a href="https://github.blog/changelog/2026-06-02-copilot-cli-improved-ui-rubber-duck-prompt-scheduling-and-voice-input/" target="_blank" rel="noopener">GitHub Copilot — Voice Input, Rubber Duck Mode, Security Review &amp; Usage-Based Billing</a></h3>
+        <p class="card-desc-clamp">GitHub Copilot shipped major updates in June: usage-based billing now live for all users (Copilot code review consumes Actions minutes); CLI gained rubber duck mode (GA), voice input (GA), prompt scheduling, experimental terminal UI with tabs for issues/PRs/gists, and a new /security-review slash command. MAI-Code-1-Flash from Microsoft began rolling out to all Copilot plans.</p>
+        <a class="card-link" href="https://github.blog/changelog/2026-06-02-copilot-cli-improved-ui-rubber-duck-prompt-scheduling-and-voice-input/" target="_blank" rel="noopener">Read Copilot changelog ↗</a>
       </article>
 
       <article class="card" style="--cat:#fb923c">
         <div class="card-top">
-          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
-          <span class="card-age">Trending</span>
+          <span class="pill" style="background:#fb923c22;color:#fb923c;border-color:#fb923c44">NVIDIA</span>
+          <span class="card-age">June 4, 2026</span>
         </div>
-        <h3 class="card-title"><a href="https://ollama.com" target="_blank" rel="noopener">Local AI with Ollama and LM Studio: Running Frontier Models on Your Own Hardware</a></h3>
-        <p class="card-desc">GGUF quantisation, Apple Silicon Neural Engine support, and tools like Ollama and LM Studio have made it practical to run capable LLMs locally on consumer hardware — enabling private, offline, zero-cost AI inference for developers everywhere.</p>
-        <a class="card-link" href="https://ollama.com" target="_blank" rel="noopener">Get Ollama ↗</a>
+        <h3 class="card-title"><a href="https://www.aiapps.com/blog/ai-news-breakthroughs-launches-trends-must-read/" target="_blank" rel="noopener">NVIDIA Nemotron 3 Ultra (550B) &amp; Open Agent Toolkit — Enterprise AI Goes Open</a></h3>
+        <p class="card-desc-clamp">NVIDIA launched Nemotron 3 Ultra at Computex June 4 — a 550B parameter model with a 55B-active MoE architecture. Simultaneously, NVIDIA released the open-source Agent Toolkit (including NVIDIA OpenShell) at GTC, a platform for building autonomous enterprise AI agents. The open Nemotron models cut query costs by 50% while topping accuracy leaderboards in their class.</p>
+        <a class="card-link" href="https://www.aiapps.com/blog/ai-news-breakthroughs-launches-trends-must-read/" target="_blank" rel="noopener">Explore at AI Apps ↗</a>
       </article>
 
+      <article class="card" style="--cat:#fb923c">
+        <div class="card-top">
+          <span class="pill" style="background:#fb923c22;color:#fb923c;border-color:#fb923c44">Zhipu AI</span>
+          <span class="card-age">June 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://blog.mean.ceo/open-source-ai-news-june-2026/" target="_blank" rel="noopener">GLM-4.6V — 128K Context, 201 Languages, Native Multimodal Tool Use</a></h3>
+        <p class="card-desc-clamp">Zhipu AI released GLM-4.6V, an open-source multimodal model supporting native multimodal tool use, stronger visual reasoning, 128K context, and 201 languages out of the box. It's part of a broader wave of Chinese open-weight models that are closing — and in some benchmarks surpassing — proprietary Western models, now making up 4 of the top 5 open-source entries on major leaderboards.</p>
+        <a class="card-link" href="https://blog.mean.ceo/open-source-ai-news-june-2026/" target="_blank" rel="noopener">Read open-source roundup ↗</a>
+      </article>
+
+      <article class="card" style="--cat:#fb923c">
+        <div class="card-top">
+          <span class="pill" style="background:#fb923c22;color:#fb923c;border-color:#fb923c44">JetBrains</span>
+          <span class="card-age">June 2026</span>
+        </div>
+        <h3 class="card-title"><a href="https://blog.jetbrains.com/pycharm/2026/06/top-agentic-frameworks-for-building-applications-2026/" target="_blank" rel="noopener">Top Agentic Frameworks 2026 — LangChain, LlamaIndex, Mastra, and the MCP Revolution</a></h3>
+        <p class="card-desc-clamp">JetBrains' comprehensive June 2026 survey of the agentic framework landscape names LangChain, LlamaIndex, and Mastra as the top open-source choices for production teams. The defining story of 2026 is MCP (Model Context Protocol) becoming the universal connector standard, enabling agents to access any tool or data source through a single interface — rapidly replacing proprietary integrations.</p>
+        <a class="card-link" href="https://blog.jetbrains.com/pycharm/2026/06/top-agentic-frameworks-for-building-applications-2026/" target="_blank" rel="noopener">Read JetBrains guide ↗</a>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="how">
+    <div class="how-title">⚙️ How AI Pulse Works</div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-icon">📡</div>
+        <div class="how-label">Live Web Research</div>
+        <div class="how-desc">An AI agent searches dozens of sources — TechCrunch, VentureBeat, The Verge, Wired, arXiv, IEEE Spectrum, MIT Tech Review, HackerNews — to find the week's most important AI stories.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">🗂️</div>
+        <div class="how-label">Curated &amp; Verified</div>
+        <div class="how-desc">Stories are classified into topic buckets, checked for relevance and recency, de-duplicated, and ranked by impact — then written up with enough context to understand what matters and why.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">📊</div>
+        <div class="how-label">Model Leaderboards</div>
+        <div class="how-desc">The frontier model table is refreshed weekly using the Artificial Analysis Intelligence Index and other benchmark sources, giving you a current snapshot of where each major model ranks.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">⚡</div>
+        <div class="how-label">Zero-Infra Deploy</div>
+        <div class="how-desc">A GitHub Actions workflow runs <code>scripts/fetch_news.py</code>, commits the new <code>docs/index.html</code>, and GitHub Pages serves it globally — no servers, no databases, no paywalls.</div>
+      </div>
     </div>
   </section>
 
@@ -603,12 +1025,13 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
 
 <!-- ══════ STATS ══════ -->
 <div class="stats">
-  <span class="stat"><span class="stat-dot" style="--c:#22d3ee"></span>🔬 4 Research</span>
-  <span class="stat"><span class="stat-dot" style="--c:#c084fc"></span>🤖 4 Agents</span>
-  <span class="stat"><span class="stat-dot" style="--c:#60a5fa"></span>🚀 4 Products</span>
-  <span class="stat"><span class="stat-dot" style="--c:#4ade80"></span>💼 3 Industry</span>
-  <span class="stat"><span class="stat-dot" style="--c:#fb923c"></span>🌐 3 Open Source</span>
-  <span class="stat" style="margin-left:auto">⚡ Auto-updated daily</span>
+  <span class="stat"><span class="stat-dot" style="--c:#a78bfa"></span>🧠 7 Models</span>
+  <span class="stat"><span class="stat-dot" style="--c:#c084fc"></span>🤖 6 Agents</span>
+  <span class="stat"><span class="stat-dot" style="--c:#60a5fa"></span>🚀 7 Products</span>
+  <span class="stat"><span class="stat-dot" style="--c:#22d3ee"></span>🔬 5 Research</span>
+  <span class="stat"><span class="stat-dot" style="--c:#4ade80"></span>💼 6 Industry</span>
+  <span class="stat"><span class="stat-dot" style="--c:#fb923c"></span>🌐 5 Open Source</span>
+  <span class="stat" style="margin-left:auto">⚡ Updated June 17, 2026</span>
 </div>
 
 <!-- ══════ FOOTER ══════ -->
@@ -620,15 +1043,17 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
       <a href="https://arxiv.org/list/cs.AI/recent"        target="_blank" rel="noopener">arXiv CS.AI</a>
       <a href="https://news.ycombinator.com"               target="_blank" rel="noopener">HackerNews</a>
       <a href="https://huggingface.co"                     target="_blank" rel="noopener">Hugging Face</a>
+      <a href="https://llm-stats.com/ai-news"              target="_blank" rel="noopener">LLM Stats</a>
     </div>
     <div class="footer-sources">
-      <span>TechCrunch AI</span><span>VentureBeat AI</span><span>The Verge</span>
+      <span>TechCrunch</span><span>VentureBeat</span><span>The Verge</span>
       <span>Wired</span><span>IEEE Spectrum</span><span>MIT Tech Review</span>
-      <span>arXiv</span><span>HackerNews</span>
+      <span>arXiv</span><span>HackerNews</span><span>Crunchbase</span>
+      <span>Artificial Analysis</span><span>CNBC</span><span>JetBrains</span>
     </div>
     <div class="footer-note">
-      Automated daily digest · Generated by AI agent · Served via GitHub Pages<br>
-      Issue #1 · Inaugural Edition · May 26, 2026
+      Weekly AI digest · Researched and generated by Claude · Served via GitHub Pages<br>
+      Issue #2 · Week of June 16, 2026 · <a href="https://github.com/oeway/ai-news-channel" target="_blank" rel="noopener" style="color:var(--dim)">View source</a>
     </div>
   </div>
 </footer>
