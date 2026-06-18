@@ -1,2 +1,2 @@
-feedparser>=6.0.0
-requests>=2.31.0
+# All RSS/Atom parsing uses Python stdlib (xml.etree.ElementTree)
+# No third-party packages required — the script uses only urllib and xml from the standard library

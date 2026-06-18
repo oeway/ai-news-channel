@@ -15,12 +15,12 @@
   <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
 :root {
-  --bg:       #07071a;
-  --surface:  #0d0d24;
-  --card:     #111128;
-  --card-h:   #16163a;
-  --border:   rgba(255,255,255,0.06);
-  --border-h: rgba(255,255,255,0.13);
+  --bg:       #06071a;
+  --surface:  #0c0d23;
+  --card:     #101127;
+  --card-h:   #15163a;
+  --border:   rgba(255,255,255,0.055);
+  --border-h: rgba(255,255,255,0.11);
   --text:     #e8eaf6;
   --sub:      #94a3b8;
   --muted:    #64748b;
@@ -36,28 +36,27 @@ a { color: inherit; text-decoration: none }
 body::before {
   content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background:
-    radial-gradient(ellipse 70% 50% at 15% 0%,   rgba(99,102,241,.09) 0%, transparent 65%),
-    radial-gradient(ellipse 50% 40% at 85% 90%,  rgba(6,182,212,.07)  0%, transparent 65%),
-    radial-gradient(ellipse 40% 30% at 50% 50%,  rgba(139,92,246,.04) 0%, transparent 60%);
+    radial-gradient(ellipse 65% 45% at 18%  8%,  rgba(99,102,241,.09) 0%, transparent 68%),
+    radial-gradient(ellipse 55% 38% at 82% 88%,  rgba(6,182,212,.07)  0%, transparent 68%),
+    radial-gradient(ellipse 38% 28% at 50% 50%,  rgba(139,92,246,.04) 0%, transparent 62%);
 }
 .page { position: relative; z-index: 1 }
 
-/* ─ Header ─ */
+/* Header */
 .site-header {
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(13,13,36,.98) 0%, rgba(7,7,26,.92) 100%);
-  backdrop-filter: blur(14px);
+  background: linear-gradient(180deg, rgba(12,13,35,.98) 0%, rgba(6,7,26,.92) 100%);
+  backdrop-filter: blur(16px);
   position: sticky; top: 0; z-index: 100;
 }
 .header-inner {
-  max-width: 1180px; margin: 0 auto; padding: .85rem 1.5rem;
+  max-width: 1200px; margin: 0 auto; padding: .9rem 1.5rem;
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-  flex-wrap: wrap;
 }
-.brand { display: flex; align-items: center; gap: .7rem }
-.brand-logo { font-size: 1.65rem; line-height: 1 }
+.brand { display: flex; align-items: center; gap: .75rem }
+.brand-logo { font-size: 1.8rem; line-height: 1 }
 .brand-name {
-  font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif; font-size: 1.35rem; font-weight: 700;
   background: linear-gradient(130deg, #a78bfa 0%, #38bdf8 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
@@ -73,16 +72,16 @@ body::before {
 .live-dot {
   display: inline-block; width: 7px; height: 7px; border-radius: 50%;
   background: #22c55e; margin-right: .3rem;
-  animation: blink 2.4s ease-in-out infinite;
+  animation: blink 2.5s ease-in-out infinite;
 }
 @keyframes blink {
   0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(34,197,94,.5) }
   50%      { opacity:.6; box-shadow: 0 0 0 5px rgba(34,197,94,0) }
 }
 
-/* ─ Category nav ─ */
+/* Category nav */
 .cat-nav {
-  max-width: 1180px; margin: 0 auto; padding: .8rem 1.5rem;
+  max-width: 1200px; margin: 0 auto; padding: .8rem 1.5rem;
   display: flex; gap: .45rem; flex-wrap: wrap;
   border-bottom: 1px solid var(--border);
 }
@@ -93,14 +92,14 @@ body::before {
 }
 .nav-pill:hover { background: color-mix(in srgb, var(--cat) 11%, transparent); transform: translateY(-1px) }
 
-/* ─ Main ─ */
-main { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem }
+/* Main */
+main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem }
 
-/* ─ Hero / Featured ─ */
+/* Hero */
 .hero {
   background: linear-gradient(135deg, #140f3c 0%, #0e0e2c 55%, #091428 100%);
-  border: 1px solid rgba(167,139,250,.2); border-radius: 20px;
-  padding: 2.25rem 2.75rem; margin-bottom: 2.75rem;
+  border: 1px solid rgba(167,139,250,.22); border-radius: 20px;
+  padding: 2.5rem 2.75rem; margin-bottom: 2.75rem;
   position: relative; overflow: hidden;
 }
 .hero::before {
@@ -114,70 +113,93 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem }
   background: radial-gradient(circle, rgba(6,182,212,.07) 0%, transparent 65%);
 }
 .hero-eyebrow { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.1rem }
-.hero-tag {
-  font-size: .7rem; font-weight: 700; letter-spacing: .11em; color: #a78bfa;
-  text-transform: uppercase;
-}
-.hero-cat { font-size: .76rem; font-weight: 500; color: #67e8f9 }
+.hero-badge { font-size: .7rem; font-weight: 700; letter-spacing: .11em; color: #a78bfa; text-transform: uppercase }
+.hero-cat   { font-size: .76rem; font-weight: 500; color: #67e8f9 }
 .hero-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(1.35rem, 3.5vw, 2rem); font-weight: 700; line-height: 1.28;
-  margin-bottom: 1rem;
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem); font-weight: 700; line-height: 1.25;
+  margin-bottom: 1rem; position: relative; z-index: 1;
 }
 .hero-meta { display: flex; align-items: center; gap: .7rem; margin-bottom: 1.1rem; flex-wrap: wrap }
-.hero-age  { font-size: .78rem; color: var(--muted) }
-.hero-body { color: var(--sub); line-height: 1.75; margin-bottom: 1.6rem; max-width: 700px; position: relative; z-index: 1 }
+.hero-pill {
+  display: inline-block; font-size: .66rem; font-weight: 700; letter-spacing: .04em;
+  padding: .13rem .48rem; border-radius: 5px; border: 1px solid; text-transform: uppercase;
+}
+.hero-age { font-size: .78rem; color: var(--muted) }
+.hero-body { color: var(--sub); line-height: 1.78; margin-bottom: 1.6rem; max-width: 720px; position: relative; z-index: 1 }
+.hero-actions { display: flex; gap: .75rem; flex-wrap: wrap; position: relative; z-index: 1 }
 .hero-btn {
   display: inline-flex; align-items: center; gap: .4rem;
-  background: linear-gradient(135deg, #6d28d9, #4f46e5);
-  color: #fff; padding: .62rem 1.35rem; border-radius: 9px;
-  font-size: .87rem; font-weight: 600;
-  box-shadow: 0 4px 18px rgba(99,102,241,.38);
-  transition: opacity .2s, transform .15s; position: relative; z-index: 1;
+  background: linear-gradient(135deg, #6d28d9, #4f46e5); color: #fff;
+  padding: .65rem 1.4rem; border-radius: 9px; font-size: .88rem; font-weight: 600;
+  box-shadow: 0 4px 18px rgba(99,102,241,.38); transition: opacity .2s, transform .15s;
 }
 .hero-btn:hover { opacity: .86; transform: translateY(-1px) }
+.hero-btn-ghost {
+  display: inline-flex; align-items: center; gap: .4rem;
+  border: 1px solid rgba(167,139,250,.3); color: #a78bfa;
+  padding: .65rem 1.4rem; border-radius: 9px; font-size: .88rem; font-weight: 500;
+  transition: background .2s, transform .15s;
+}
+.hero-btn-ghost:hover { background: rgba(167,139,250,.08); transform: translateY(-1px) }
 
-/* ─ Section ─ */
+/* How-it-works */
+.how {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px; padding: 1.85rem 2.25rem; margin-bottom: 3rem;
+}
+.how-title {
+  font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; font-weight: 600;
+  color: var(--text); margin-bottom: 1.4rem; display: flex; align-items: center; gap: .5rem;
+}
+.how-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem }
+.how-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.15rem;
+  transition: border-color .2s, transform .2s;
+}
+.how-card:hover { border-color: var(--border-h); transform: translateY(-2px) }
+.how-icon  { font-size: 1.65rem; margin-bottom: .6rem }
+.how-label { font-size: .9rem; font-weight: 600; margin-bottom: .3rem }
+.how-desc  { font-size: .78rem; color: var(--muted); line-height: 1.55 }
+code { font-size: .74rem; background: rgba(255,255,255,.07); padding: .1rem .32rem; border-radius: 3px; font-family: monospace }
+
+/* Section */
 .section { margin-bottom: 3rem }
 .section-hdr {
   display: flex; align-items: center; gap: .55rem;
   margin-bottom: 1.3rem; padding-bottom: .7rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid transparent;
+  border-image: linear-gradient(90deg, color-mix(in srgb, var(--cat) 50%, transparent), transparent) 1;
 }
-.section-icon  { font-size: 1.2rem }
+.section-icon  { font-size: 1.25rem }
 .section-label {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.05rem; font-weight: 600; color: var(--cat);
+  font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 600; color: var(--cat);
 }
 .section-count {
   margin-left: auto; font-size: .7rem; color: var(--muted);
-  background: var(--card); border: 1px solid var(--border);
-  padding: .13rem .52rem; border-radius: 12px;
+  background: var(--card); border: 1px solid var(--border); padding: .13rem .52rem; border-radius: 12px;
 }
 
-/* ─ Card grid ─ */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1rem;
-}
+/* Card grid */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem }
 
-/* ─ Card ─ */
+/* Card */
 .card {
   background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-  padding: 1.1rem 1.2rem;
-  display: flex; flex-direction: column; gap: .55rem;
+  padding: 1.15rem 1.25rem; display: flex; flex-direction: column; gap: .55rem;
   transition: border-color .2s, background .2s, transform .2s, box-shadow .2s;
   position: relative; overflow: hidden;
 }
 .card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--cat, #8b5cf6); opacity: 0; transition: opacity .2s;
+  background: linear-gradient(90deg, var(--cat, #8b5cf6), color-mix(in srgb, var(--cat) 30%, transparent));
+  opacity: 0; transition: opacity .2s;
 }
 .card:hover {
   border-color: color-mix(in srgb, var(--cat) 38%, transparent);
   background: var(--card-h); transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(0,0,0,.4), 0 0 0 1px color-mix(in srgb,var(--cat) 12%,transparent);
+  box-shadow: 0 10px 32px rgba(0,0,0,.4), 0 0 0 1px color-mix(in srgb,var(--cat) 12%,transparent),
+              0 0 20px color-mix(in srgb,var(--cat) 6%,transparent);
 }
 .card:hover::before { opacity: 1 }
 .card-top  { display: flex; align-items: center; justify-content: space-between }
@@ -186,103 +208,75 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem }
 .card-title a { color: var(--text); transition: color .15s }
 .card-title a:hover { color: var(--cat, #a78bfa) }
 .card-desc {
-  font-size: .8rem; color: var(--muted); line-height: 1.55; flex-grow: 1;
+  font-size: .8rem; color: var(--muted); line-height: 1.58; flex-grow: 1;
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
 }
-.card-link {
-  font-size: .77rem; font-weight: 500; margin-top: auto;
-  color: color-mix(in srgb, var(--cat) 85%, #fff);
-  transition: opacity .15s;
-}
+.card-link { font-size: .77rem; font-weight: 500; margin-top: auto; color: color-mix(in srgb, var(--cat) 85%, #fff); transition: opacity .15s }
 .card-link:hover { opacity: .7 }
 
-/* ─ Pill / badge ─ */
+/* Pill */
 .pill {
   display: inline-block; font-size: .66rem; font-weight: 700; letter-spacing: .04em;
-  padding: .13rem .48rem; border-radius: 5px; border: 1px solid; text-transform: uppercase;
+  padding: .13rem .48rem; border-radius: 5px; border: 1px solid; text-transform: uppercase; white-space: nowrap;
 }
 
-/* ─ How-it-works ─ */
-.how {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 18px; padding: 1.75rem 2.25rem; margin-bottom: 3rem;
-}
-.how-title {
-  font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; font-weight: 600;
-  color: var(--text); margin-bottom: 1.2rem; display: flex; align-items: center; gap: .5rem;
-}
-.how-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem }
-.how-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 1.1rem;
-}
-.how-icon  { font-size: 1.55rem; margin-bottom: .55rem }
-.how-label { font-size: .88rem; font-weight: 600; margin-bottom: .3rem }
-.how-desc  { font-size: .78rem; color: var(--muted); line-height: 1.5 }
-code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3rem; border-radius: 3px }
-
-/* ─ Stats bar ─ */
+/* Stats */
 .stats {
-  max-width: 1180px; margin: 0 auto;
-  padding: .7rem 1.5rem;
-  display: flex; gap: 1.4rem; flex-wrap: wrap;
-  border-top: 1px solid var(--border);
-  font-size: .76rem; color: var(--muted);
+  max-width: 1200px; margin: 0 auto; padding: .75rem 1.5rem;
+  display: flex; gap: 1.5rem; flex-wrap: wrap;
+  border-top: 1px solid var(--border); font-size: .76rem; color: var(--muted);
 }
 .stat { display: flex; align-items: center; gap: .32rem }
-.stat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, #6b7280) }
+.stat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c, #6b7280); flex-shrink: 0 }
 
-/* ─ Footer ─ */
-.footer {
-  background: var(--surface); border-top: 1px solid var(--border);
-  padding: 2rem 1.5rem; margin-top: 3rem;
-}
+/* Footer */
+.footer { background: var(--surface); border-top: 1px solid var(--border); padding: 2.25rem 1.5rem; margin-top: 3rem }
 .footer-inner {
-  max-width: 1180px; margin: 0 auto;
-  display: flex; flex-direction: column; align-items: center; gap: .9rem; text-align: center;
+  max-width: 1200px; margin: 0 auto;
+  display: flex; flex-direction: column; align-items: center; gap: 1rem; text-align: center;
 }
 .footer-name {
-  font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700;
   background: linear-gradient(130deg,#a78bfa,#38bdf8);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-.footer-links { display: flex; gap: 1.2rem; flex-wrap: wrap; justify-content: center }
-.footer-links a { font-size: .8rem; color: var(--muted) }
+.footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; justify-content: center }
+.footer-links a { font-size: .82rem; color: var(--muted) }
 .footer-links a:hover { color: var(--text) }
-.footer-sources { display: flex; gap: .45rem; flex-wrap: wrap; justify-content: center; font-size: .73rem; color: var(--dim) }
-.footer-sources span::after { content: '·'; margin-left: .45rem }
+.footer-sources { display: flex; gap: .48rem; flex-wrap: wrap; justify-content: center; font-size: .73rem; color: var(--dim) }
+.footer-sources span::after { content: '·'; margin-left: .48rem }
 .footer-sources span:last-child::after { content: '' }
-.footer-note { font-size: .73rem; color: var(--dim); line-height: 1.6 }
+.footer-note { font-size: .73rem; color: var(--dim); line-height: 1.7 }
 
-/* ─ Scroll top ─ */
+/* Scroll top */
 .scroll-top {
   position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;
-  background: rgba(13,13,36,.88); border: 1px solid rgba(167,139,250,.28);
-  color: #a78bfa; width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(12,13,35,.9); border: 1px solid rgba(167,139,250,.3);
+  color: #a78bfa; width: 40px; height: 40px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1rem; backdrop-filter: blur(10px);
-  box-shadow: 0 4px 14px rgba(0,0,0,.35);
-  transition: background .2s, transform .2s;
+  font-size: 1.1rem; backdrop-filter: blur(10px);
+  box-shadow: 0 4px 14px rgba(0,0,0,.4); transition: background .2s, transform .2s;
 }
 .scroll-top:hover { background: rgba(99,102,241,.22); transform: translateY(-2px) }
 
-/* ─ Responsive ─ */
+/* Responsive */
 @media (max-width: 780px) {
-  .hero { padding: 1.6rem 1.5rem }
-  main  { padding: 1.25rem 1rem }
+  .hero  { padding: 1.75rem 1.5rem }
+  main   { padding: 1.25rem 1rem }
   .cat-nav { padding: .7rem 1rem }
-  .how  { padding: 1.4rem 1.25rem }
+  .how   { padding: 1.4rem 1.25rem }
 }
-@media (max-width: 480px) {
-  .grid { grid-template-columns: 1fr }
+@media (max-width: 500px) {
+  .grid  { grid-template-columns: 1fr }
   .header-date { display: none }
+  .header-inner { flex-wrap: wrap }
+  .hero-actions { flex-direction: column }
 }
   </style>
 </head>
 <body>
 <div class="page">
 
-<!-- ══════ HEADER ══════ -->
 <header class="site-header">
   <div class="header-inner">
     <a class="brand" href="#">
@@ -293,78 +287,89 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
       </div>
     </a>
     <div class="header-right">
-      <span class="issue-badge">Issue #1</span>
-      <span class="header-date"><span class="live-dot"></span>May 26, 2026</span>
+      <span class="issue-badge">Inaugural Edition</span>
+      <span class="header-date"><span class="live-dot"></span>Live Daily</span>
     </div>
   </div>
   <nav class="cat-nav">
-    <a class="nav-pill" href="#research"   style="--cat:#22d3ee">🔬&thinsp;Research</a>
-    <a class="nav-pill" href="#agents"     style="--cat:#c084fc">🤖&thinsp;AI Agents</a>
-    <a class="nav-pill" href="#products"   style="--cat:#60a5fa">🚀&thinsp;Products</a>
-    <a class="nav-pill" href="#industry"   style="--cat:#4ade80">💼&thinsp;Industry</a>
-    <a class="nav-pill" href="#opensource" style="--cat:#fb923c">🌐&thinsp;Open Source</a>
+    <a class="nav-pill" href="#research"    style="--cat:#22d3ee">🔬&thinsp;Research &amp; Breakthroughs</a>
+    <a class="nav-pill" href="#agents"      style="--cat:#c084fc">🤖&thinsp;AI Agents</a>
+    <a class="nav-pill" href="#products"    style="--cat:#60a5fa">🚀&thinsp;Products &amp; Releases</a>
+    <a class="nav-pill" href="#industry"    style="--cat:#4ade80">💼&thinsp;Industry &amp; Business</a>
+    <a class="nav-pill" href="#open_source" style="--cat:#fb923c">🌐&thinsp;Open Source</a>
   </nav>
 </header>
 
-<!-- ══════ MAIN ══════ -->
 <main>
 
   <!-- Hero -->
   <section class="hero">
     <div class="hero-eyebrow">
-      <span class="hero-tag">✦ Inaugural Edition</span>
+      <span class="hero-badge">✦ Inaugural Edition</span>
       <span class="hero-cat">🤖 Automated AI Intelligence Feed</span>
     </div>
     <h1 class="hero-title">Welcome to AI Pulse — Your Daily Briefing on Everything Artificial Intelligence</h1>
     <div class="hero-meta">
-      <span class="pill" style="background:#6366f122;color:#818cf8;border-color:#6366f144">AI PULSE</span>
+      <span class="hero-pill" style="background:#6366f122;color:#818cf8;border-color:#6366f144">AI PULSE</span>
       <span class="hero-age">Issue #1 · Inaugural Edition</span>
     </div>
     <p class="hero-body">
       AI Pulse is a fully automated daily newsletter that scrapes and curates the most important
-      developments in artificial intelligence. Every morning at 07:00 UTC, a GitHub Actions workflow
-      pulls fresh articles from arXiv, TechCrunch, VentureBeat, The Verge, Wired, IEEE Spectrum,
-      MIT Tech Review, and HackerNews — classifies them into five topic buckets, ranks them by
-      recency and source quality, and regenerates this page. No editors. No paywalls. Pure signal.
+      developments in artificial intelligence — research breakthroughs, autonomous agents, new
+      products, industry moves, and open-source releases. Every morning at 07:00 UTC, a GitHub
+      Actions workflow pulls fresh articles from <strong>10+ live sources</strong> including arXiv,
+      TechCrunch, VentureBeat, The Verge, Wired, IEEE Spectrum, MIT Tech Review, Hugging Face Blog,
+      The Gradient, HackerNews, and Simon Willison's blog — classifies them into five sections,
+      ranks by recency and source quality, and regenerates this page. No editors. No paywalls.
     </p>
-    <a class="hero-btn" href="https://github.com/oeway/ai-news-channel" target="_blank" rel="noopener">
-      View Source on GitHub ↗
-    </a>
+    <div class="hero-actions">
+      <a class="hero-btn" href="https://github.com/oeway/ai-news-channel" target="_blank" rel="noopener">
+        View Source on GitHub ↗
+      </a>
+      <a class="hero-btn-ghost" href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">
+        Browse arXiv CS.AI ↗
+      </a>
+    </div>
   </section>
 
   <!-- How it works -->
-  <section class="how">
+  <section class="how" id="how-it-works">
     <div class="how-title">⚙️ How It Works</div>
     <div class="how-grid">
       <div class="how-card">
         <div class="how-icon">📡</div>
-        <div class="how-label">8+ Live Sources</div>
-        <div class="how-desc">RSS feeds from TechCrunch, VentureBeat, The Verge, Wired, IEEE Spectrum &amp; MIT Tech Review, plus arXiv CS papers and HackerNews via Algolia API.</div>
+        <div class="how-label">10+ Live Sources</div>
+        <div class="how-desc">RSS/Atom feeds from TechCrunch, VentureBeat, The Verge, Wired, IEEE Spectrum, MIT Tech Review, Hugging Face, The Gradient &amp; Simon Willison, plus arXiv API and HackerNews Algolia.</div>
       </div>
       <div class="how-card">
         <div class="how-icon">🗂️</div>
         <div class="how-label">Auto Classification</div>
-        <div class="how-desc">Each article is matched against keyword sets for Research, Agents, Products, Industry and Open Source. URL &amp; title fingerprints remove duplicates.</div>
+        <div class="how-desc">Each article is scored against keyword sets for Research, Agents, Products, Industry and Open Source. URL &amp; title fingerprints remove duplicates across all sources automatically.</div>
       </div>
       <div class="how-card">
         <div class="how-icon">📊</div>
         <div class="how-label">Recency Ranking</div>
-        <div class="how-desc">A composite score weighs freshness (exponential decay over 5 days), source authority, and title quality to surface the most impactful stories first.</div>
+        <div class="how-desc">A composite score weighs freshness (exponential decay over 7 days), source authority, title quality, and description richness to surface the most impactful stories first.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">🕖</div>
+        <div class="how-label">Daily at 07:00 UTC</div>
+        <div class="how-desc">A GitHub Actions cron job runs <code>scripts/fetch_news.py</code> every morning, commits the new <code>docs/index.html</code>, and GitHub Pages serves it instantly — zero infra.</div>
       </div>
       <div class="how-card">
         <div class="how-icon">⚡</div>
-        <div class="how-label">Zero-Infra Deploy</div>
-        <div class="how-desc">An external AI agent runs <code>scripts/fetch_news.py</code>, commits the new <code>docs/index.html</code>, and GitHub Pages serves it automatically.</div>
+        <div class="how-label">Zero Infrastructure</div>
+        <div class="how-desc">Fully serverless. Pure Python + standard library — no database, no Node.js, no Docker. Just a commit and GitHub Pages deploys it. The whole pipeline is open source.</div>
       </div>
     </div>
   </section>
 
-  <!-- ── Research ── -->
+  <!-- Research & Breakthroughs -->
   <section class="section" id="research" style="--cat:#22d3ee">
     <header class="section-hdr">
       <span class="section-icon">🔬</span>
       <h2 class="section-label">Research &amp; Breakthroughs</h2>
-      <span class="section-count">4 stories</span>
+      <span class="section-count">4 curated links</span>
     </header>
     <div class="grid">
 
@@ -374,7 +379,7 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
           <span class="card-age">Daily</span>
         </div>
         <h3 class="card-title"><a href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">Reasoning at Scale: Chain-of-Thought, Process Rewards &amp; Test-Time Compute</a></h3>
-        <p class="card-desc">The field is converging on a key insight: spending more compute at inference time — through extended reasoning, search, or self-refinement — can substitute for larger training runs and unlock qualitatively new capabilities.</p>
+        <p class="card-desc">The field is converging on a key insight: spending more compute at inference time — extended reasoning, search, or self-refinement — can substitute for larger training runs and unlock qualitatively new capabilities.</p>
         <a class="card-link" href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">Browse latest papers ↗</a>
       </article>
 
@@ -411,12 +416,12 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
     </div>
   </section>
 
-  <!-- ── Agents ── -->
+  <!-- AI Agents -->
   <section class="section" id="agents" style="--cat:#c084fc">
     <header class="section-hdr">
       <span class="section-icon">🤖</span>
       <h2 class="section-label">AI Agents &amp; Automation</h2>
-      <span class="section-count">4 stories</span>
+      <span class="section-count">4 curated links</span>
     </header>
     <div class="grid">
 
@@ -426,7 +431,7 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
           <span class="card-age">Emerging</span>
         </div>
         <h3 class="card-title"><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Agentic AI: From Single-Turn Chat to Long-Horizon Autonomous Workflows</a></h3>
-        <p class="card-desc">The industry is pivoting from one-shot prompts to multi-step agentic pipelines that browse the web, write and run code, call APIs, manage files, and coordinate with other specialised sub-agents to complete complex goals.</p>
+        <p class="card-desc">The industry is pivoting from one-shot prompts to multi-step agentic pipelines that browse the web, write and run code, call APIs, manage files, and coordinate sub-agents to complete complex goals reliably.</p>
         <a class="card-link" href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Read on TechCrunch ↗</a>
       </article>
 
@@ -436,7 +441,7 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
           <span class="card-age">Emerging</span>
         </div>
         <h3 class="card-title"><a href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Multi-Agent Orchestration: LangGraph, AutoGen and Production Deployments</a></h3>
-        <p class="card-desc">Frameworks like LangGraph, AutoGen, and CrewAI are moving into production. Supervisor-planner-executor topologies are outperforming single agents on complex tasks, and evaluation tooling is catching up fast.</p>
+        <p class="card-desc">Frameworks like LangGraph, AutoGen, and CrewAI are moving into production. Supervisor-planner-executor topologies outperform single agents on complex tasks, and evaluation tooling is catching up fast.</p>
         <a class="card-link" href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Read on VentureBeat ↗</a>
       </article>
 
@@ -446,29 +451,29 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
           <span class="card-age">Research</span>
         </div>
         <h3 class="card-title"><a href="https://arxiv.org/search/?searchtype=all&query=AI+agent+tool+use" target="_blank" rel="noopener">Tool Use, Memory and Planning: The Building Blocks of Capable AI Agents</a></h3>
-        <p class="card-desc">Reliable tool invocation, persistent memory across sessions, hierarchical planning, and graceful error recovery are the four pillars that separate toy demos from production-grade AI agents. Each remains an active research frontier.</p>
+        <p class="card-desc">Reliable tool invocation, persistent memory across sessions, hierarchical planning, and graceful error recovery are the pillars that separate toy demos from production-grade AI agents. Each is an active research frontier.</p>
         <a class="card-link" href="https://arxiv.org/search/?searchtype=all&query=AI+agent+tool+use" target="_blank" rel="noopener">Read research ↗</a>
       </article>
 
       <article class="card" style="--cat:#c084fc">
         <div class="card-top">
-          <span class="pill" style="background:#818cf822;color:#818cf8;border-color:#818cf844">Wired</span>
-          <span class="card-age">Emerging</span>
+          <span class="pill" style="background:#f472b622;color:#f472b6;border-color:#f472b644">Simon Willison</span>
+          <span class="card-age">Weekly</span>
         </div>
-        <h3 class="card-title"><a href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Software Engineering Agents: Devin, Copilot Workspace and the AI Dev Loop</a></h3>
-        <p class="card-desc">AI coding agents can now scaffold whole projects, write and run tests, debug failures across multiple files, and open pull requests. The question has shifted from "can it code?" to "how do we review and trust its output?"</p>
-        <a class="card-link" href="https://www.wired.com/tag/artificial-intelligence/" target="_blank" rel="noopener">Read on Wired ↗</a>
+        <h3 class="card-title"><a href="https://simonwillison.net/tags/agents/" target="_blank" rel="noopener">LLM Tool Use in Practice: MCP, Function Calling and Real-World Patterns</a></h3>
+        <p class="card-desc">Simon Willison's deep-dives on Model Context Protocol, function calling patterns, prompt injection risks, and real-world agent deployments are essential reading for practitioners building production AI systems.</p>
+        <a class="card-link" href="https://simonwillison.net/tags/agents/" target="_blank" rel="noopener">Read on simonwillison.net ↗</a>
       </article>
 
     </div>
   </section>
 
-  <!-- ── Products ── -->
+  <!-- Products -->
   <section class="section" id="products" style="--cat:#60a5fa">
     <header class="section-hdr">
       <span class="section-icon">🚀</span>
       <h2 class="section-label">New Products &amp; Releases</h2>
-      <span class="section-count">4 stories</span>
+      <span class="section-count">4 curated links</span>
     </header>
     <div class="grid">
 
@@ -478,18 +483,18 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
           <span class="card-age">Recent</span>
         </div>
         <h3 class="card-title"><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Frontier Model Releases: The Race Between GPT, Claude, Gemini and Llama</a></h3>
-        <p class="card-desc">OpenAI, Anthropic, Google DeepMind, and Meta are shipping major model updates at an accelerating cadence. Longer context, stronger reasoning, lower latency, and multimodal capability are improving simultaneously across all labs.</p>
+        <p class="card-desc">OpenAI, Anthropic, Google DeepMind, and Meta are shipping major model updates at an accelerating cadence. Longer context, stronger reasoning, lower latency, and multimodal capability are all improving simultaneously.</p>
         <a class="card-link" href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Read on TechCrunch ↗</a>
       </article>
 
       <article class="card" style="--cat:#60a5fa">
         <div class="card-top">
-          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">VentureBeat</span>
+          <span class="pill" style="background:#fbbf2422;color:#fbbf24;border-color:#fbbf2444">Hugging Face</span>
           <span class="card-age">Recent</span>
         </div>
-        <h3 class="card-title"><a href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Developer APIs Expand: Structured Output, Vision, Batch and Fine-Tuning</a></h3>
-        <p class="card-desc">Model providers are widening their API surfaces with structured outputs, vision, image generation, embeddings, and fine-tuning endpoints. Batch APIs and caching are making large-scale AI applications economically viable for the first time.</p>
-        <a class="card-link" href="https://venturebeat.com/category/ai/" target="_blank" rel="noopener">Read on VentureBeat ↗</a>
+        <h3 class="card-title"><a href="https://huggingface.co/blog" target="_blank" rel="noopener">Open-Weight Model Drops: Releases, Fine-Tunes &amp; New Datasets on the Hub</a></h3>
+        <p class="card-desc">Hugging Face publishes model cards, fine-tuning guides, and deep-dives on cutting-edge open models. The Hub now hosts 500,000+ checkpoints with free inference APIs for rapid experimentation.</p>
+        <a class="card-link" href="https://huggingface.co/blog" target="_blank" rel="noopener">Read on Hugging Face ↗</a>
       </article>
 
       <article class="card" style="--cat:#60a5fa">
@@ -515,12 +520,12 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
     </div>
   </section>
 
-  <!-- ── Industry ── -->
+  <!-- Industry -->
   <section class="section" id="industry" style="--cat:#4ade80">
     <header class="section-hdr">
       <span class="section-icon">💼</span>
       <h2 class="section-label">Industry &amp; Business</h2>
-      <span class="section-count">3 stories</span>
+      <span class="section-count">3 curated links</span>
     </header>
     <div class="grid">
 
@@ -557,18 +562,18 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
     </div>
   </section>
 
-  <!-- ── Open Source ── -->
-  <section class="section" id="opensource" style="--cat:#fb923c">
+  <!-- Open Source -->
+  <section class="section" id="open_source" style="--cat:#fb923c">
     <header class="section-hdr">
       <span class="section-icon">🌐</span>
       <h2 class="section-label">Open Source &amp; Community</h2>
-      <span class="section-count">3 stories</span>
+      <span class="section-count">4 curated links</span>
     </header>
     <div class="grid">
 
       <article class="card" style="--cat:#fb923c">
         <div class="card-top">
-          <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+          <span class="pill" style="background:#fbbf2422;color:#fbbf24;border-color:#fbbf2444">Hugging Face</span>
           <span class="card-age">Trending</span>
         </div>
         <h3 class="card-title"><a href="https://huggingface.co/models" target="_blank" rel="noopener">Hugging Face: The Central Hub for 500,000+ Open AI Models and Datasets</a></h3>
@@ -581,7 +586,7 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
           <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
           <span class="card-age">Ongoing</span>
         </div>
-        <h3 class="card-title"><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Open-Weight Models Catch Up: Llama 3, Mistral, Qwen and DeepSeek</a></h3>
+        <h3 class="card-title"><a href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Open-Weight Models Catch Up: Llama, Mistral, Qwen and DeepSeek</a></h3>
         <p class="card-desc">Meta's Llama series, Mistral AI, Alibaba's Qwen, and DeepSeek are reaching competitive performance against proprietary frontier models on key benchmarks. The open-weight ecosystem is narrowing the capability gap faster than most predicted.</p>
         <a class="card-link" href="https://techcrunch.com/category/artificial-intelligence/" target="_blank" rel="noopener">Read on TechCrunch ↗</a>
       </article>
@@ -596,22 +601,32 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
         <a class="card-link" href="https://ollama.com" target="_blank" rel="noopener">Get Ollama ↗</a>
       </article>
 
+      <article class="card" style="--cat:#fb923c">
+        <div class="card-top">
+          <span class="pill" style="background:#34d39922;color:#34d399;border-color:#34d39944">The Gradient</span>
+          <span class="card-age">Weekly</span>
+        </div>
+        <h3 class="card-title"><a href="https://thegradient.pub" target="_blank" rel="noopener">The Gradient: In-Depth Analysis of AI Research for Practitioners</a></h3>
+        <p class="card-desc">The Gradient publishes long-form technical articles by ML researchers and practitioners — covering architecture decisions, training dynamics, evaluation pitfalls, and the nuances of deploying real AI systems at scale.</p>
+        <a class="card-link" href="https://thegradient.pub" target="_blank" rel="noopener">Read The Gradient ↗</a>
+      </article>
+
     </div>
   </section>
 
 </main>
 
-<!-- ══════ STATS ══════ -->
+<!-- Stats -->
 <div class="stats">
-  <span class="stat"><span class="stat-dot" style="--c:#22d3ee"></span>🔬 4 Research</span>
-  <span class="stat"><span class="stat-dot" style="--c:#c084fc"></span>🤖 4 Agents</span>
-  <span class="stat"><span class="stat-dot" style="--c:#60a5fa"></span>🚀 4 Products</span>
-  <span class="stat"><span class="stat-dot" style="--c:#4ade80"></span>💼 3 Industry</span>
-  <span class="stat"><span class="stat-dot" style="--c:#fb923c"></span>🌐 3 Open Source</span>
-  <span class="stat" style="margin-left:auto">⚡ Auto-updated daily</span>
+  <span class="stat"><span class="stat-dot" style="--c:#22d3ee"></span>🔬 4 Research &amp; Breakthroughs</span>
+  <span class="stat"><span class="stat-dot" style="--c:#c084fc"></span>🤖 4 AI Agents</span>
+  <span class="stat"><span class="stat-dot" style="--c:#60a5fa"></span>🚀 4 Products &amp; Releases</span>
+  <span class="stat"><span class="stat-dot" style="--c:#4ade80"></span>💼 3 Industry &amp; Business</span>
+  <span class="stat"><span class="stat-dot" style="--c:#fb923c"></span>🌐 4 Open Source</span>
+  <span class="stat" style="margin-left:auto">⚡ Auto-updated daily at 07:00 UTC</span>
 </div>
 
-<!-- ══════ FOOTER ══════ -->
+<!-- Footer -->
 <footer class="footer">
   <div class="footer-inner">
     <div class="footer-name">⚡ AI Pulse</div>
@@ -620,15 +635,17 @@ code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3re
       <a href="https://arxiv.org/list/cs.AI/recent"        target="_blank" rel="noopener">arXiv CS.AI</a>
       <a href="https://news.ycombinator.com"               target="_blank" rel="noopener">HackerNews</a>
       <a href="https://huggingface.co"                     target="_blank" rel="noopener">Hugging Face</a>
+      <a href="https://thegradient.pub"                    target="_blank" rel="noopener">The Gradient</a>
     </div>
     <div class="footer-sources">
-      <span>TechCrunch AI</span><span>VentureBeat AI</span><span>The Verge</span>
+      <span>TechCrunch</span><span>VentureBeat</span><span>The Verge</span>
       <span>Wired</span><span>IEEE Spectrum</span><span>MIT Tech Review</span>
+      <span>Hugging Face Blog</span><span>The Gradient</span><span>Simon Willison</span>
       <span>arXiv</span><span>HackerNews</span>
     </div>
     <div class="footer-note">
-      Automated daily digest · Generated by AI agent · Served via GitHub Pages<br>
-      Issue #1 · Inaugural Edition · May 26, 2026
+      Automated daily digest · 10+ live sources · Served via GitHub Pages<br>
+      Inaugural Edition · Refreshed daily at 07:00 UTC by GitHub Actions
     </div>
   </div>
 </footer>
