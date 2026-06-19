@@ -1,0 +1,39 @@
+name: Fetch AI News
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # Daily at 07:00 UTC
+  workflow_dispatch:        # Manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install feedparser>=6.0
+
+      - name: Fetch and render news
+        run: python scripts/fetch_news.py
+
+      - name: Commit updated newsletter
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html docs/state.json
+          git diff --staged --quiet || git commit -m "chore: update AI newsletter $(date -u +%Y-%m-%d) [skip ci]"
+
+      - name: Push changes
+        run: git push origin ${{ github.ref_name }}

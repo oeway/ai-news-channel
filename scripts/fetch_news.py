@@ -19,12 +19,6 @@ import urllib.parse
 import urllib.request
 import urllib.error
 
-try:
-    import feedparser
-except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
-
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -48,10 +42,12 @@ RSS_FEEDS = [
      "source": "IEEE Spectrum", "color": "#0ea5e9"},
     {"url": "https://www.technologyreview.com/feed/",
      "source": "MIT Tech Review", "color": "#a78bfa"},
+    {"url": "https://huggingface.co/blog/feed.xml",
+     "source": "Hugging Face", "color": "#fb923c"},
 ]
 
 HN_API  = "https://hn.algolia.com/api/v1/search_by_date"
-HN_TAGS = ["artificial intelligence", "AI agent", "large language model", "machine learning", "LLM"]
+HN_TAGS = ["artificial intelligence", "AI agent", "large language model", "machine learning"]
 
 ARXIV_API   = "https://export.arxiv.org/api/query"
 ARXIV_QUERY = "cat:cs.AI+OR+cat:cs.LG+OR+cat:cs.CL+OR+cat:cs.NE"
@@ -69,7 +65,8 @@ CATEGORIES: Dict[str, Dict] = {
             "paper", "arxiv", "research", "study", "benchmark", "dataset", "training",
             "pretrain", "fine-tun", "neural", "transformer", "diffusion", "multimodal",
             "evaluation", "algorithm", "architecture", "inference", "reasoning",
-            "capability", "scaling", "emergent", "alignment", "rlhf", "reward model"
+            "capability", "scaling", "emergent", "alignment", "rlhf", "reward model",
+            "iclr", "neurips", "icml", "acl", "emnlp", "preprint", "weights"
         ]
     },
     "agents": {
@@ -82,7 +79,8 @@ CATEGORIES: Dict[str, Dict] = {
             "agent", "autonomous", "agentic", "multi-agent", "planning", "memory",
             "tool use", "function call", "workflow", "automation", "copilot",
             "computer use", "browse", "execute", "retrieval", "rag", "orchestrat",
-            "self-improv", "task complet", "action"
+            "self-improv", "task complet", "action", "mcp", "langgraph", "autogen",
+            "crewai", "openenv", "dify"
         ]
     },
     "products": {
@@ -120,14 +118,15 @@ CATEGORIES: Dict[str, Dict] = {
         "keywords": [
             "open source", "open-source", "github", "hugging face", "huggingface",
             "llama", "open weight", "open model", "community", "contrib", "fork",
-            "mit license", "apache", "open access", "weights", "permissive", "ollama"
+            "mit license", "apache", "open access", "weights", "permissive", "ollama",
+            "gemma", "qwen", "deepseek", "mistral", "openenv"
         ]
     }
 }
 
 DEFAULT_CATEGORY    = "industry"
 MAX_PER_CATEGORY    = 6
-MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
+MAX_FEATURED_AGE_H  = 72
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
 
@@ -147,16 +146,15 @@ def fetch(url: str, timeout: int = 20) -> Optional[str]:
 def to_dt(v: Any) -> Optional[datetime]:
     if isinstance(v, datetime):
         return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
-    if isinstance(v, (list, tuple)):
-        try:    return datetime(*v[:6], tzinfo=timezone.utc)
-        except: return None
     if isinstance(v, (int, float)):
         return datetime.fromtimestamp(v, tz=timezone.utc)
     if isinstance(v, str):
+        v = v.strip()
         for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z",
-                    "%a, %d %b %Y %H:%M:%S %z", "%a, %d %b %Y %H:%M:%S GMT", "%Y-%m-%d"):
+                    "%a, %d %b %Y %H:%M:%S %z", "%a, %d %b %Y %H:%M:%S GMT",
+                    "%a, %d %b %Y %H:%M:%S +0000", "%Y-%m-%d"):
             try:
-                dt = datetime.strptime(v.strip(), fmt)
+                dt = datetime.strptime(v, fmt)
                 return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
             except ValueError:
                 continue
@@ -177,39 +175,94 @@ def long_date(dt: Optional[datetime]) -> str:
     if dt is None: return ""
     return dt.strftime("%B %d, %Y")
 
+# ─── Native RSS/Atom parser (no feedparser dependency) ───────────────────────
+
+RSS_NS  = {"atom": "http://www.w3.org/2005/Atom",
+           "media": "http://search.yahoo.com/mrss/",
+           "dc": "http://purl.org/dc/elements/1.1/"}
+
+def _strip_html(text: str) -> str:
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"&amp;",  "&", text)
+    text = re.sub(r"&lt;",   "<", text)
+    text = re.sub(r"&gt;",   ">", text)
+    text = re.sub(r"&quot;", '"', text)
+    text = re.sub(r"&#?\w+;", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+def parse_rss(raw: str, source: str, color: str) -> List[Dict]:
+    """Parse RSS 2.0 or Atom feeds without feedparser."""
+    articles: List[Dict] = []
+    try:
+        root = ET.fromstring(raw)
+    except ET.ParseError:
+        # Try stripping XML declaration issues
+        try:
+            raw2 = re.sub(r"<\?xml[^?]*\?>", "", raw, count=1)
+            root = ET.fromstring(raw2)
+        except ET.ParseError as e:
+            print(f"  [!] XML parse error for {source}: {e}", file=sys.stderr)
+            return []
+
+    tag = root.tag.lower()
+
+    # ── Atom feed ──
+    if "atom" in tag or root.tag == "{http://www.w3.org/2005/Atom}feed":
+        ns = "http://www.w3.org/2005/Atom"
+        entries = root.findall(f"{{{ns}}}entry")
+        for e in entries[:20]:
+            title = _strip_html(e.findtext(f"{{{ns}}}title", ""))
+            # Atom link is an element with href attribute
+            link  = ""
+            for lnk in e.findall(f"{{{ns}}}link"):
+                rel = lnk.get("rel", "alternate")
+                if rel in ("alternate", "") and lnk.get("href"):
+                    link = lnk.get("href", "")
+                    break
+            if not link:
+                link = e.findtext(f"{{{ns}}}id", "")
+            summary = _strip_html(e.findtext(f"{{{ns}}}summary", "") or
+                                  e.findtext(f"{{{ns}}}content", ""))[:400]
+            pub = e.findtext(f"{{{ns}}}published", "") or e.findtext(f"{{{ns}}}updated", "")
+            if title and link:
+                articles.append({"title": title, "url": link, "desc": summary,
+                                  "source": source, "source_color": color,
+                                  "date": to_dt(pub), "category": None})
+
+    else:
+        # ── RSS 2.0 ──
+        channel = root.find("channel") or root
+        items   = channel.findall("item") or root.findall(".//item")
+        for item in items[:20]:
+            title = _strip_html(item.findtext("title", ""))
+            link  = (item.findtext("link") or
+                     item.findtext("{http://www.w3.org/2005/Atom}link") or "").strip()
+            if not link:
+                # <link> sometimes uses CDATA in non-standard ways; try guid
+                link = item.findtext("guid", "")
+            desc_raw = (item.findtext("description") or
+                        item.findtext("{http://purl.org/rss/1.0/modules/content/}encoded") or "")
+            desc = _strip_html(desc_raw)[:400]
+            pub  = (item.findtext("pubDate") or
+                    item.findtext("{http://purl.org/dc/elements/1.1/}date") or
+                    item.findtext("{http://www.w3.org/2005/Atom}updated", ""))
+            if title and link:
+                articles.append({"title": title, "url": link, "desc": desc,
+                                  "source": source, "source_color": color,
+                                  "date": to_dt(pub), "category": None})
+
+    return articles
+
 # ─── Fetchers ────────────────────────────────────────────────────────────────
 
 def fetch_rss(cfg: Dict) -> List[Dict]:
     print(f"  RSS  {cfg['source']}…", flush=True)
     raw = fetch(cfg["url"])
-    if not raw: return []
-    try:
-        feed     = feedparser.parse(raw)
-        articles = []
-        for e in feed.entries[:20]:
-            desc = ""
-            for attr in ("summary", "description", "content"):
-                val = getattr(e, attr, None)
-                if isinstance(val, list): val = val[0].get("value", "") if val else ""
-                if val:
-                    desc = re.sub(r"<[^>]+>", " ", val)
-                    desc = re.sub(r"\s+", " ", desc).strip()[:400]
-                    break
-            dt = None
-            for attr in ("published_parsed", "updated_parsed", "created_parsed"):
-                dt = to_dt(getattr(e, attr, None))
-                if dt: break
-            title = getattr(e, "title", "").strip()
-            url   = getattr(e, "link",  "").strip()
-            if not title or not url: continue
-            articles.append({"title": title, "url": url, "desc": desc,
-                              "source": cfg["source"], "source_color": cfg["color"],
-                              "date": dt, "category": None})
-        print(f"     → {len(articles)} items", flush=True)
-        return articles
-    except Exception as ex:
-        print(f"  [!] parse error {cfg['source']}: {ex}", file=sys.stderr)
+    if not raw:
         return []
+    arts = parse_rss(raw, cfg["source"], cfg["color"])
+    print(f"     → {len(arts)} items", flush=True)
+    return arts
 
 
 def fetch_hn() -> List[Dict]:
@@ -288,10 +341,10 @@ def score(a: Dict) -> float:
     dt   = a.get("date")
     if dt:
         age = (datetime.now(timezone.utc) - dt).total_seconds() / 3600
-        s  += max(0, 10 - age * 0.08)          # decay over ~5 days
+        s  += max(0, 10 - age * 0.08)
     source_bonus = {"arXiv": 2.5, "IEEE Spectrum": 2.0, "MIT Tech Review": 1.8,
                     "TechCrunch": 1.5, "VentureBeat": 1.3, "Wired": 1.3,
-                    "The Verge": 1.2, "HackerNews": 0.8}
+                    "The Verge": 1.2, "Hugging Face": 1.5, "HackerNews": 0.8}
     s += source_bonus.get(a.get("source",""), 1.0)
     tl = len(a.get("title",""))
     if 40 < tl < 130: s += 0.4
@@ -336,6 +389,7 @@ SOURCE_COLORS: Dict[str, str] = {
     "MIT Tech Review":"#a78bfa",
     "arXiv":          "#a78bfa",
     "HackerNews":     "#f97316",
+    "Hugging Face":   "#fb923c",
 }
 
 def source_pill(source: str, color: str = "") -> str:
@@ -434,6 +488,7 @@ PAGE_CSS = r"""
   --border:    rgba(255,255,255,0.06);
   --border-h:  rgba(255,255,255,0.12);
   --text:      #e8eaf6;
+  --sub:       #94a3b8;
   --muted:     #64748b;
   --dim:       #334155;
   font-size: 15px;
@@ -449,15 +504,15 @@ body {
   min-height: 100vh;
 }
 
-a { color: inherit; }
+a { color: inherit; text-decoration: none }
 
-/* ── Background radial glows ── */
 body::before {
   content: '';
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background:
-    radial-gradient(ellipse 60% 40% at 20% 10%,  rgba(99,102,241,.08) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 40% at 80% 80%,  rgba(6,182,212,.06)  0%, transparent 70%);
+    radial-gradient(ellipse 70% 50% at 15% 0%,  rgba(99,102,241,.09)  0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 85% 90%, rgba(6,182,212,.07)   0%, transparent 65%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(139,92,246,.04)  0%, transparent 60%);
 }
 
 .page { position: relative; z-index: 1; }
@@ -465,34 +520,35 @@ body::before {
 /* ── Header ── */
 .site-header {
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(13,13,36,.98) 0%, rgba(7,7,26,.9) 100%);
-  backdrop-filter: blur(12px);
+  background: linear-gradient(180deg, rgba(13,13,36,.98) 0%, rgba(7,7,26,.92) 100%);
+  backdrop-filter: blur(14px);
   position: sticky; top: 0; z-index: 100;
 }
 .header-inner {
-  max-width: 1160px; margin: 0 auto;
-  padding: .9rem 1.5rem;
+  max-width: 1180px; margin: 0 auto;
+  padding: .85rem 1.5rem;
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  flex-wrap: wrap;
 }
-.brand { display: flex; align-items: center; gap: .75rem; text-decoration: none }
-.brand-logo { font-size: 1.7rem; line-height: 1 }
+.brand { display: flex; align-items: center; gap: .7rem }
+.brand-logo { font-size: 1.65rem; line-height: 1 }
 .brand-name {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.35rem; font-weight: 700;
-  background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%);
+  font-size: 1.3rem; font-weight: 700;
+  background: linear-gradient(130deg, #a78bfa 0%, #38bdf8 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.brand-sub { font-size: .72rem; color: var(--muted); margin-top: 1px }
+.brand-sub { font-size: .7rem; color: var(--muted); margin-top: 2px }
 
-.header-right { display: flex; align-items: center; gap: .75rem; flex-shrink: 0 }
+.header-right { display: flex; align-items: center; gap: .65rem; flex-shrink: 0 }
 .issue-badge {
-  font-size: .72rem; font-weight: 700; letter-spacing: .07em;
-  background: linear-gradient(135deg, rgba(167,139,250,.15), rgba(56,189,248,.15));
-  border: 1px solid rgba(167,139,250,.3);
-  color: #a78bfa; padding: .25rem .7rem; border-radius: 20px;
+  font-size: .7rem; font-weight: 700; letter-spacing: .07em;
+  background: linear-gradient(135deg, rgba(167,139,250,.14), rgba(56,189,248,.12));
+  border: 1px solid rgba(167,139,250,.28);
+  color: #a78bfa; padding: .22rem .65rem; border-radius: 20px;
 }
-.header-date { font-size: .8rem; color: var(--muted) }
+.header-date { font-size: .78rem; color: var(--muted) }
 .live-dot {
   display: inline-block; width: 7px; height: 7px; border-radius: 50%;
   background: #22c55e; margin-right: .3rem;
@@ -505,97 +561,105 @@ body::before {
 
 /* ── Category nav ── */
 .cat-nav {
-  max-width: 1160px; margin: 0 auto;
-  padding: .9rem 1.5rem;
-  display: flex; gap: .5rem; flex-wrap: wrap;
+  max-width: 1180px; margin: 0 auto;
+  padding: .8rem 1.5rem;
+  display: flex; gap: .45rem; flex-wrap: wrap;
   border-bottom: 1px solid var(--border);
 }
 .nav-pill {
-  font-size: .78rem; font-weight: 500;
-  padding: .3rem .75rem; border-radius: 20px;
-  border: 1px solid color-mix(in srgb, var(--cat) 30%, transparent);
-  color: var(--cat); text-decoration: none;
+  font-size: .76rem; font-weight: 500;
+  padding: .28rem .72rem; border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--cat) 28%, transparent);
+  color: var(--cat);
   transition: background .15s, transform .15s;
   white-space: nowrap;
 }
 .nav-pill:hover {
-  background: color-mix(in srgb, var(--cat) 12%, transparent);
+  background: color-mix(in srgb, var(--cat) 11%, transparent);
   transform: translateY(-1px);
 }
 
 /* ── Main ── */
-main { max-width: 1160px; margin: 0 auto; padding: 2rem 1.5rem }
+main { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem }
 
 /* ── Featured ── */
-.featured-wrap { margin-bottom: 2.5rem }
+.featured-wrap { margin-bottom: 2.75rem }
 .featured-card {
-  background: linear-gradient(135deg, #14103a 0%, #0e0e28 60%, #0a1428 100%);
+  background: linear-gradient(135deg, #140f3c 0%, #0e0e2c 55%, #091428 100%);
   border: 1px solid rgba(167,139,250,.22);
-  border-radius: 18px; padding: 2rem 2.5rem;
+  border-radius: 20px; padding: 2.25rem 2.75rem;
   position: relative; overflow: hidden;
 }
+.featured-card::before {
+  content: ''; position: absolute; top: -100px; right: -100px;
+  width: 420px; height: 420px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,.13) 0%, transparent 65%);
+  pointer-events: none;
+}
 .featured-card::after {
-  content: ''; position: absolute; top: -80px; right: -80px;
-  width: 350px; height: 350px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(99,102,241,.12) 0%, transparent 70%);
+  content: ''; position: absolute; bottom: -60px; left: 20%;
+  width: 250px; height: 250px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(6,182,212,.07) 0%, transparent 65%);
   pointer-events: none;
 }
 .featured-eyebrow {
-  display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1.1rem
 }
 .featured-badge {
-  font-size: .72rem; font-weight: 700; letter-spacing: .1em;
+  font-size: .7rem; font-weight: 700; letter-spacing: .11em;
   color: #a78bfa; text-transform: uppercase;
 }
-.featured-cat { font-size: .78rem; font-weight: 500 }
+.featured-cat { font-size: .76rem; font-weight: 500 }
 .featured-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(1.3rem,3vw,1.9rem); font-weight: 700;
-  line-height: 1.3; margin-bottom: 1rem;
+  font-size: clamp(1.35rem, 3.5vw, 2rem); font-weight: 700;
+  line-height: 1.28; margin-bottom: 1rem;
 }
-.featured-meta { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem }
-.featured-age  { font-size: .8rem; color: var(--muted) }
-.featured-body { color: #94a3b8; line-height: 1.7; margin-bottom: 1.5rem; max-width: 680px }
+.featured-meta { display: flex; align-items: center; gap: .7rem; margin-bottom: 1.1rem; flex-wrap: wrap }
+.featured-age  { font-size: .78rem; color: var(--muted) }
+.featured-body {
+  color: var(--sub); line-height: 1.75; margin-bottom: 1.6rem;
+  max-width: 700px; position: relative; z-index: 1;
+}
 .featured-btn {
   display: inline-flex; align-items: center; gap: .4rem;
   background: linear-gradient(135deg, #6d28d9, #4f46e5);
-  color: #fff; text-decoration: none;
-  padding: .6rem 1.3rem; border-radius: 9px;
-  font-size: .88rem; font-weight: 600;
-  transition: opacity .2s, transform .15s;
-  box-shadow: 0 4px 14px rgba(99,102,241,.35);
+  color: #fff; padding: .62rem 1.35rem; border-radius: 9px;
+  font-size: .87rem; font-weight: 600;
+  box-shadow: 0 4px 18px rgba(99,102,241,.38);
+  transition: opacity .2s, transform .15s; position: relative; z-index: 1;
 }
-.featured-btn:hover { opacity: .88; transform: translateY(-1px) }
+.featured-btn:hover { opacity: .86; transform: translateY(-1px) }
 
 /* ── Category section ── */
 .cat-section { margin-bottom: 3rem }
 .section-hdr {
-  display: flex; align-items: center; gap: .6rem;
-  margin-bottom: 1.25rem; padding-bottom: .75rem;
+  display: flex; align-items: center; gap: .55rem;
+  margin-bottom: 1.3rem; padding-bottom: .7rem;
   border-bottom: 1px solid var(--border);
 }
-.section-icon  { font-size: 1.25rem }
+.section-icon  { font-size: 1.2rem }
 .section-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.1rem; font-weight: 600; color: var(--cat);
+  font-size: 1.05rem; font-weight: 600; color: var(--cat);
 }
 .section-count {
-  margin-left: auto; font-size: .72rem; color: var(--muted);
+  margin-left: auto; font-size: .7rem; color: var(--muted);
   background: var(--card); border: 1px solid var(--border);
-  padding: .15rem .55rem; border-radius: 12px;
+  padding: .13rem .52rem; border-radius: 12px;
 }
 
 /* ── Cards ── */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1rem;
 }
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px; padding: 1.15rem 1.25rem;
-  display: flex; flex-direction: column; gap: .6rem;
+  border-radius: 14px; padding: 1.1rem 1.2rem;
+  display: flex; flex-direction: column; gap: .55rem;
   transition: border-color .2s, background .2s, transform .2s, box-shadow .2s;
   position: relative; overflow: hidden;
 }
@@ -604,54 +668,69 @@ main { max-width: 1160px; margin: 0 auto; padding: 2rem 1.5rem }
   background: var(--cat, #8b5cf6); opacity: 0; transition: opacity .2s;
 }
 .card:hover {
-  border-color: color-mix(in srgb, var(--cat) 40%, transparent);
+  border-color: color-mix(in srgb, var(--cat) 38%, transparent);
   background: var(--card-h);
   transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(0,0,0,.35), 0 0 0 1px color-mix(in srgb,var(--cat) 15%,transparent);
+  box-shadow: 0 10px 30px rgba(0,0,0,.4), 0 0 0 1px color-mix(in srgb,var(--cat) 12%,transparent);
 }
 .card:hover::before { opacity: 1 }
 
 .card-top  { display: flex; align-items: center; justify-content: space-between }
-.card-age  { font-size: .72rem; color: var(--muted) }
+.card-age  { font-size: .7rem; color: var(--muted) }
 .card-title {
-  font-size: .93rem; font-weight: 600; line-height: 1.45;
+  font-size: .92rem; font-weight: 600; line-height: 1.45;
 }
-.card-title a {
-  text-decoration: none; color: var(--text);
-  transition: color .15s;
-}
+.card-title a { color: var(--text); transition: color .15s }
 .card-title a:hover { color: var(--cat, #a78bfa) }
 .card-desc {
-  font-size: .81rem; color: var(--muted); line-height: 1.55;
+  font-size: .8rem; color: var(--muted); line-height: 1.55;
   flex-grow: 1;
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
   overflow: hidden;
 }
 .card-link {
-  font-size: .78rem; font-weight: 500;
-  color: color-mix(in srgb, var(--cat) 90%, #fff);
-  text-decoration: none; margin-top: auto;
-  transition: opacity .15s;
+  font-size: .77rem; font-weight: 500;
+  color: color-mix(in srgb, var(--cat) 85%, #fff);
+  transition: opacity .15s; margin-top: auto;
 }
-.card-link:hover { opacity: .75 }
+.card-link:hover { opacity: .7 }
 
 /* ── Source pill ── */
 .pill {
   display: inline-block;
-  font-size: .68rem; font-weight: 700; letter-spacing: .04em;
-  padding: .15rem .5rem; border-radius: 5px; border: 1px solid;
+  font-size: .66rem; font-weight: 700; letter-spacing: .04em;
+  padding: .13rem .48rem; border-radius: 5px; border: 1px solid;
   text-transform: uppercase;
 }
 
+/* ── How it works ── */
+.how {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px; padding: 1.75rem 2.25rem; margin-bottom: 3rem;
+}
+.how-title {
+  font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; font-weight: 600;
+  color: var(--text); margin-bottom: 1.2rem; display: flex; align-items: center; gap: .5rem;
+}
+.how-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem }
+.how-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.1rem;
+}
+.how-icon  { font-size: 1.55rem; margin-bottom: .55rem }
+.how-label { font-size: .88rem; font-weight: 600; margin-bottom: .3rem }
+.how-desc  { font-size: .78rem; color: var(--muted); line-height: 1.5 }
+code { font-size: .75rem; background: rgba(255,255,255,.07); padding: .1rem .3rem; border-radius: 3px }
+
 /* ── Stats bar ── */
 .stats-bar {
-  max-width: 1160px; margin: 0 auto 0;
-  padding: .75rem 1.5rem;
-  display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+  max-width: 1180px; margin: 0 auto;
+  padding: .7rem 1.5rem;
+  display: flex; align-items: center; gap: 1.4rem; flex-wrap: wrap;
   border-top: 1px solid var(--border);
-  font-size: .78rem; color: var(--muted);
+  font-size: .76rem; color: var(--muted);
 }
-.stat-item { display: flex; align-items: center; gap: .35rem }
+.stat-item { display: flex; align-items: center; gap: .32rem }
 .stat-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--c, #6b7280) }
 
 /* ── Footer ── */
@@ -661,25 +740,25 @@ main { max-width: 1160px; margin: 0 auto; padding: 2rem 1.5rem }
   padding: 2rem 1.5rem; margin-top: 3rem;
 }
 .footer-inner {
-  max-width: 1160px; margin: 0 auto;
+  max-width: 1180px; margin: 0 auto;
   display: flex; flex-direction: column; align-items: center;
-  gap: 1rem; text-align: center;
+  gap: .9rem; text-align: center;
 }
 .footer-brand {
-  font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700;
-  background: linear-gradient(135deg,#a78bfa,#38bdf8);
+  font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; font-weight: 700;
+  background: linear-gradient(130deg,#a78bfa,#38bdf8);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-.footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; justify-content: center }
-.footer-links a { font-size: .82rem; color: var(--muted); text-decoration: none }
+.footer-links { display: flex; gap: 1.2rem; flex-wrap: wrap; justify-content: center }
+.footer-links a { font-size: .8rem; color: var(--muted) }
 .footer-links a:hover { color: var(--text) }
-.footer-note { font-size: .75rem; color: var(--dim) }
 .footer-sources {
-  font-size: .75rem; color: var(--dim);
-  display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center;
+  font-size: .73rem; color: var(--dim);
+  display: flex; gap: .45rem; flex-wrap: wrap; justify-content: center;
 }
-.footer-sources span::after { content: '·'; margin-left: .5rem }
+.footer-sources span::after { content: '·'; margin-left: .45rem }
 .footer-sources span:last-child::after { content: '' }
+.footer-note { font-size: .73rem; color: var(--dim); line-height: 1.6 }
 
 /* ── Empty state ── */
 .empty-state {
@@ -687,30 +766,57 @@ main { max-width: 1160px; margin: 0 auto; padding: 2rem 1.5rem }
 }
 .empty-icon { font-size: 3rem; margin-bottom: 1rem }
 
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .header-inner { flex-wrap: wrap }
-  .featured-card { padding: 1.5rem }
-  main { padding: 1.25rem 1rem }
-  .cat-nav { padding: .75rem 1rem }
-}
-@media (max-width: 500px) {
-  .card-grid { grid-template-columns: 1fr }
-  .header-date { display: none }
-}
-
 /* ── Scroll-to-top ── */
 .scroll-top {
   position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;
-  background: rgba(13,13,36,.9); border: 1px solid rgba(167,139,250,.3);
+  background: rgba(13,13,36,.88); border: 1px solid rgba(167,139,250,.28);
   color: #a78bfa; width: 38px; height: 38px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; cursor: pointer; text-decoration: none;
-  backdrop-filter: blur(8px); transition: background .2s, transform .2s;
-  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+  font-size: 1rem; backdrop-filter: blur(10px);
+  box-shadow: 0 4px 14px rgba(0,0,0,.35);
+  transition: background .2s, transform .2s;
 }
-.scroll-top:hover { background: rgba(99,102,241,.25); transform: translateY(-2px) }
+.scroll-top:hover { background: rgba(99,102,241,.22); transform: translateY(-2px) }
+
+/* ── Responsive ── */
+@media (max-width: 780px) {
+  .featured-card { padding: 1.6rem 1.5rem }
+  main { padding: 1.25rem 1rem }
+  .cat-nav { padding: .7rem 1rem }
+  .how  { padding: 1.4rem 1.25rem }
+}
+@media (max-width: 480px) {
+  .card-grid { grid-template-columns: 1fr }
+  .header-date { display: none }
+}
 """
+
+HOW_IT_WORKS = """
+  <section class="how">
+    <div class="how-title">⚙️ How It Works</div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-icon">📡</div>
+        <div class="how-label">9+ Live Sources</div>
+        <div class="how-desc">RSS feeds from TechCrunch, VentureBeat, The Verge, Wired, IEEE Spectrum, MIT Tech Review &amp; Hugging Face, plus arXiv CS papers and HackerNews.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">🗂️</div>
+        <div class="how-label">Auto Classification</div>
+        <div class="how-desc">Each article is matched against keyword sets for Research, Agents, Products, Industry and Open Source. URL &amp; title fingerprints remove duplicates.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">📊</div>
+        <div class="how-label">Recency Ranking</div>
+        <div class="how-desc">A composite score weighs freshness, source authority, and title quality to surface the most impactful stories first.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-icon">⚡</div>
+        <div class="how-label">Daily Auto-Update</div>
+        <div class="how-desc">GitHub Actions runs <code>fetch_news.py</code> every morning at 07:00 UTC, commits the new <code>docs/index.html</code>, and GitHub Pages serves it automatically.</div>
+      </div>
+    </div>
+  </section>"""
 
 def full_page(featured: Optional[Dict],
               sections: Dict[str, List[Dict]],
@@ -722,13 +828,11 @@ def full_page(featured: Optional[Dict],
     total    = sum(len(v) for v in sections.values())
     src_set  = sorted({a["source"] for v in sections.values() for a in v})
 
-    featured_block = ""
-    if featured:
-        featured_block = featured_html(featured)
+    featured_block = featured_html(featured) if featured else ""
 
-    cat_order       = list(CATEGORIES.keys())
-    sections_html   = ""
-    active_cats     = [c for c in cat_order if sections.get(c)]
+    cat_order     = list(CATEGORIES.keys())
+    sections_html = ""
+    active_cats   = [c for c in cat_order if sections.get(c)]
     for cat in active_cats:
         sections_html += section_html(cat, sections[cat])
 
@@ -788,6 +892,7 @@ def full_page(featured: Optional[Dict],
 
   <main>
     {featured_block}
+    {HOW_IT_WORKS}
     {sections_html}
   </main>
 
@@ -798,8 +903,9 @@ def full_page(featured: Optional[Dict],
       <div class="footer-brand">⚡ AI Pulse</div>
       <div class="footer-links">
         <a href="https://github.com/oeway/ai-news-channel" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">arXiv CS.AI</a>
-        <a href="https://news.ycombinator.com" target="_blank" rel="noopener">HackerNews</a>
+        <a href="https://arxiv.org/list/cs.AI/recent"        target="_blank" rel="noopener">arXiv CS.AI</a>
+        <a href="https://news.ycombinator.com"               target="_blank" rel="noopener">HackerNews</a>
+        <a href="https://huggingface.co"                     target="_blank" rel="noopener">Hugging Face</a>
       </div>
       <div class="footer-sources">{sources_pills}</div>
       <div class="footer-note">
@@ -825,7 +931,6 @@ def main() -> None:
     issue = load_issue() + 1
     print(f"Generating Issue #{issue}", flush=True)
 
-    # ── Fetch ──
     print("\n[1/4] Fetching news…", flush=True)
     all_articles: List[Dict] = []
     for cfg in RSS_FEEDS:
@@ -834,14 +939,12 @@ def main() -> None:
     all_articles.extend(fetch_arxiv())
     print(f"  Total raw: {len(all_articles)}", flush=True)
 
-    # ── Deduplicate + classify ──
     print("\n[2/4] Deduplicating & classifying…", flush=True)
     articles = dedup(all_articles)
     for a in articles:
         a["category"] = classify(a)
     print(f"  After dedup: {len(articles)}", flush=True)
 
-    # ── Sort & bucket ──
     print("\n[3/4] Scoring & sorting…", flush=True)
     articles.sort(key=score, reverse=True)
 
@@ -851,7 +954,6 @@ def main() -> None:
         if cat in sections and len(sections[cat]) < MAX_PER_CATEGORY:
             sections[cat].append(a)
 
-    # ── Featured ──
     featured: Optional[Dict] = None
     now = datetime.now(timezone.utc)
     for a in articles:
@@ -866,7 +968,6 @@ def main() -> None:
     print(f"  Sections: {', '.join(f'{k}:{len(v)}' for k,v in sections.items() if v)}", flush=True)
     print(f"  Total placed: {total}", flush=True)
 
-    # ── Render ──
     print("\n[4/4] Rendering HTML…", flush=True)
     generated = datetime.now(timezone.utc)
     html_out  = full_page(featured, sections, issue, generated)
