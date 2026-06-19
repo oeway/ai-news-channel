@@ -1,1 +1,2 @@
-feedparser>=6.0
+# No external dependencies required.
+# fetch_news.py uses only Python standard library (urllib, xml.etree.ElementTree, json).
