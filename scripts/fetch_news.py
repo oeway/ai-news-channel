@@ -19,12 +19,6 @@ import urllib.parse
 import urllib.request
 import urllib.error
 
-try:
-    import feedparser
-except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
-
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -179,32 +173,69 @@ def long_date(dt: Optional[datetime]) -> str:
 
 # ─── Fetchers ────────────────────────────────────────────────────────────────
 
+def _rss_text(el) -> str:
+    """Recursively collect all text from an XML element."""
+    parts = []
+    if el.text: parts.append(el.text)
+    for child in el:
+        parts.append(_rss_text(child))
+        if child.tail: parts.append(child.tail)
+    return "".join(parts)
+
+def _strip_html(text: str) -> str:
+    text = re.sub(r"<[^>]+>", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
 def fetch_rss(cfg: Dict) -> List[Dict]:
     print(f"  RSS  {cfg['source']}…", flush=True)
     raw = fetch(cfg["url"])
     if not raw: return []
     try:
-        feed     = feedparser.parse(raw)
+        # Strip XML namespace declarations that cause ElementTree issues
+        raw_clean = re.sub(r'\s+xmlns(?::\w+)?="[^"]*"', '', raw)
+        root = ET.fromstring(raw_clean)
         articles = []
-        for e in feed.entries[:20]:
-            desc = ""
-            for attr in ("summary", "description", "content"):
-                val = getattr(e, attr, None)
-                if isinstance(val, list): val = val[0].get("value", "") if val else ""
-                if val:
-                    desc = re.sub(r"<[^>]+>", " ", val)
-                    desc = re.sub(r"\s+", " ", desc).strip()[:400]
+
+        # Support both RSS (channel/item) and Atom (entry) formats
+        ns_map = {"atom": "http://www.w3.org/2005/Atom"}
+        items = (root.findall(".//item") or
+                 root.findall(".//entry") or
+                 root.findall("channel/item"))
+
+        for item in items[:20]:
+            def t(tag):
+                for name in (tag, f"atom:{tag}"):
+                    el = item.find(name)
+                    if el is not None:
+                        return (el.text or "").strip()
+                return ""
+
+            title = t("title")
+            url   = t("link")
+            # Atom <link> may be an attribute
+            if not url:
+                link_el = item.find("link")
+                if link_el is not None:
+                    url = link_el.get("href", "")
+
+            if not title or not url:
+                continue
+
+            raw_desc = ""
+            for tag in ("description", "summary", "content:encoded", "content"):
+                el = item.find(tag)
+                if el is not None and (el.text or len(list(el))):
+                    raw_desc = _rss_text(el)
                     break
-            dt = None
-            for attr in ("published_parsed", "updated_parsed", "created_parsed"):
-                dt = to_dt(getattr(e, attr, None))
-                if dt: break
-            title = getattr(e, "title", "").strip()
-            url   = getattr(e, "link",  "").strip()
-            if not title or not url: continue
+            desc = _strip_html(raw_desc)[:400]
+
+            pub = t("pubDate") or t("published") or t("updated")
+            dt  = to_dt(pub)
+
             articles.append({"title": title, "url": url, "desc": desc,
                               "source": cfg["source"], "source_color": cfg["color"],
                               "date": dt, "category": None})
+
         print(f"     → {len(articles)} items", flush=True)
         return articles
     except Exception as ex:
