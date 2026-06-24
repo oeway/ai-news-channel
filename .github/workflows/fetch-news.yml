@@ -1,0 +1,69 @@
+name: Fetch AI News & Publish Newsletter
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # Daily at 06:00 UTC
+  workflow_dispatch:        # Manual trigger from Actions tab
+
+permissions:
+  contents: write   # push the generated HTML back to main
+  pages: write      # deploy to GitHub Pages
+  id-token: write   # required by actions/deploy-pages
+
+concurrency:
+  group: pages
+  cancel-in-progress: false   # never interrupt a running deploy
+
+jobs:
+  generate-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install feedparser requests
+
+      - name: Fetch news & generate newsletter
+        run: python scripts/fetch_news.py
+
+      - name: Commit generated files to main
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if git diff --cached --quiet; then
+            echo "Nothing changed — skipping commit."
+          else
+            ISSUE=$(python - <<'EOF'
+import json, pathlib
+state = pathlib.Path("docs/state.json")
+print(json.loads(state.read_text()).get("issue", "?") if state.exists() else "?")
+EOF
+)
+            DATE=$(date -u '+%Y-%m-%d')
+            git commit -m "Newsletter Issue #${ISSUE} — ${DATE} [skip ci]"
+            git push origin HEAD:main
+          fi
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload docs/ as Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
