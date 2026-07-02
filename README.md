@@ -38,6 +38,12 @@ Alternatively set source to the `gh-pages` branch (root) if you prefer the mirro
 
 Go to **Actions → Update AI News Newsletter → Run workflow** for an immediate update.
 
+> **First-time setup:** `docs/index.html` ships with an empty placeholder — the
+> newsletter generator needs outbound internet access (RSS/arXiv/HN) that only
+> the GitHub-hosted Actions runner has, not every dev environment. Run the
+> workflow once manually (above) after merging to `main` to populate the first
+> real issue.
+
 ## Dependencies
 
 The newsletter generator uses **Python stdlib only** — no external packages or pip installs required.

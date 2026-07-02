@@ -34,5 +34,5 @@ jobs:
             echo "No changes to commit."
           else
             git commit -m "chore: update newsletter $(date -u +'%Y-%m-%d %H:%M UTC')"
-            git push origin HEAD:refs/heads/main
+            git push origin HEAD:${{ github.ref }}
           fi
