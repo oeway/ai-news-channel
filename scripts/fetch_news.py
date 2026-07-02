@@ -2,6 +2,7 @@
 """
 AI Pulse Newsletter Generator
 Fetches the latest AI news from multiple sources and generates a beautiful static HTML newsletter.
+Uses only Python stdlib — no external dependencies required.
 """
 
 import os
@@ -14,16 +15,11 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from html import escape as h
+from html.parser import HTMLParser
 from typing import List, Dict, Any, Optional
 import urllib.parse
 import urllib.request
 import urllib.error
-
-try:
-    import feedparser
-except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -37,21 +33,21 @@ STATE_FILE = DOCS_DIR / "state.json"
 
 RSS_FEEDS = [
     {"url": "https://techcrunch.com/category/artificial-intelligence/feed/",
-     "source": "TechCrunch",   "color": "#22c55e"},
+     "source": "TechCrunch",      "color": "#22c55e"},
     {"url": "https://venturebeat.com/category/ai/feed/",
-     "source": "VentureBeat",  "color": "#f97316"},
+     "source": "VentureBeat",     "color": "#f97316"},
     {"url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
-     "source": "The Verge",    "color": "#e11d48"},
+     "source": "The Verge",       "color": "#e11d48"},
     {"url": "https://www.wired.com/feed/category/artificial-intelligence/latest/rss",
-     "source": "Wired",        "color": "#818cf8"},
+     "source": "Wired",           "color": "#818cf8"},
     {"url": "https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss",
-     "source": "IEEE Spectrum", "color": "#0ea5e9"},
+     "source": "IEEE Spectrum",   "color": "#0ea5e9"},
     {"url": "https://www.technologyreview.com/feed/",
      "source": "MIT Tech Review", "color": "#a78bfa"},
 ]
 
 HN_API  = "https://hn.algolia.com/api/v1/search_by_date"
-HN_TAGS = ["artificial intelligence", "AI agent", "large language model", "machine learning", "LLM"]
+HN_TAGS = ["artificial intelligence", "AI agent", "large language model", "machine learning"]
 
 ARXIV_API   = "https://export.arxiv.org/api/query"
 ARXIV_QUERY = "cat:cs.AI+OR+cat:cs.LG+OR+cat:cs.CL+OR+cat:cs.NE"
@@ -125,9 +121,10 @@ CATEGORIES: Dict[str, Dict] = {
     }
 }
 
-DEFAULT_CATEGORY    = "industry"
-MAX_PER_CATEGORY    = 6
-MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
+DEFAULT_CATEGORY   = "industry"
+MAX_PER_CATEGORY   = 6
+MAX_FEATURED_AGE_H = 72
+MIN_ARTICLES       = 3   # exit(1) if fewer than this — so CI fails visibly
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
 
@@ -142,24 +139,50 @@ def fetch(url: str, timeout: int = 20) -> Optional[str]:
         print(f"  [!] fetch {url[:70]}: {e}", file=sys.stderr)
         return None
 
+# ─── HTML strip helper ───────────────────────────────────────────────────────
+
+class _StripHTML(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.parts: List[str] = []
+    def handle_data(self, data: str) -> None:
+        self.parts.append(data)
+
+def strip_html(raw: str) -> str:
+    p = _StripHTML()
+    try:
+        p.feed(raw)
+    except Exception:
+        pass
+    return re.sub(r"\s+", " ", "".join(p.parts)).strip()
+
 # ─── Date helpers ────────────────────────────────────────────────────────────
 
 def to_dt(v: Any) -> Optional[datetime]:
     if isinstance(v, datetime):
         return v if v.tzinfo else v.replace(tzinfo=timezone.utc)
-    if isinstance(v, (list, tuple)):
-        try:    return datetime(*v[:6], tzinfo=timezone.utc)
-        except: return None
     if isinstance(v, (int, float)):
         return datetime.fromtimestamp(v, tz=timezone.utc)
     if isinstance(v, str):
-        for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z",
-                    "%a, %d %b %Y %H:%M:%S %z", "%a, %d %b %Y %H:%M:%S GMT", "%Y-%m-%d"):
+        for fmt in (
+            "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%dT%H:%M:%S%z",
+            "%a, %d %b %Y %H:%M:%S %z",
+            "%a, %d %b %Y %H:%M:%S GMT",
+            "%a, %d %b %Y %H:%M:%S +0000",
+            "%Y-%m-%d",
+        ):
             try:
                 dt = datetime.strptime(v.strip(), fmt)
                 return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
             except ValueError:
                 continue
+        # Fallback: fromisoformat handles fractional seconds and ±HH:MM offsets
+        try:
+            dt = datetime.fromisoformat(v.strip().replace("Z", "+00:00"))
+            return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+        except ValueError:
+            pass
     return None
 
 def age_str(dt: Optional[datetime]) -> str:
@@ -173,44 +196,143 @@ def age_str(dt: Optional[datetime]) -> str:
     if delta.days < 7:  return f"{delta.days}d ago"
     return dt.strftime("%b %d, %Y")
 
-def long_date(dt: Optional[datetime]) -> str:
-    if dt is None: return ""
-    return dt.strftime("%B %d, %Y")
+# ─── RSS / Atom parser (stdlib only) ─────────────────────────────────────────
 
-# ─── Fetchers ────────────────────────────────────────────────────────────────
+# XML namespace constants
+NS_ATOM    = "http://www.w3.org/2005/Atom"
+NS_CONTENT = "http://purl.org/rss/1.0/modules/content/"
+NS_DC      = "http://purl.org/dc/elements/1.1/"
+NS_MEDIA   = "http://search.yahoo.com/mrss/"
+
+def _txt(el: Optional[ET.Element], *tags: str) -> str:
+    """Return concatenated text of first found tag (handles mixed/CDATA content)."""
+    if el is None:
+        return ""
+    for tag in tags:
+        child = el.find(tag)
+        if child is not None:
+            text = "".join(child.itertext()).strip()
+            if text:
+                return text
+    return ""
+
+def _ns(ns: str, tag: str) -> str:
+    return f"{{{ns}}}{tag}"
+
+def _rss2_link(item: ET.Element) -> str:
+    """Extract permalink from RSS 2.0 <item>; skip atom:link self-references."""
+    for child in item:
+        if child.tag == "link":
+            # Text node link (standard RSS 2.0)
+            text = (child.text or "").strip()
+            if text:
+                return text
+            # Some feeds use tail text after <link/> (quirky but seen in practice)
+            tail = (child.tail or "").strip()
+            if tail:
+                return tail
+        elif child.tag == _ns(NS_ATOM, "link"):
+            rel  = child.get("rel", "alternate")
+            href = (child.get("href") or "").strip()
+            if href and rel != "self":
+                return href
+    return ""
+
+def _parse_rss2(root: ET.Element) -> List[Dict]:
+    """Parse RSS 2.0 <channel><item>..."""
+    items = root.findall(".//item")
+    arts  = []
+    for item in items[:25]:
+        title = _txt(item, "title")
+        link  = _rss2_link(item)
+        if not title or not link:
+            continue
+        desc_raw = (
+            _txt(item, _ns(NS_CONTENT, "encoded")) or
+            _txt(item, "description") or ""
+        )
+        desc = strip_html(desc_raw)[:400]
+        date = to_dt(
+            _txt(item, "pubDate") or _txt(item, _ns(NS_DC, "date"))
+        )
+        arts.append({"title": title, "link": link, "desc": desc, "date": date})
+    return arts
+
+def _atom_link(entry: ET.Element) -> str:
+    """Prefer rel=alternate permalink; fall back to first non-self link."""
+    links = entry.findall(_ns(NS_ATOM, "link"))
+    alternate = ""
+    fallback  = ""
+    for lk in links:
+        rel  = lk.get("rel", "alternate")
+        href = (lk.get("href") or "").strip()
+        if not href:
+            continue
+        if rel == "alternate" and not alternate:
+            alternate = href
+        elif rel not in ("self", "enclosure") and not fallback:
+            fallback = href
+    return alternate or fallback
+
+def _parse_atom(root: ET.Element) -> List[Dict]:
+    """Parse Atom <feed><entry>..."""
+    entries = root.findall(_ns(NS_ATOM, "entry"))
+    arts    = []
+    for entry in entries[:25]:
+        title_el = entry.find(_ns(NS_ATOM, "title"))
+        title    = "".join(title_el.itertext()).strip() if title_el is not None else ""
+
+        link = _atom_link(entry)
+
+        summary_el = entry.find(_ns(NS_ATOM, "summary")) or entry.find(_ns(NS_ATOM, "content"))
+        desc       = strip_html("".join(summary_el.itertext()))[:400] if summary_el is not None else ""
+
+        pub = ""
+        for tag in (_ns(NS_ATOM, "published"), _ns(NS_ATOM, "updated")):
+            el = entry.find(tag)
+            if el is not None:
+                pub = "".join(el.itertext()).strip()
+                if pub:
+                    break
+        date = to_dt(pub)
+
+        if not title or not link:
+            continue
+        arts.append({"title": title, "link": link, "desc": desc, "date": date})
+    return arts
 
 def fetch_rss(cfg: Dict) -> List[Dict]:
     print(f"  RSS  {cfg['source']}…", flush=True)
     raw = fetch(cfg["url"])
-    if not raw: return []
+    if not raw:
+        return []
     try:
-        feed     = feedparser.parse(raw)
+        root = ET.fromstring(raw)
+        tag  = root.tag
+
+        if "feed" in tag.lower() or tag == _ns(NS_ATOM, "feed"):
+            parsed = _parse_atom(root)
+        else:
+            parsed = _parse_rss2(root)
+
         articles = []
-        for e in feed.entries[:20]:
-            desc = ""
-            for attr in ("summary", "description", "content"):
-                val = getattr(e, attr, None)
-                if isinstance(val, list): val = val[0].get("value", "") if val else ""
-                if val:
-                    desc = re.sub(r"<[^>]+>", " ", val)
-                    desc = re.sub(r"\s+", " ", desc).strip()[:400]
-                    break
-            dt = None
-            for attr in ("published_parsed", "updated_parsed", "created_parsed"):
-                dt = to_dt(getattr(e, attr, None))
-                if dt: break
-            title = getattr(e, "title", "").strip()
-            url   = getattr(e, "link",  "").strip()
-            if not title or not url: continue
-            articles.append({"title": title, "url": url, "desc": desc,
-                              "source": cfg["source"], "source_color": cfg["color"],
-                              "date": dt, "category": None})
+        for p in parsed:
+            articles.append({
+                "title": p["title"],
+                "url":   p["link"],
+                "desc":  p["desc"],
+                "source": cfg["source"],
+                "source_color": cfg["color"],
+                "date":  p["date"],
+                "category": None,
+            })
         print(f"     → {len(articles)} items", flush=True)
         return articles
     except Exception as ex:
         print(f"  [!] parse error {cfg['source']}: {ex}", file=sys.stderr)
         return []
 
+# ─── HackerNews ──────────────────────────────────────────────────────────────
 
 def fetch_hn() -> List[Dict]:
     print("  HN   Algolia search…", flush=True)
@@ -219,35 +341,42 @@ def fetch_hn() -> List[Dict]:
     for q in HN_TAGS[:4]:
         url  = f"{HN_API}?{urllib.parse.urlencode({'query': q, 'tags': 'story', 'hitsPerPage': 15})}"
         raw  = fetch(url)
-        if not raw: continue
+        if not raw:
+            continue
         try:
             for hit in json.loads(raw).get("hits", []):
                 oid = hit.get("objectID", "")
-                if oid in seen: continue
+                if oid in seen:
+                    continue
                 seen.add(oid)
                 title = hit.get("title", "").strip()
-                if not title: continue
+                if not title:
+                    continue
                 story_url = hit.get("url") or f"https://news.ycombinator.com/item?id={oid}"
                 pts   = hit.get("points", 0)
                 cmnts = hit.get("num_comments", 0)
                 desc  = f"🔥 {pts} points · {cmnts} comments on Hacker News"
                 dt    = to_dt(hit.get("created_at_i"))
-                articles.append({"title": title, "url": story_url, "desc": desc,
-                                  "source": "HackerNews", "source_color": "#f97316",
-                                  "date": dt, "category": None})
+                articles.append({
+                    "title": title, "url": story_url, "desc": desc,
+                    "source": "HackerNews", "source_color": "#f97316",
+                    "date": dt, "category": None,
+                })
         except Exception as ex:
             print(f"  [!] HN parse: {ex}", file=sys.stderr)
         time.sleep(0.3)
     print(f"     → {len(articles)} items", flush=True)
     return articles
 
+# ─── arXiv ───────────────────────────────────────────────────────────────────
 
 def fetch_arxiv() -> List[Dict]:
     print("  Arxiv papers…", flush=True)
     url = (f"{ARXIV_API}?search_query={ARXIV_QUERY}"
            "&start=0&max_results=20&sortBy=submittedDate&sortOrder=descending")
     raw = fetch(url)
-    if not raw: return []
+    if not raw:
+        return []
     try:
         ns   = {"a": "http://www.w3.org/2005/Atom"}
         root = ET.fromstring(raw)
@@ -257,13 +386,16 @@ def fetch_arxiv() -> List[Dict]:
             summ   = (entry.findtext("a:summary", "", ns) or "").replace("\n", " ").strip()[:350]
             link   = (entry.findtext("a:id",      "", ns) or "").strip()
             pub    = entry.findtext("a:published", "", ns)
-            cats   = [c.get("term","") for c in entry.findall("a:category", ns)]
+            cats   = [c.get("term", "") for c in entry.findall("a:category", ns)]
             cat_s  = " · ".join(cats[:3])
             desc   = f"[{cat_s}] {summ}"
-            if not title or not link: continue
-            arts.append({"title": title, "url": link, "desc": desc,
-                         "source": "arXiv", "source_color": "#a78bfa",
-                         "date": to_dt(pub), "category": "research"})
+            if not title or not link:
+                continue
+            arts.append({
+                "title": title, "url": link, "desc": desc,
+                "source": "arXiv", "source_color": "#a78bfa",
+                "date": to_dt(pub), "category": "research",
+            })
         print(f"     → {len(arts)} papers", flush=True)
         return arts
     except Exception as ex:
@@ -275,7 +407,7 @@ def fetch_arxiv() -> List[Dict]:
 def classify(a: Dict) -> str:
     if a.get("category"):
         return a["category"]
-    text   = (a.get("title","") + " " + a.get("desc","")).lower()
+    text   = (a.get("title", "") + " " + a.get("desc", "")).lower()
     scores = {cat: sum(1 for kw in cfg["keywords"] if kw in text)
               for cat, cfg in CATEGORIES.items()}
     best   = max(scores, key=lambda k: scores[k])
@@ -284,31 +416,41 @@ def classify(a: Dict) -> str:
 # ─── Score ───────────────────────────────────────────────────────────────────
 
 def score(a: Dict) -> float:
-    s    = 0.0
-    dt   = a.get("date")
+    s  = 0.0
+    dt = a.get("date")
     if dt:
         age = (datetime.now(timezone.utc) - dt).total_seconds() / 3600
-        s  += max(0, 10 - age * 0.08)          # decay over ~5 days
-    source_bonus = {"arXiv": 2.5, "IEEE Spectrum": 2.0, "MIT Tech Review": 1.8,
-                    "TechCrunch": 1.5, "VentureBeat": 1.3, "Wired": 1.3,
-                    "The Verge": 1.2, "HackerNews": 0.8}
-    s += source_bonus.get(a.get("source",""), 1.0)
-    tl = len(a.get("title",""))
-    if 40 < tl < 130: s += 0.4
+        s  += max(0, 10 - age * 0.08)
+    source_bonus = {
+        "arXiv": 2.5, "IEEE Spectrum": 2.0, "MIT Tech Review": 1.8,
+        "TechCrunch": 1.5, "VentureBeat": 1.3, "Wired": 1.3,
+        "The Verge": 1.2, "HackerNews": 0.8,
+    }
+    s += source_bonus.get(a.get("source", ""), 1.0)
+    tl = len(a.get("title", ""))
+    if 40 < tl < 130:
+        s += 0.4
     return s
 
 # ─── Deduplicate ─────────────────────────────────────────────────────────────
+
+def _norm_url(url: str) -> str:
+    url = re.sub(r"^https?://", "", url)   # normalize scheme
+    url = re.sub(r"\?.*$", "", url)         # strip query
+    return url.rstrip("/")
 
 def dedup(articles: List[Dict]) -> List[Dict]:
     seen_urls:   set = set()
     seen_titles: set = set()
     out:  List[Dict] = []
     for a in articles:
-        url   = re.sub(r"\?.*$", "", a.get("url","")).rstrip("/")
-        tkey  = hashlib.md5(a.get("title","").lower()[:60].encode()).hexdigest()
-        if url in seen_urls or tkey in seen_titles: continue
-        if url: seen_urls.add(url)
-        seen_titles.add(tkey)
+        url_key  = _norm_url(a.get("url", ""))
+        title_fp = hashlib.md5(a.get("title", "").lower()[:80].encode()).hexdigest()
+        if url_key in seen_urls or title_fp in seen_titles:
+            continue
+        if url_key:
+            seen_urls.add(url_key)
+        seen_titles.add(title_fp)
         out.append(a)
     return out
 
@@ -318,7 +460,8 @@ def load_issue() -> int:
     if STATE_FILE.exists():
         try:
             return json.loads(STATE_FILE.read_text()).get("issue", 0)
-        except: pass
+        except Exception:
+            pass
     return 0
 
 def save_issue(n: int) -> None:
@@ -344,12 +487,12 @@ def source_pill(source: str, color: str = "") -> str:
             f'border-color:{c}44">{h(source)}</span>')
 
 def card_html(a: Dict, cat_color: str) -> str:
-    title   = h(a.get("title","Untitled"))
-    url     = h(a.get("url","#"))
-    desc    = h(a.get("desc","")[:240])
-    src     = a.get("source","")
-    src_c   = a.get("source_color","") or SOURCE_COLORS.get(src,"#6b7280")
-    age     = age_str(a.get("date"))
+    title = h(a.get("title", "Untitled"))
+    url   = h(a.get("url", "#"))
+    desc  = h(a.get("desc", "")[:240])
+    src   = a.get("source", "")
+    src_c = a.get("source_color", "") or SOURCE_COLORS.get(src, "#6b7280")
+    age   = age_str(a.get("date"))
     return f'''
     <article class="card" style="--cat:{cat_color}">
       <div class="card-top">
@@ -362,7 +505,8 @@ def card_html(a: Dict, cat_color: str) -> str:
     </article>'''
 
 def section_html(cat: str, articles: List[Dict]) -> str:
-    if not articles: return ""
+    if not articles:
+        return ""
     cfg   = CATEGORIES[cat]
     color = cfg["color"]
     bg    = cfg["bg"]
@@ -382,16 +526,16 @@ def section_html(cat: str, articles: List[Dict]) -> str:
   </section>'''
 
 def featured_html(a: Dict) -> str:
-    title = h(a.get("title","Untitled"))
-    url   = h(a.get("url","#"))
-    desc  = h(a.get("desc","")[:500])
-    src   = a.get("source","")
-    src_c = a.get("source_color","") or SOURCE_COLORS.get(src,"#6b7280")
+    title = h(a.get("title", "Untitled"))
+    url   = h(a.get("url", "#"))
+    desc  = h(a.get("desc", "")[:500])
+    src   = a.get("source", "")
+    src_c = a.get("source_color", "") or SOURCE_COLORS.get(src, "#6b7280")
     age   = age_str(a.get("date"))
     cat   = a.get("category", DEFAULT_CATEGORY)
-    cat_c = CATEGORIES.get(cat,{}).get("color","#8b5cf6")
-    cat_l = CATEGORIES.get(cat,{}).get("label","News")
-    cat_i = CATEGORIES.get(cat,{}).get("icon","📌")
+    cat_c = CATEGORIES.get(cat, {}).get("color", "#8b5cf6")
+    cat_l = CATEGORIES.get(cat, {}).get("label", "News")
+    cat_i = CATEGORIES.get(cat, {}).get("icon", "📌")
     return f'''
   <section class="featured-wrap">
     <div class="featured-card">
@@ -421,7 +565,7 @@ def nav_html(sections_with_content: List[str]) -> str:
         )
     return f'<nav class="cat-nav">{"".join(links)}</nav>'
 
-# ─── Full page ───────────────────────────────────────────────────────────────
+# ─── Full page CSS ────────────────────────────────────────────────────────────
 
 PAGE_CSS = r"""
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
@@ -451,7 +595,6 @@ body {
 
 a { color: inherit; }
 
-/* ── Background radial glows ── */
 body::before {
   content: '';
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
@@ -712,6 +855,8 @@ main { max-width: 1160px; margin: 0 auto; padding: 2rem 1.5rem }
 .scroll-top:hover { background: rgba(99,102,241,.25); transform: translateY(-2px) }
 """
 
+# ─── Full page ────────────────────────────────────────────────────────────────
+
 def full_page(featured: Optional[Dict],
               sections: Dict[str, List[Dict]],
               issue: int,
@@ -722,15 +867,11 @@ def full_page(featured: Optional[Dict],
     total    = sum(len(v) for v in sections.values())
     src_set  = sorted({a["source"] for v in sections.values() for a in v})
 
-    featured_block = ""
-    if featured:
-        featured_block = featured_html(featured)
+    featured_block = featured_html(featured) if featured else ""
 
-    cat_order       = list(CATEGORIES.keys())
-    sections_html   = ""
-    active_cats     = [c for c in cat_order if sections.get(c)]
-    for cat in active_cats:
-        sections_html += section_html(cat, sections[cat])
+    cat_order     = list(CATEGORIES.keys())
+    active_cats   = [c for c in cat_order if sections.get(c)]
+    sections_html = "".join(section_html(cat, sections[cat]) for cat in active_cats)
 
     if not featured_block and not sections_html:
         sections_html = '''
@@ -739,11 +880,11 @@ def full_page(featured: Optional[Dict],
     <p>No articles fetched yet. The workflow will populate this soon.</p>
   </div>'''
 
-    nav_block  = nav_html(active_cats) if active_cats else ""
+    nav_block = nav_html(active_cats) if active_cats else ""
 
     stats_items = "".join(
         f'<span class="stat-item"><span class="stat-dot" style="--c:{CATEGORIES[c]["color"]}"></span>'
-        f'{h(CATEGORIES[c]["icon"])} {len(sections.get(c,[]))} {h(CATEGORIES[c]["label"])}</span>'
+        f'{h(CATEGORIES[c]["icon"])} {len(sections.get(c, []))} {h(CATEGORIES[c]["label"])}</span>'
         for c in active_cats if sections.get(c)
     )
     stats_block = f'<div class="stats-bar">{stats_items}</div>' if stats_items else ""
@@ -798,8 +939,8 @@ def full_page(featured: Optional[Dict],
       <div class="footer-brand">⚡ AI Pulse</div>
       <div class="footer-links">
         <a href="https://github.com/oeway/ai-news-channel" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">arXiv CS.AI</a>
-        <a href="https://news.ycombinator.com" target="_blank" rel="noopener">HackerNews</a>
+        <a href="https://arxiv.org/list/cs.AI/recent"        target="_blank" rel="noopener">arXiv CS.AI</a>
+        <a href="https://news.ycombinator.com"               target="_blank" rel="noopener">HackerNews</a>
       </div>
       <div class="footer-sources">{sources_pills}</div>
       <div class="footer-note">
@@ -851,6 +992,13 @@ def main() -> None:
         if cat in sections and len(sections[cat]) < MAX_PER_CATEGORY:
             sections[cat].append(a)
 
+    total = sum(len(v) for v in sections.values())
+
+    if total < MIN_ARTICLES:
+        print(f"\n[!] Only {total} articles fetched (minimum {MIN_ARTICLES}). "
+              "Aborting to avoid publishing an empty page.", file=sys.stderr)
+        sys.exit(1)
+
     # ── Featured ──
     featured: Optional[Dict] = None
     now = datetime.now(timezone.utc)
@@ -862,8 +1010,13 @@ def main() -> None:
     if featured is None and articles:
         featured = articles[0]
 
-    total = sum(len(v) for v in sections.values())
-    print(f"  Sections: {', '.join(f'{k}:{len(v)}' for k,v in sections.items() if v)}", flush=True)
+    # Remove featured article from its section bucket to avoid duplication
+    if featured:
+        cat = featured.get("category", DEFAULT_CATEGORY)
+        if featured in sections.get(cat, []):
+            sections[cat].remove(featured)
+
+    print(f"  Sections: {', '.join(f'{k}:{len(v)}' for k, v in sections.items() if v)}", flush=True)
     print(f"  Total placed: {total}", flush=True)
 
     # ── Render ──

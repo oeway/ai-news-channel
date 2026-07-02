@@ -1,2 +1,3 @@
-feedparser>=6.0.0
-requests>=2.31.0
+# No external dependencies — the newsletter generator uses Python stdlib only.
+# feedparser was previously used for RSS parsing and has been replaced with
+# xml.etree.ElementTree for portability.

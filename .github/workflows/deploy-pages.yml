@@ -6,6 +6,10 @@ on:
     paths: ['docs/**']
   workflow_dispatch:
 
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
+
 permissions:
   contents: write
 

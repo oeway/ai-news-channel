@@ -1,0 +1,38 @@
+name: Update AI News Newsletter
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # Daily at 07:00 UTC
+  workflow_dispatch:        # Allow manual trigger from Actions tab
+
+concurrency:
+  group: newsletter-update
+  cancel-in-progress: false  # Never cancel an in-flight newsletter update
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch news and regenerate newsletter
+        run: python scripts/fetch_news.py
+
+      - name: Commit and push updated newsletter
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html docs/state.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: update newsletter $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push origin HEAD:refs/heads/main
+          fi
