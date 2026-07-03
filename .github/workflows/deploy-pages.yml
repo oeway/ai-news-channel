@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -19,10 +23,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p /tmp/pages-deploy
+          cp -r docs/. /tmp/pages-deploy/
           git checkout --orphan gh-pages-tmp
-          git rm -rf .
-          cp -r docs/* .
-          cp docs/.nojekyll . 2>/dev/null || true
+          git rm -rf . > /dev/null
+          cp -r /tmp/pages-deploy/. .
           git add -A
           git commit -m "Deploy docs to GitHub Pages"
           git push origin HEAD:gh-pages --force

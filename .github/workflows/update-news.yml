@@ -1,0 +1,72 @@
+name: Update AI News Newsletter
+
+on:
+  schedule:
+    # Run daily at 07:00 UTC so the digest is ready each morning
+    - cron: '0 7 * * *'
+  workflow_dispatch:    # Manual trigger from the Actions tab
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/fetch_news.py'
+      - 'requirements.txt'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: newsletter-update
+  cancel-in-progress: false
+
+jobs:
+  update-newsletter:
+    name: Fetch, Render & Deploy Newsletter
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate newsletter
+        run: python scripts/fetch_news.py
+
+      - name: Commit updated newsletter
+        id: commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if git diff --staged --quiet; then
+            echo "No changes – newsletter is already up to date."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            DATE=$(date -u +"%Y-%m-%d")
+            git commit -m "📰 Update AI newsletter · $DATE"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Pushing with the default GITHUB_TOKEN above does not trigger the
+      # separate deploy-pages.yml push event, so publish inline here.
+      - name: Deploy to GitHub Pages
+        if: steps.commit.outputs.changed == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p /tmp/pages-deploy
+          cp -r docs/. /tmp/pages-deploy/
+          git checkout --orphan gh-pages-tmp
+          git rm -rf . > /dev/null
+          cp -r /tmp/pages-deploy/. .
+          git add -A
+          git commit -m "Deploy docs to GitHub Pages"
+          git push origin HEAD:gh-pages --force
