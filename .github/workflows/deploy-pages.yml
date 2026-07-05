@@ -19,10 +19,18 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Stage the site contents outside the repo first — checking out an
+          # orphan branch and running `git rm -rf .` wipes docs/ before we can
+          # copy from it otherwise.
+          STAGE=$(mktemp -d)
+          cp -r docs/. "$STAGE"/
+
           git checkout --orphan gh-pages-tmp
-          git rm -rf .
-          cp -r docs/* .
-          cp docs/.nojekyll . 2>/dev/null || true
+          git rm -rf . > /dev/null
+          cp -r "$STAGE"/. .
+          rm -rf "$STAGE"
+
           git add -A
           git commit -m "Deploy docs to GitHub Pages"
           git push origin HEAD:gh-pages --force
