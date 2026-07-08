@@ -20,10 +20,11 @@ A fully automated, daily newsletter that scrapes and curates the most important 
 
 ## How it works
 
-1. **Daily at 07:00 UTC** — GitHub Actions runs `scripts/fetch_news.py`
-2. The script fetches RSS feeds + arXiv + HackerNews, deduplicates, classifies, and scores articles
-3. It renders a complete `docs/index.html` with the day's top stories
-4. The action commits the new HTML and GitHub Pages serves it immediately
+1. An AI agent session periodically researches the latest AI news (RSS/arXiv sources when reachable, web search otherwise), curates and categorizes the top stories, and renders a complete `docs/index.html` via `scripts/fetch_news.py`'s templates.
+2. The agent commits and pushes the updated newsletter.
+3. A GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) redeploys GitHub Pages whenever `docs/` changes on `main`.
+
+`scripts/fetch_news.py` can also be run standalone to pull RSS/arXiv/HackerNews directly and regenerate the page — useful for local development or environments with unrestricted outbound network access.
 
 ## Setup
 
