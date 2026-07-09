@@ -127,6 +127,7 @@ CATEGORIES: Dict[str, Dict] = {
 
 DEFAULT_CATEGORY    = "industry"
 MAX_PER_CATEGORY    = 6
+MIN_ARTICLES        = 5   # guard: abort instead of publishing a near-empty page
 MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
@@ -837,6 +838,10 @@ def main() -> None:
     # ── Deduplicate + classify ──
     print("\n[2/4] Deduplicating & classifying…", flush=True)
     articles = dedup(all_articles)
+    if len(articles) < MIN_ARTICLES:
+        print(f"\n❌ Only {len(articles)} articles fetched (min {MIN_ARTICLES}) — "
+              "aborting without touching the published page.", file=sys.stderr)
+        sys.exit(1)
     for a in articles:
         a["category"] = classify(a)
     print(f"  After dedup: {len(articles)}", flush=True)
