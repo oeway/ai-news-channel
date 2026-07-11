@@ -10,6 +10,7 @@ import sys
 import json
 import time
 import hashlib
+import argparse
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -311,6 +312,28 @@ def dedup(articles: List[Dict]) -> List[Dict]:
         seen_titles.add(tkey)
         out.append(a)
     return out
+
+# ─── Curated input (fallback when direct scraping is network-blocked) ────────
+
+def fetch_from_curated(path: Path) -> List[Dict]:
+    """Load a pre-researched article list (title/url/desc/source/date/category)
+    as a stand-in for the live RSS/HN/arXiv fetchers, for environments where
+    outbound access to news sites is restricted by egress policy."""
+    print(f"  Curated  {path.name}…", flush=True)
+    raw = json.loads(path.read_text())
+    articles = []
+    for item in raw:
+        articles.append({
+            "title":        item["title"],
+            "url":          item["url"],
+            "desc":         item.get("desc", ""),
+            "source":       item.get("source", "Unknown"),
+            "source_color": item.get("source_color", ""),
+            "date":         to_dt(item.get("date")),
+            "category":     item.get("category"),
+        })
+    print(f"     → {len(articles)} items", flush=True)
+    return articles
 
 # ─── Load / save issue counter ───────────────────────────────────────────────
 
@@ -816,10 +839,20 @@ def full_page(featured: Optional[Dict],
 
 # ─── Main ────────────────────────────────────────────────────────────────────
 
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="AI Pulse Newsletter Generator")
+    p.add_argument("--from-json", type=Path, default=None,
+                    help="Load a curated article list instead of live-fetching "
+                         "RSS/HN/arXiv (use when outbound access to news sites "
+                         "is blocked by network policy).")
+    return p.parse_args()
+
+
 def main() -> None:
     print("⚡ AI Pulse Newsletter Generator", flush=True)
     print("─" * 50, flush=True)
 
+    args = parse_args()
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
 
     issue = load_issue() + 1
@@ -828,10 +861,13 @@ def main() -> None:
     # ── Fetch ──
     print("\n[1/4] Fetching news…", flush=True)
     all_articles: List[Dict] = []
-    for cfg in RSS_FEEDS:
-        all_articles.extend(fetch_rss(cfg))
-    all_articles.extend(fetch_hn())
-    all_articles.extend(fetch_arxiv())
+    if args.from_json:
+        all_articles.extend(fetch_from_curated(args.from_json))
+    else:
+        for cfg in RSS_FEEDS:
+            all_articles.extend(fetch_rss(cfg))
+        all_articles.extend(fetch_hn())
+        all_articles.extend(fetch_arxiv())
     print(f"  Total raw: {len(all_articles)}", flush=True)
 
     # ── Deduplicate + classify ──
