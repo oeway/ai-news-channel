@@ -129,6 +129,7 @@ CATEGORIES: Dict[str, Dict] = {
 DEFAULT_CATEGORY    = "industry"
 MAX_PER_CATEGORY    = 6
 MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
+MIN_ARTICLES        = 5    # abort rather than publish a near-empty page
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
 
@@ -869,6 +870,12 @@ def main() -> None:
         all_articles.extend(fetch_hn())
         all_articles.extend(fetch_arxiv())
     print(f"  Total raw: {len(all_articles)}", flush=True)
+
+    if len(all_articles) < MIN_ARTICLES:
+        print(f"\n❌ Only {len(all_articles)} articles fetched (need ≥{MIN_ARTICLES}). "
+              f"Sources may be unreachable — leaving the published page untouched.",
+              file=sys.stderr)
+        sys.exit(1)
 
     # ── Deduplicate + classify ──
     print("\n[2/4] Deduplicating & classifying…", flush=True)
