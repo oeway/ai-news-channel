@@ -127,6 +127,7 @@ CATEGORIES: Dict[str, Dict] = {
 
 DEFAULT_CATEGORY    = "industry"
 MAX_PER_CATEGORY    = 6
+MIN_ARTICLES        = 5   # guard: abort instead of publishing a near-empty page
 MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
@@ -816,6 +817,17 @@ def full_page(featured: Optional[Dict],
 
 # ─── Main ────────────────────────────────────────────────────────────────────
 
+def load_curated(path: Path) -> List[Dict]:
+    """Load a hand-curated article list (used when live fetching is blocked)."""
+    raw = json.loads(path.read_text())
+    articles = []
+    for a in raw:
+        a = dict(a)
+        a["date"] = to_dt(a.get("date"))
+        articles.append(a)
+    return articles
+
+
 def main() -> None:
     print("⚡ AI Pulse Newsletter Generator", flush=True)
     print("─" * 50, flush=True)
@@ -825,18 +837,31 @@ def main() -> None:
     issue = load_issue() + 1
     print(f"Generating Issue #{issue}", flush=True)
 
+    from_json = None
+    if "--from-json" in sys.argv:
+        from_json = Path(sys.argv[sys.argv.index("--from-json") + 1])
+
     # ── Fetch ──
-    print("\n[1/4] Fetching news…", flush=True)
     all_articles: List[Dict] = []
-    for cfg in RSS_FEEDS:
-        all_articles.extend(fetch_rss(cfg))
-    all_articles.extend(fetch_hn())
-    all_articles.extend(fetch_arxiv())
-    print(f"  Total raw: {len(all_articles)}", flush=True)
+    if from_json:
+        print(f"\n[1/4] Loading curated articles from {from_json}…", flush=True)
+        all_articles.extend(load_curated(from_json))
+        print(f"  Total raw: {len(all_articles)}", flush=True)
+    else:
+        print("\n[1/4] Fetching news…", flush=True)
+        for cfg in RSS_FEEDS:
+            all_articles.extend(fetch_rss(cfg))
+        all_articles.extend(fetch_hn())
+        all_articles.extend(fetch_arxiv())
+        print(f"  Total raw: {len(all_articles)}", flush=True)
 
     # ── Deduplicate + classify ──
     print("\n[2/4] Deduplicating & classifying…", flush=True)
     articles = dedup(all_articles)
+    if len(articles) < MIN_ARTICLES:
+        print(f"\n❌ Only {len(articles)} articles fetched (min {MIN_ARTICLES}) — "
+              "aborting without touching the published page.", file=sys.stderr)
+        sys.exit(1)
     for a in articles:
         a["category"] = classify(a)
     print(f"  After dedup: {len(articles)}", flush=True)
