@@ -29,7 +29,7 @@ A fully automated, daily newsletter that scrapes and curates the most important 
 
 ### Enable GitHub Pages
 
-In your repository settings → **Pages** → set source to **Deploy from a branch**, branch `main`, folder `/docs`.
+In your repository settings → **Pages** → set **Build and deployment → Source** to **GitHub Actions**. The `Deploy to GitHub Pages` workflow will then publish `docs/` on every update.
 
 ### Manual trigger
 
