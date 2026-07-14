@@ -43,6 +43,20 @@ python scripts/fetch_news.py
 open docs/index.html
 ```
 
+If your network blocks the RSS/arXiv/HN hosts directly (e.g. a sandboxed dev
+environment), you can render from a hand-curated article list instead — it
+flows through the same dedup/classify/score/render pipeline so the output is
+visually identical to a live run:
+
+```bash
+python scripts/fetch_news.py --from-json path/to/articles.json
+```
+
+Each entry needs `title`, `url`, and optionally `desc`, `source`,
+`source_color`, `date` (ISO 8601), and `category` (one of `research`,
+`agents`, `products`, `industry`, `open_source` — auto-classified from
+keywords if omitted).
+
 ## License
 
 MIT

@@ -10,6 +10,7 @@ import sys
 import json
 import time
 import hashlib
+import argparse
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -22,8 +23,7 @@ import urllib.error
 try:
     import feedparser
 except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
+    feedparser = None
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -128,6 +128,7 @@ CATEGORIES: Dict[str, Dict] = {
 DEFAULT_CATEGORY    = "industry"
 MAX_PER_CATEGORY    = 6
 MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
+MIN_ARTICLES        = 5    # abort instead of publishing a near-empty page
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
 
@@ -181,6 +182,9 @@ def long_date(dt: Optional[datetime]) -> str:
 
 def fetch_rss(cfg: Dict) -> List[Dict]:
     print(f"  RSS  {cfg['source']}…", flush=True)
+    if feedparser is None:
+        print("  [!] feedparser not installed — run: pip install -r requirements.txt", file=sys.stderr)
+        return []
     raw = fetch(cfg["url"])
     if not raw: return []
     try:
@@ -269,6 +273,27 @@ def fetch_arxiv() -> List[Dict]:
     except Exception as ex:
         print(f"  [!] Arxiv parse: {ex}", file=sys.stderr)
         return []
+
+def load_from_json(path: Path) -> List[Dict]:
+    """Load a curated article list (same shape as the live fetchers produce).
+
+    Lets a hand-curated article list flow through the same dedup/classify/
+    score/render pipeline as live-fetched articles, for use when the live
+    RSS/arXiv/HN hosts aren't reachable (e.g. a sandboxed dev environment).
+    """
+    raw = json.loads(path.read_text())
+    articles = []
+    for item in raw:
+        articles.append({
+            "title":        item["title"],
+            "url":          item["url"],
+            "desc":         item.get("desc", ""),
+            "source":       item.get("source", "News"),
+            "source_color": item.get("source_color", ""),
+            "date":         to_dt(item.get("date")),
+            "category":     item.get("category"),
+        })
+    return articles
 
 # ─── Classify ────────────────────────────────────────────────────────────────
 
@@ -817,6 +842,11 @@ def full_page(featured: Optional[Dict],
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="AI Pulse Newsletter Generator")
+    parser.add_argument("--from-json", type=Path, default=None,
+                         help="Skip live fetching; render from a curated JSON article list instead")
+    args = parser.parse_args()
+
     print("⚡ AI Pulse Newsletter Generator", flush=True)
     print("─" * 50, flush=True)
 
@@ -826,13 +856,23 @@ def main() -> None:
     print(f"Generating Issue #{issue}", flush=True)
 
     # ── Fetch ──
-    print("\n[1/4] Fetching news…", flush=True)
     all_articles: List[Dict] = []
-    for cfg in RSS_FEEDS:
-        all_articles.extend(fetch_rss(cfg))
-    all_articles.extend(fetch_hn())
-    all_articles.extend(fetch_arxiv())
-    print(f"  Total raw: {len(all_articles)}", flush=True)
+    if args.from_json:
+        print(f"\n[1/4] Loading curated articles from {args.from_json}…", flush=True)
+        all_articles = load_from_json(args.from_json)
+        print(f"  Loaded: {len(all_articles)}", flush=True)
+    else:
+        print("\n[1/4] Fetching news…", flush=True)
+        for cfg in RSS_FEEDS:
+            all_articles.extend(fetch_rss(cfg))
+        all_articles.extend(fetch_hn())
+        all_articles.extend(fetch_arxiv())
+        print(f"  Total raw: {len(all_articles)}", flush=True)
+
+    if len(all_articles) < MIN_ARTICLES:
+        print(f"\n❌ Only {len(all_articles)} article(s) fetched (need ≥{MIN_ARTICLES}). "
+              f"Aborting without touching the published page.", file=sys.stderr)
+        sys.exit(1)
 
     # ── Deduplicate + classify ──
     print("\n[2/4] Deduplicating & classifying…", flush=True)

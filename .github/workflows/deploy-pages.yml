@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -19,10 +23,18 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Stage docs/ contents outside the repo first — `git rm -rf .` below
+          # deletes working-tree files too, so docs/* would otherwise be gone
+          # by the time we `cp` it (this was the bug that broke every prior
+          # deploy: "cp: cannot stat 'docs/*': No such file or directory").
+          STAGE=$(mktemp -d)
+          cp -r docs/. "$STAGE"/
+
           git checkout --orphan gh-pages-tmp
           git rm -rf .
-          cp -r docs/* .
-          cp docs/.nojekyll . 2>/dev/null || true
+          cp -r "$STAGE"/. .
+          rm -rf "$STAGE"
           git add -A
           git commit -m "Deploy docs to GitHub Pages"
           git push origin HEAD:gh-pages --force
