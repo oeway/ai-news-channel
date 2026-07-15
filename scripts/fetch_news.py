@@ -816,6 +816,29 @@ def full_page(featured: Optional[Dict],
 
 # ─── Main ────────────────────────────────────────────────────────────────────
 
+def load_manual_articles(path: str) -> List[Dict]:
+    """Load pre-fetched articles from a JSON file (used when live network
+    access to news sources isn't available, e.g. sandboxed environments).
+    Expects a list of objects with title/url/desc/source/date[/category]."""
+    raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    articles = []
+    for item in raw:
+        title = (item.get("title") or "").strip()
+        url   = (item.get("url") or "").strip()
+        if not title or not url:
+            continue
+        articles.append({
+            "title":        title,
+            "url":          url,
+            "desc":         (item.get("desc") or "").strip()[:400],
+            "source":       item.get("source") or "News",
+            "source_color": item.get("source_color") or SOURCE_COLORS.get(item.get("source", ""), "#6b7280"),
+            "date":         to_dt(item.get("date")),
+            "category":     item.get("category"),
+        })
+    return articles
+
+
 def main() -> None:
     print("⚡ AI Pulse Newsletter Generator", flush=True)
     print("─" * 50, flush=True)
@@ -825,13 +848,21 @@ def main() -> None:
     issue = load_issue() + 1
     print(f"Generating Issue #{issue}", flush=True)
 
+    manual_json = None
+    if "--from-json" in sys.argv:
+        manual_json = sys.argv[sys.argv.index("--from-json") + 1]
+
     # ── Fetch ──
     print("\n[1/4] Fetching news…", flush=True)
     all_articles: List[Dict] = []
-    for cfg in RSS_FEEDS:
-        all_articles.extend(fetch_rss(cfg))
-    all_articles.extend(fetch_hn())
-    all_articles.extend(fetch_arxiv())
+    if manual_json:
+        print(f"  Loading curated articles from {manual_json}", flush=True)
+        all_articles.extend(load_manual_articles(manual_json))
+    else:
+        for cfg in RSS_FEEDS:
+            all_articles.extend(fetch_rss(cfg))
+        all_articles.extend(fetch_hn())
+        all_articles.extend(fetch_arxiv())
     print(f"  Total raw: {len(all_articles)}", flush=True)
 
     # ── Deduplicate + classify ──
