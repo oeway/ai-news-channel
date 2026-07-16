@@ -20,20 +20,21 @@ A fully automated, daily newsletter that scrapes and curates the most important 
 
 ## How it works
 
-1. **Daily at 07:00 UTC** — GitHub Actions runs `scripts/fetch_news.py`
+1. **Daily at 07:00 UTC** — the `Update AI News Newsletter` workflow runs `scripts/fetch_news.py`
 2. The script fetches RSS feeds + arXiv + HackerNews, deduplicates, classifies, and scores articles
-3. It renders a complete `docs/index.html` with the day's top stories
-4. The action commits the new HTML and GitHub Pages serves it immediately
+3. It renders a complete `docs/index.html` with the day's top stories and commits it to `main`
+4. That push triggers `Deploy to GitHub Pages`, which copies `docs/` onto the `gh-pages` branch
+5. GitHub Pages serves the `gh-pages` branch
 
 ## Setup
 
 ### Enable GitHub Pages
 
-In your repository settings → **Pages** → set source to **Deploy from a branch**, branch `main`, folder `/docs`.
+In your repository settings → **Pages** → set source to **Deploy from a branch**, branch `gh-pages`, folder `/ (root)`. The `gh-pages` branch is created automatically the first time the deploy workflow runs.
 
 ### Manual trigger
 
-Go to **Actions → Update AI News Newsletter → Run workflow** for an immediate update.
+Go to **Actions → Update AI News Newsletter → Run workflow** for an immediate content refresh, or **Actions → Deploy to GitHub Pages → Run workflow** to just republish the current `docs/` contents.
 
 ## Local development
 
