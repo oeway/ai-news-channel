@@ -22,8 +22,7 @@ import urllib.error
 try:
     import feedparser
 except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
+    feedparser = None
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -128,6 +127,7 @@ CATEGORIES: Dict[str, Dict] = {
 DEFAULT_CATEGORY    = "industry"
 MAX_PER_CATEGORY    = 6
 MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
+MIN_ARTICLES        = 5    # abort without touching the published page if fewer were gathered
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
 
@@ -181,6 +181,9 @@ def long_date(dt: Optional[datetime]) -> str:
 
 def fetch_rss(cfg: Dict) -> List[Dict]:
     print(f"  RSS  {cfg['source']}…", flush=True)
+    if feedparser is None:
+        print("  [!] feedparser not installed, skipping RSS sources", file=sys.stderr)
+        return []
     raw = fetch(cfg["url"])
     if not raw: return []
     try:
@@ -311,6 +314,28 @@ def dedup(articles: List[Dict]) -> List[Dict]:
         seen_titles.add(tkey)
         out.append(a)
     return out
+
+# ─── Curated input (bypasses live fetch) ────────────────────────────────────
+
+def load_from_json(path: str) -> List[Dict]:
+    """Load a curated article list and run it through the same
+    dedup/classify/score/render pipeline as a live fetch. Each entry may
+    set "category" explicitly to skip keyword classification, and
+    "featured": true to force the featured slot."""
+    raw = json.loads(Path(path).read_text())
+    articles = []
+    for item in raw:
+        articles.append({
+            "title":        item["title"],
+            "url":          item["url"],
+            "desc":         item.get("desc", ""),
+            "source":       item.get("source", "Web"),
+            "source_color": item.get("source_color", "#6b7280"),
+            "date":         to_dt(item.get("date")),
+            "category":     item.get("category"),
+            "featured":     bool(item.get("featured")),
+        })
+    return articles
 
 # ─── Load / save issue counter ───────────────────────────────────────────────
 
@@ -825,14 +850,27 @@ def main() -> None:
     issue = load_issue() + 1
     print(f"Generating Issue #{issue}", flush=True)
 
+    from_json = None
+    if "--from-json" in sys.argv:
+        from_json = sys.argv[sys.argv.index("--from-json") + 1]
+
     # ── Fetch ──
-    print("\n[1/4] Fetching news…", flush=True)
     all_articles: List[Dict] = []
-    for cfg in RSS_FEEDS:
-        all_articles.extend(fetch_rss(cfg))
-    all_articles.extend(fetch_hn())
-    all_articles.extend(fetch_arxiv())
+    if from_json:
+        print(f"\n[1/4] Loading curated articles from {from_json}…", flush=True)
+        all_articles.extend(load_from_json(from_json))
+    else:
+        print("\n[1/4] Fetching news…", flush=True)
+        for cfg in RSS_FEEDS:
+            all_articles.extend(fetch_rss(cfg))
+        all_articles.extend(fetch_hn())
+        all_articles.extend(fetch_arxiv())
     print(f"  Total raw: {len(all_articles)}", flush=True)
+
+    if len(all_articles) < MIN_ARTICLES:
+        print(f"\n✖ Only {len(all_articles)} articles gathered (need ≥{MIN_ARTICLES}) — "
+              f"leaving the published page untouched.", file=sys.stderr)
+        sys.exit(1)
 
     # ── Deduplicate + classify ──
     print("\n[2/4] Deduplicating & classifying…", flush=True)
@@ -853,12 +891,17 @@ def main() -> None:
 
     # ── Featured ──
     featured: Optional[Dict] = None
-    now = datetime.now(timezone.utc)
     for a in articles:
-        dt = a.get("date")
-        if dt and (now - dt).total_seconds() / 3600 < MAX_FEATURED_AGE_H:
+        if a.get("featured"):
             featured = a
             break
+    if featured is None:
+        now = datetime.now(timezone.utc)
+        for a in articles:
+            dt = a.get("date")
+            if dt and (now - dt).total_seconds() / 3600 < MAX_FEATURED_AGE_H:
+                featured = a
+                break
     if featured is None and articles:
         featured = articles[0]
 

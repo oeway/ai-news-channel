@@ -1,0 +1,47 @@
+name: Update AI News Newsletter
+
+on:
+  schedule:
+    # Daily at 07:00 UTC, so a fresh issue is ready each morning
+    - cron: '0 7 * * *'
+  workflow_dispatch:   # allow manual runs from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: newsletter-update
+  cancel-in-progress: false
+
+jobs:
+  update-newsletter:
+    name: Fetch & render newsletter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate newsletter
+        run: python scripts/fetch_news.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          if git diff --staged --quiet; then
+            echo "No changes — newsletter is already up to date."
+          else
+            DATE=$(date -u +"%Y-%m-%d")
+            git commit -m "News: update AI Pulse newsletter · $DATE"
+            git push
+          fi

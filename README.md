@@ -20,20 +20,20 @@ A fully automated, daily newsletter that scrapes and curates the most important 
 
 ## How it works
 
-1. **Daily at 07:00 UTC** — GitHub Actions runs `scripts/fetch_news.py`
-2. The script fetches RSS feeds + arXiv + HackerNews, deduplicates, classifies, and scores articles
-3. It renders a complete `docs/index.html` with the day's top stories
-4. The action commits the new HTML and GitHub Pages serves it immediately
+1. **Daily at 07:00 UTC** — `.github/workflows/update-news.yml` runs `scripts/fetch_news.py` on GitHub's own runners (which have normal internet access)
+2. The script fetches RSS feeds + arXiv + HackerNews, deduplicates, classifies, and scores articles, aborting without touching the published page if fewer than 5 articles were gathered
+3. It renders a complete `docs/index.html` with the day's top stories and commits it to `main`
+4. `.github/workflows/deploy-pages.yml` triggers on that push and publishes `docs/` to the `gh-pages` branch
 
 ## Setup
 
 ### Enable GitHub Pages
 
-In your repository settings → **Pages** → set source to **Deploy from a branch**, branch `main`, folder `/docs`.
+In your repository settings → **Pages** → set source to **Deploy from a branch**, branch `gh-pages`, folder `/ (root)`.
 
 ### Manual trigger
 
-Go to **Actions → Update AI News Newsletter → Run workflow** for an immediate update.
+Go to **Actions → Update AI News Newsletter → Run workflow** for an immediate refresh.
 
 ## Local development
 
@@ -42,6 +42,10 @@ pip install -r requirements.txt
 python scripts/fetch_news.py
 open docs/index.html
 ```
+
+### Curated / offline runs
+
+`scripts/fetch_news.py` also accepts a `--from-json <path>` flag that feeds a hand-curated list of articles through the same dedupe/classify/score/render pipeline as a live fetch — useful when the live sources aren't reachable (e.g. a sandboxed environment) but you still want to publish real, verified stories. Each entry accepts `title`, `url`, `desc`, `source`, `source_color`, `date` (ISO 8601), an explicit `category` (`research` / `agents` / `products` / `industry` / `open_source`), and an optional `featured: true` to force the top story.
 
 ## License
 
