@@ -1,2 +1,2 @@
-feedparser>=6.0.0
-requests>=2.31.0
+# scripts/fetch_news.py uses only the Python standard library
+# (urllib, xml.etree, json, etc.) — no third-party packages required.

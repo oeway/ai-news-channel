@@ -19,11 +19,8 @@ import urllib.parse
 import urllib.request
 import urllib.error
 
-try:
-    import feedparser
-except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
+# RSS/Atom feeds are parsed with the stdlib (xml.etree) below — no third-party
+# feed-parsing dependency required.
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -179,32 +176,56 @@ def long_date(dt: Optional[datetime]) -> str:
 
 # ─── Fetchers ────────────────────────────────────────────────────────────────
 
+ATOM_NS = "http://www.w3.org/2005/Atom"
+CONTENT_NS = "http://purl.org/rss/1.0/modules/content/"
+DC_NS = "http://purl.org/dc/elements/1.1/"
+
+def _clean_text(raw: str) -> str:
+    raw = re.sub(r"<!\[CDATA\[(.*?)\]\]>", r"\1", raw, flags=re.S)
+    raw = re.sub(r"<[^>]+>", " ", raw)
+    return re.sub(r"\s+", " ", raw).strip()
+
 def fetch_rss(cfg: Dict) -> List[Dict]:
+    """Parse RSS 2.0 or Atom feeds with the stdlib — no feedparser dependency."""
     print(f"  RSS  {cfg['source']}…", flush=True)
     raw = fetch(cfg["url"])
     if not raw: return []
     try:
-        feed     = feedparser.parse(raw)
-        articles = []
-        for e in feed.entries[:20]:
-            desc = ""
-            for attr in ("summary", "description", "content"):
-                val = getattr(e, attr, None)
-                if isinstance(val, list): val = val[0].get("value", "") if val else ""
-                if val:
-                    desc = re.sub(r"<[^>]+>", " ", val)
-                    desc = re.sub(r"\s+", " ", desc).strip()[:400]
-                    break
-            dt = None
-            for attr in ("published_parsed", "updated_parsed", "created_parsed"):
-                dt = to_dt(getattr(e, attr, None))
-                if dt: break
-            title = getattr(e, "title", "").strip()
-            url   = getattr(e, "link",  "").strip()
+        root = ET.fromstring(raw)
+        articles: List[Dict] = []
+
+        items = root.findall(".//item")
+        for it in items[:20]:
+            title = (it.findtext("title") or "").strip()
+            url   = (it.findtext("link") or "").strip()
+            desc_raw = (it.findtext("description")
+                        or it.findtext(f"{{{CONTENT_NS}}}encoded") or "")
+            desc  = _clean_text(desc_raw)[:400]
+            pub   = it.findtext("pubDate") or it.findtext(f"{{{DC_NS}}}date")
             if not title or not url: continue
             articles.append({"title": title, "url": url, "desc": desc,
                               "source": cfg["source"], "source_color": cfg["color"],
-                              "date": dt, "category": None})
+                              "date": to_dt(pub), "category": None})
+
+        if not articles:
+            for e in root.findall(f".//{{{ATOM_NS}}}entry")[:20]:
+                title = (e.findtext(f"{{{ATOM_NS}}}title") or "").strip()
+                url = ""
+                for le in e.findall(f"{{{ATOM_NS}}}link"):
+                    if le.get("rel", "alternate") == "alternate":
+                        url = le.get("href", ""); break
+                if not url:
+                    le = e.find(f"{{{ATOM_NS}}}link")
+                    url = le.get("href", "") if le is not None else ""
+                desc_raw = (e.findtext(f"{{{ATOM_NS}}}summary")
+                            or e.findtext(f"{{{ATOM_NS}}}content") or "")
+                desc = _clean_text(desc_raw)[:400]
+                pub = e.findtext(f"{{{ATOM_NS}}}published") or e.findtext(f"{{{ATOM_NS}}}updated")
+                if not title or not url: continue
+                articles.append({"title": title, "url": url.strip(), "desc": desc,
+                                  "source": cfg["source"], "source_color": cfg["color"],
+                                  "date": to_dt(pub), "category": None})
+
         print(f"     → {len(articles)} items", flush=True)
         return articles
     except Exception as ex:

@@ -5,12 +5,19 @@ on:
     branches: [main]
     paths: ['docs/**']
   workflow_dispatch:
+  workflow_run:
+    # Commits made by the newsletter-update workflow use the default
+    # GITHUB_TOKEN, which does not trigger the `push` event above — so we
+    # also deploy whenever that workflow finishes successfully.
+    workflows: ['Update AI News Newsletter']
+    types: [completed]
 
 permissions:
   contents: write
 
 jobs:
   deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
