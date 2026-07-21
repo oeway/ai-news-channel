@@ -22,8 +22,7 @@ import urllib.error
 try:
     import feedparser
 except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
+    feedparser = None  # only required for live RSS fetching, not for --from-json
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -128,6 +127,7 @@ CATEGORIES: Dict[str, Dict] = {
 DEFAULT_CATEGORY    = "industry"
 MAX_PER_CATEGORY    = 6
 MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
+MIN_ARTICLES        = 5    # abort without touching docs/ if fewer than this were gathered
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
 
@@ -180,6 +180,9 @@ def long_date(dt: Optional[datetime]) -> str:
 # ─── Fetchers ────────────────────────────────────────────────────────────────
 
 def fetch_rss(cfg: Dict) -> List[Dict]:
+    if feedparser is None:
+        print("  [!] feedparser not installed, skipping RSS feeds", file=sys.stderr)
+        return []
     print(f"  RSS  {cfg['source']}…", flush=True)
     raw = fetch(cfg["url"])
     if not raw: return []
@@ -269,6 +272,27 @@ def fetch_arxiv() -> List[Dict]:
     except Exception as ex:
         print(f"  [!] Arxiv parse: {ex}", file=sys.stderr)
         return []
+
+
+def load_from_json(path: str) -> List[Dict]:
+    """Load a curated article list (used when live fetching isn't possible,
+    e.g. a sandboxed environment with no network access to news sites)."""
+    print(f"  Curated JSON  {path}…", flush=True)
+    items = json.loads(Path(path).read_text(encoding="utf-8"))
+    articles = []
+    for it in items:
+        title = (it.get("title") or "").strip()
+        url   = (it.get("url") or "").strip()
+        if not title or not url:
+            continue
+        src = it.get("source", "")
+        articles.append({
+            "title": title, "url": url, "desc": (it.get("desc") or "")[:400],
+            "source": src, "source_color": SOURCE_COLORS.get(src, "#8b5cf6"),
+            "date": to_dt(it.get("date")), "category": it.get("category"),
+        })
+    print(f"     → {len(articles)} items", flush=True)
+    return articles
 
 # ─── Classify ────────────────────────────────────────────────────────────────
 
@@ -820,6 +844,10 @@ def main() -> None:
     print("⚡ AI Pulse Newsletter Generator", flush=True)
     print("─" * 50, flush=True)
 
+    from_json = None
+    if "--from-json" in sys.argv:
+        from_json = sys.argv[sys.argv.index("--from-json") + 1]
+
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
 
     issue = load_issue() + 1
@@ -828,10 +856,13 @@ def main() -> None:
     # ── Fetch ──
     print("\n[1/4] Fetching news…", flush=True)
     all_articles: List[Dict] = []
-    for cfg in RSS_FEEDS:
-        all_articles.extend(fetch_rss(cfg))
-    all_articles.extend(fetch_hn())
-    all_articles.extend(fetch_arxiv())
+    if from_json:
+        all_articles.extend(load_from_json(from_json))
+    else:
+        for cfg in RSS_FEEDS:
+            all_articles.extend(fetch_rss(cfg))
+        all_articles.extend(fetch_hn())
+        all_articles.extend(fetch_arxiv())
     print(f"  Total raw: {len(all_articles)}", flush=True)
 
     # ── Deduplicate + classify ──
@@ -840,6 +871,11 @@ def main() -> None:
     for a in articles:
         a["category"] = classify(a)
     print(f"  After dedup: {len(articles)}", flush=True)
+
+    if len(articles) < MIN_ARTICLES:
+        print(f"\n❌ Only {len(articles)} articles gathered (need ≥{MIN_ARTICLES}). "
+              f"Leaving docs/ untouched.", file=sys.stderr)
+        sys.exit(1)
 
     # ── Sort & bucket ──
     print("\n[3/4] Scoring & sorting…", flush=True)
