@@ -128,6 +128,7 @@ CATEGORIES: Dict[str, Dict] = {
 DEFAULT_CATEGORY    = "industry"
 MAX_PER_CATEGORY    = 6
 MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
+MIN_ARTICLES        = 5    # below this, sources are likely unreachable — don't publish an empty page
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
 
@@ -840,6 +841,11 @@ def main() -> None:
     for a in articles:
         a["category"] = classify(a)
     print(f"  After dedup: {len(articles)}", flush=True)
+
+    if len(articles) < MIN_ARTICLES:
+        print(f"\n❌ Only {len(articles)} articles fetched (need ≥{MIN_ARTICLES}) — "
+              "sources likely unreachable. Leaving published page untouched.", file=sys.stderr)
+        sys.exit(1)
 
     # ── Sort & bucket ──
     print("\n[3/4] Scoring & sorting…", flush=True)
