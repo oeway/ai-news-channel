@@ -43,6 +43,17 @@ python scripts/fetch_news.py
 open docs/index.html
 ```
 
+### Curated input mode
+
+If live RSS/arXiv/HN fetching isn't reachable from where you're running (e.g. a sandboxed
+environment), pass `--from-json path/to/articles.json` — a JSON array of
+`{title, url, desc, source, date, category}` objects that flows through the same
+dedup/classify/score/render pipeline as a normal fetch:
+
+```bash
+python scripts/fetch_news.py --from-json articles.json
+```
+
 ## License
 
 MIT

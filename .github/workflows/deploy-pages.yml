@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -19,10 +23,16 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Stage docs/ outside the repo BEFORE the orphan checkout wipes the
+          # working tree (`git rm -rf .` removes files from disk, not just the
+          # index — copying from docs/* after that fails with "No such file").
+          STAGE=$(mktemp -d)
+          cp -r docs/. "$STAGE/"
+
           git checkout --orphan gh-pages-tmp
           git rm -rf .
-          cp -r docs/* .
-          cp docs/.nojekyll . 2>/dev/null || true
+          cp -r "$STAGE/." .
           git add -A
           git commit -m "Deploy docs to GitHub Pages"
           git push origin HEAD:gh-pages --force
