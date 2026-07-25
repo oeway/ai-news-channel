@@ -22,8 +22,7 @@ import urllib.error
 try:
     import feedparser
 except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
+    feedparser = None
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -128,6 +127,7 @@ CATEGORIES: Dict[str, Dict] = {
 DEFAULT_CATEGORY    = "industry"
 MAX_PER_CATEGORY    = 6
 MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
+MIN_ARTICLES        = 5    # abort (leave published page untouched) below this
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
 
@@ -181,6 +181,9 @@ def long_date(dt: Optional[datetime]) -> str:
 
 def fetch_rss(cfg: Dict) -> List[Dict]:
     print(f"  RSS  {cfg['source']}…", flush=True)
+    if feedparser is None:
+        print("  [!] feedparser not installed, skipping RSS sources", file=sys.stderr)
+        return []
     raw = fetch(cfg["url"])
     if not raw: return []
     try:
@@ -816,9 +819,32 @@ def full_page(featured: Optional[Dict],
 
 # ─── Main ────────────────────────────────────────────────────────────────────
 
+def load_curated(path: str) -> List[Dict]:
+    """Load a hand-curated article list (used when live fetching is blocked,
+    e.g. a sandboxed egress policy) and feed it through the same
+    dedup/classify/score/render pipeline as a live fetch."""
+    raw = json.loads(Path(path).read_text())
+    out = []
+    for a in raw:
+        out.append({
+            "title":        a["title"],
+            "url":          a["url"],
+            "desc":         a.get("desc", ""),
+            "source":       a.get("source", "Web"),
+            "source_color": a.get("source_color", ""),
+            "date":         to_dt(a.get("date")),
+            "category":     a.get("category"),
+        })
+    return out
+
+
 def main() -> None:
     print("⚡ AI Pulse Newsletter Generator", flush=True)
     print("─" * 50, flush=True)
+
+    from_json = None
+    if "--from-json" in sys.argv:
+        from_json = sys.argv[sys.argv.index("--from-json") + 1]
 
     DOCS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -828,11 +854,20 @@ def main() -> None:
     # ── Fetch ──
     print("\n[1/4] Fetching news…", flush=True)
     all_articles: List[Dict] = []
-    for cfg in RSS_FEEDS:
-        all_articles.extend(fetch_rss(cfg))
-    all_articles.extend(fetch_hn())
-    all_articles.extend(fetch_arxiv())
+    if from_json:
+        print(f"  Loading curated articles from {from_json}", flush=True)
+        all_articles.extend(load_curated(from_json))
+    else:
+        for cfg in RSS_FEEDS:
+            all_articles.extend(fetch_rss(cfg))
+        all_articles.extend(fetch_hn())
+        all_articles.extend(fetch_arxiv())
     print(f"  Total raw: {len(all_articles)}", flush=True)
+
+    if len(all_articles) < MIN_ARTICLES:
+        print(f"\n❌ Only {len(all_articles)} articles fetched (< {MIN_ARTICLES}). "
+              f"Aborting without touching the published page.", file=sys.stderr)
+        sys.exit(1)
 
     # ── Deduplicate + classify ──
     print("\n[2/4] Deduplicating & classifying…", flush=True)
