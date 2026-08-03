@@ -9,6 +9,7 @@ import re
 import sys
 import json
 import time
+import argparse
 import hashlib
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
@@ -22,8 +23,7 @@ import urllib.error
 try:
     import feedparser
 except ImportError:
-    print("Error: feedparser not installed. Run: pip install feedparser", file=sys.stderr)
-    sys.exit(1)
+    feedparser = None  # only required for live RSS fetching; --from-json works without it
 
 # ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -128,6 +128,7 @@ CATEGORIES: Dict[str, Dict] = {
 DEFAULT_CATEGORY    = "industry"
 MAX_PER_CATEGORY    = 6
 MAX_FEATURED_AGE_H  = 72   # featured article must be < 3 days old
+MIN_ARTICLES        = 5    # live fetch aborts (leaving published page untouched) below this
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
 
@@ -181,6 +182,9 @@ def long_date(dt: Optional[datetime]) -> str:
 
 def fetch_rss(cfg: Dict) -> List[Dict]:
     print(f"  RSS  {cfg['source']}…", flush=True)
+    if feedparser is None:
+        print("  [!] feedparser not installed, skipping RSS sources", file=sys.stderr)
+        return []
     raw = fetch(cfg["url"])
     if not raw: return []
     try:
@@ -311,6 +315,21 @@ def dedup(articles: List[Dict]) -> List[Dict]:
         seen_titles.add(tkey)
         out.append(a)
     return out
+
+def load_curated(path: Path) -> List[Dict]:
+    raw = json.loads(path.read_text())
+    articles = []
+    for a in raw:
+        articles.append({
+            "title":        a["title"],
+            "url":          a["url"],
+            "desc":         a.get("desc", ""),
+            "source":       a.get("source", "Unknown"),
+            "source_color": a.get("source_color", ""),
+            "date":         to_dt(a.get("date")),
+            "category":     a.get("category"),
+        })
+    return articles
 
 # ─── Load / save issue counter ───────────────────────────────────────────────
 
@@ -817,6 +836,12 @@ def full_page(featured: Optional[Dict],
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="AI Pulse Newsletter Generator")
+    parser.add_argument("--from-json", type=Path, default=None,
+                         help="Load a curated article list instead of live-fetching "
+                              "(same dedup/classify/score/render pipeline)")
+    args = parser.parse_args()
+
     print("⚡ AI Pulse Newsletter Generator", flush=True)
     print("─" * 50, flush=True)
 
@@ -826,13 +851,22 @@ def main() -> None:
     print(f"Generating Issue #{issue}", flush=True)
 
     # ── Fetch ──
-    print("\n[1/4] Fetching news…", flush=True)
     all_articles: List[Dict] = []
-    for cfg in RSS_FEEDS:
-        all_articles.extend(fetch_rss(cfg))
-    all_articles.extend(fetch_hn())
-    all_articles.extend(fetch_arxiv())
-    print(f"  Total raw: {len(all_articles)}", flush=True)
+    if args.from_json:
+        print(f"\n[1/4] Loading curated articles from {args.from_json}…", flush=True)
+        all_articles.extend(load_curated(args.from_json))
+        print(f"  Total curated: {len(all_articles)}", flush=True)
+    else:
+        print("\n[1/4] Fetching news…", flush=True)
+        for cfg in RSS_FEEDS:
+            all_articles.extend(fetch_rss(cfg))
+        all_articles.extend(fetch_hn())
+        all_articles.extend(fetch_arxiv())
+        print(f"  Total raw: {len(all_articles)}", flush=True)
+        if len(all_articles) < MIN_ARTICLES:
+            print(f"\n❌ Only {len(all_articles)} articles fetched (need {MIN_ARTICLES}+). "
+                  "Leaving published page untouched.", file=sys.stderr)
+            sys.exit(1)
 
     # ── Deduplicate + classify ──
     print("\n[2/4] Deduplicating & classifying…", flush=True)
