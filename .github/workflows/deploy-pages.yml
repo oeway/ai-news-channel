@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
     paths: ['docs/**']
+  workflow_run:
+    workflows: ['Update AI News Newsletter']
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -16,8 +19,11 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Deploy to gh-pages branch
         run: |
