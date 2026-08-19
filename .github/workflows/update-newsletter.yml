@@ -29,13 +29,33 @@ jobs:
         run: python scripts/fetch_news.py
 
       - name: Commit and push if changed
+        id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           if git diff --quiet -- docs/; then
             echo "No changes to publish."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git add docs/index.html docs/state.json
           git commit -m "chore: refresh AI Pulse newsletter [skip ci]"
           git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # Pushes made with the default GITHUB_TOKEN don't trigger other workflows'
+      # `on: push` events, so deploy-pages.yml never fires after this job commits.
+      # Deploy inline instead of relying on that cross-workflow trigger.
+      - name: Deploy to gh-pages branch
+        if: steps.commit.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          STAGE=$(mktemp -d)
+          cp -r docs/. "$STAGE"/
+          git checkout --orphan gh-pages-tmp
+          git rm -rf . > /dev/null
+          cp -r "$STAGE"/. .
+          git add -A
+          git commit -m "Deploy docs to GitHub Pages"
+          git push origin HEAD:gh-pages --force
