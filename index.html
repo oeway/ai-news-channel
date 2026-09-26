@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Pulse — Daily AI News Digest · Issue #57</title>
+  <meta name="description" content="Daily curated AI news: research, agents, products, and industry — Issue #57, September 26, 2026">
+  <meta property="og:title"       content="AI Pulse — Issue #57 · September 26, 2026">
+  <meta property="og:description" content="Daily curated AI news digest covering research breakthroughs, AI agents, new products, and industry.">
+  <meta property="og:type"        content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+
+:root {
+  --bg:        #07071a;
+  --surface:   #0d0d24;
+  --card:      #111128;
+  --card-h:    #16163a;
+  --border:    rgba(255,255,255,0.06);
+  --border-h:  rgba(255,255,255,0.12);
+  --text:      #e8eaf6;
+  --muted:     #64748b;
+  --dim:       #334155;
+  font-size: 15px;
+}
+
+html { scroll-behavior: smooth }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a { color: inherit; }
+
+/* ── Background radial glows ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%,  rgba(99,102,241,.08) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 80%,  rgba(6,182,212,.06)  0%, transparent 70%);
+}
+
+.page { position: relative; z-index: 1; }
+
+/* ── Header ── */
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(13,13,36,.98) 0%, rgba(7,7,26,.9) 100%);
+  backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 100;
+}
+.header-inner {
+  max-width: 1160px; margin: 0 auto;
+  padding: .9rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.brand { display: flex; align-items: center; gap: .75rem; text-decoration: none }
+.brand-logo { font-size: 1.7rem; line-height: 1 }
+.brand-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.35rem; font-weight: 700;
+  background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.brand-sub { font-size: .72rem; color: var(--muted); margin-top: 1px }
+
+.header-right { display: flex; align-items: center; gap: .75rem; flex-shrink: 0 }
+.issue-badge {
+  font-size: .72rem; font-weight: 700; letter-spacing: .07em;
+  background: linear-gradient(135deg, rgba(167,139,250,.15), rgba(56,189,248,.15));
+  border: 1px solid rgba(167,139,250,.3);
+  color: #a78bfa; padding: .25rem .7rem; border-radius: 20px;
+}
+.header-date { font-size: .8rem; color: var(--muted) }
+.live-dot {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: #22c55e; margin-right: .3rem;
+  animation: pulse-dot 2.5s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,.4) }
+  50%      { opacity: .7; box-shadow: 0 0 0 5px rgba(34,197,94,0) }
+}
+
+/* ── Category nav ── */
+.cat-nav {
+  max-width: 1160px; margin: 0 auto;
+  padding: .9rem 1.5rem;
+  display: flex; gap: .5rem; flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+.nav-pill {
+  font-size: .78rem; font-weight: 500;
+  padding: .3rem .75rem; border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--cat) 30%, transparent);
+  color: var(--cat); text-decoration: none;
+  transition: background .15s, transform .15s;
+  white-space: nowrap;
+}
+.nav-pill:hover {
+  background: color-mix(in srgb, var(--cat) 12%, transparent);
+  transform: translateY(-1px);
+}
+
+/* ── Main ── */
+main { max-width: 1160px; margin: 0 auto; padding: 2rem 1.5rem }
+
+/* ── Featured ── */
+.featured-wrap { margin-bottom: 2.5rem }
+.featured-card {
+  background: linear-gradient(135deg, #14103a 0%, #0e0e28 60%, #0a1428 100%);
+  border: 1px solid rgba(167,139,250,.22);
+  border-radius: 18px; padding: 2rem 2.5rem;
+  position: relative; overflow: hidden;
+}
+.featured-card::after {
+  content: ''; position: absolute; top: -80px; right: -80px;
+  width: 350px; height: 350px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.featured-eyebrow {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem
+}
+.featured-badge {
+  font-size: .72rem; font-weight: 700; letter-spacing: .1em;
+  color: #a78bfa; text-transform: uppercase;
+}
+.featured-cat { font-size: .78rem; font-weight: 500 }
+.featured-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.3rem,3vw,1.9rem); font-weight: 700;
+  line-height: 1.3; margin-bottom: 1rem;
+}
+.featured-meta { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem }
+.featured-age  { font-size: .8rem; color: var(--muted) }
+.featured-body { color: #94a3b8; line-height: 1.7; margin-bottom: 1.5rem; max-width: 680px }
+.featured-btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: linear-gradient(135deg, #6d28d9, #4f46e5);
+  color: #fff; text-decoration: none;
+  padding: .6rem 1.3rem; border-radius: 9px;
+  font-size: .88rem; font-weight: 600;
+  transition: opacity .2s, transform .15s;
+  box-shadow: 0 4px 14px rgba(99,102,241,.35);
+}
+.featured-btn:hover { opacity: .88; transform: translateY(-1px) }
+
+/* ── Category section ── */
+.cat-section { margin-bottom: 3rem }
+.section-hdr {
+  display: flex; align-items: center; gap: .6rem;
+  margin-bottom: 1.25rem; padding-bottom: .75rem;
+  border-bottom: 1px solid var(--border);
+}
+.section-icon  { font-size: 1.25rem }
+.section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem; font-weight: 600; color: var(--cat);
+}
+.section-count {
+  margin-left: auto; font-size: .72rem; color: var(--muted);
+  background: var(--card); border: 1px solid var(--border);
+  padding: .15rem .55rem; border-radius: 12px;
+}
+
+/* ── Cards ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 1rem;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.15rem 1.25rem;
+  display: flex; flex-direction: column; gap: .6rem;
+  transition: border-color .2s, background .2s, transform .2s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--cat, #8b5cf6); opacity: 0; transition: opacity .2s;
+}
+.card:hover {
+  border-color: color-mix(in srgb, var(--cat) 40%, transparent);
+  background: var(--card-h);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,.35), 0 0 0 1px color-mix(in srgb,var(--cat) 15%,transparent);
+}
+.card:hover::before { opacity: 1 }
+
+.card-top  { display: flex; align-items: center; justify-content: space-between }
+.card-age  { font-size: .72rem; color: var(--muted) }
+.card-title {
+  font-size: .93rem; font-weight: 600; line-height: 1.45;
+}
+.card-title a {
+  text-decoration: none; color: var(--text);
+  transition: color .15s;
+}
+.card-title a:hover { color: var(--cat, #a78bfa) }
+.card-desc {
+  font-size: .81rem; color: var(--muted); line-height: 1.55;
+  flex-grow: 1;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-link {
+  font-size: .78rem; font-weight: 500;
+  color: color-mix(in srgb, var(--cat) 90%, #fff);
+  text-decoration: none; margin-top: auto;
+  transition: opacity .15s;
+}
+.card-link:hover { opacity: .75 }
+
+/* ── Source pill ── */
+.pill {
+  display: inline-block;
+  font-size: .68rem; font-weight: 700; letter-spacing: .04em;
+  padding: .15rem .5rem; border-radius: 5px; border: 1px solid;
+  text-transform: uppercase;
+}
+
+/* ── Stats bar ── */
+.stats-bar {
+  max-width: 1160px; margin: 0 auto 0;
+  padding: .75rem 1.5rem;
+  display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  font-size: .78rem; color: var(--muted);
+}
+.stat-item { display: flex; align-items: center; gap: .35rem }
+.stat-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--c, #6b7280) }
+
+/* ── Footer ── */
+.site-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 2rem 1.5rem; margin-top: 3rem;
+}
+.footer-inner {
+  max-width: 1160px; margin: 0 auto;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 1rem; text-align: center;
+}
+.footer-brand {
+  font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700;
+  background: linear-gradient(135deg,#a78bfa,#38bdf8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; justify-content: center }
+.footer-links a { font-size: .82rem; color: var(--muted); text-decoration: none }
+.footer-links a:hover { color: var(--text) }
+.footer-note { font-size: .75rem; color: var(--dim) }
+.footer-sources {
+  font-size: .75rem; color: var(--dim);
+  display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center;
+}
+.footer-sources span::after { content: '·'; margin-left: .5rem }
+.footer-sources span:last-child::after { content: '' }
+
+/* ── Empty state ── */
+.empty-state {
+  text-align: center; padding: 3rem 1rem; color: var(--muted);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 1rem }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .header-inner { flex-wrap: wrap }
+  .featured-card { padding: 1.5rem }
+  main { padding: 1.25rem 1rem }
+  .cat-nav { padding: .75rem 1rem }
+}
+@media (max-width: 500px) {
+  .card-grid { grid-template-columns: 1fr }
+  .header-date { display: none }
+}
+
+/* ── Scroll-to-top ── */
+.scroll-top {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;
+  background: rgba(13,13,36,.9); border: 1px solid rgba(167,139,250,.3);
+  color: #a78bfa; width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; cursor: pointer; text-decoration: none;
+  backdrop-filter: blur(8px); transition: background .2s, transform .2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+}
+.scroll-top:hover { background: rgba(99,102,241,.25); transform: translateY(-2px) }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#">
+        <span class="brand-logo">⚡</span>
+        <div>
+          <div class="brand-name">AI Pulse</div>
+          <div class="brand-sub">Daily AI News Digest</div>
+        </div>
+      </a>
+      <div class="header-right">
+        <span class="issue-badge">Issue #57</span>
+        <span class="header-date"><span class="live-dot"></span>September 26, 2026</span>
+      </div>
+    </div>
+    <nav class="cat-nav"><a class="nav-pill" href="#research" style="--cat:#22d3ee">🔬&thinsp;Research &amp; Breakthroughs</a><a class="nav-pill" href="#agents" style="--cat:#c084fc">🤖&thinsp;AI Agents &amp; Automation</a><a class="nav-pill" href="#products" style="--cat:#60a5fa">🚀&thinsp;New Products &amp; Releases</a><a class="nav-pill" href="#industry" style="--cat:#4ade80">💼&thinsp;Industry &amp; Business</a></nav>
+  </header>
+
+  <main>
+    
+  <section class="featured-wrap">
+    <div class="featured-card">
+      <div class="featured-eyebrow">
+        <span class="featured-badge">✦ Featured Story</span>
+        <span class="featured-cat" style="color:#c084fc">🤖 AI Agents &amp; Automation</span>
+      </div>
+      <h2 class="featured-title">Restricting AI Agents When No Human Is Watching</h2>
+      <div class="featured-meta">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="featured-age">17m ago</span>
+      </div>
+      <p class="featured-body">🔥 1 points · 0 comments on Hacker News</p>
+      <a class="featured-btn" href="https://a16y.ai/blog/securing-ai-agents-when-no-human-is-watching" target="_blank" rel="noopener">
+        Read Full Story ↗
+      </a>
+    </div>
+  </section>
+    
+  <section class="cat-section" id="research" style="--cat:#22d3ee;--cat-bg:rgba(34,211,238,0.07);--cat-glow:rgba(34,211,238,0.12)">
+    <header class="section-hdr">
+      <span class="section-icon">🔬</span>
+      <h2 class="section-title">Research &amp; Breakthroughs</h2>
+      <span class="section-count">6 stories</span>
+    </header>
+    <div class="card-grid">
+      
+    <article class="card" style="--cat:#22d3ee">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">13h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/09/25/unsecured-openai-agents-posted-53-user-images-on-the-internet-without-the-labs-knowledge/" target="_blank" rel="noopener">Unsecured OpenAI agents posted 53 user images on the internet without the lab’s knowledge</a></h3>
+      <p  class="card-desc">AI agents operating in OpenAI&#x27;s research environment posted user images on public image-hosting sites without the lab&#x27;s knowledge.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/09/25/unsecured-openai-agents-posted-53-user-images-on-the-internet-without-the-labs-knowledge/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#22d3ee">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">20h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/09/25/for-months-openais-agent-swarms-have-been-attacking-online-databases-to-find-obscure-facts/" target="_blank" rel="noopener">For months, OpenAI’s agent swarms have been attacking online databases to find obscure facts</a></h3>
+      <p  class="card-desc">The latest unauthorized agent swarms were discovered by researchers.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/09/25/for-months-openais-agent-swarms-have-been-attacking-online-databases-to-find-obscure-facts/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#22d3ee">
+      <div class="card-top">
+        <span class="pill" style="background:#0ea5e922;color:#0ea5e9;border-color:#0ea5e944">IEEE Spectrum</span>
+        <span class="card-age">3d ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://spectrum.ieee.org/paper2agent-ai-agents-research-papers" target="_blank" rel="noopener">Why Read a Research Paper When You Can Turn It Into an AI Agent?</a></h3>
+      <p  class="card-desc">Have you ever read a paper in Science or Nature and thought, “Man, that research was so cool. I wish I could try that method on my own data,” only to spend a week wrestling with someone else’s undocumented repo, broken dependencies, and hal</p>
+      <a  class="card-link" href="https://spectrum.ieee.org/paper2agent-ai-agents-research-papers" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#22d3ee">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">3d ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://machinelearningmastery.com/the-roadmap-to-mastering-llm-inference-optimization/" target="_blank" rel="noopener">Mastering LLM Inference Optimization</a></h3>
+      <p  class="card-desc">🔥 2 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://machinelearningmastery.com/the-roadmap-to-mastering-llm-inference-optimization/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#22d3ee">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">4d ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://ICML.cc/virtual/2025/poster/45395" target="_blank" rel="noopener">EncryptedLLM: Privacy-Preserving Large Language Model Inference</a></h3>
+      <p  class="card-desc">🔥 1 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://ICML.cc/virtual/2025/poster/45395" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#22d3ee">
+      <div class="card-top">
+        <span class="pill" style="background:#0ea5e922;color:#0ea5e9;border-color:#0ea5e944">IEEE Spectrum</span>
+        <span class="card-age">Sep 18, 2026</span>
+      </div>
+      <h3 class="card-title"><a href="https://content.knowledgehub.wiley.com/76-faster-replication-same-infrastructure/" target="_blank" rel="noopener">Parallel Reads and Write Optimization for Large-Scale Data Replication</a></h3>
+      <p  class="card-desc">This White Paper gives data engineers and architects a practical overview of how parallel partitioned reads, write-path optimization, and cloud-native bulk loading reduce large-table replication times, and why replication speed has become a</p>
+      <a  class="card-link" href="https://content.knowledgehub.wiley.com/76-faster-replication-same-infrastructure/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+    </div>
+  </section>
+  <section class="cat-section" id="agents" style="--cat:#c084fc;--cat-bg:rgba(192,132,252,0.07);--cat-glow:rgba(192,132,252,0.12)">
+    <header class="section-hdr">
+      <span class="section-icon">🤖</span>
+      <h2 class="section-title">AI Agents &amp; Automation</h2>
+      <span class="section-count">6 stories</span>
+    </header>
+    <div class="card-grid">
+      
+    <article class="card" style="--cat:#c084fc">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">17m ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://a16y.ai/blog/securing-ai-agents-when-no-human-is-watching" target="_blank" rel="noopener">Restricting AI Agents When No Human Is Watching</a></h3>
+      <p  class="card-desc">🔥 1 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://a16y.ai/blog/securing-ai-agents-when-no-human-is-watching" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#c084fc">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">45m ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://agentboxd.com" target="_blank" rel="noopener">Agentboxd – Email inboxes for AI agents that treat mail as hostile</a></h3>
+      <p  class="card-desc">🔥 2 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://agentboxd.com" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#c084fc">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">2h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://anaivebidder.com/posts/the-agentic-pomodoro-iterating-faster/" target="_blank" rel="noopener">Using Pomodoro to limit interaction with AI</a></h3>
+      <p  class="card-desc">🔥 2 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://anaivebidder.com/posts/the-agentic-pomodoro-iterating-faster/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#c084fc">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">3h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://www.phoronix.com/news/Linux-Considers-AGENTS-MD" target="_blank" rel="noopener">Linux Kernel Developers Consider Adding Agents.md to Help Guide AI/LLM Agents</a></h3>
+      <p  class="card-desc">🔥 3 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://www.phoronix.com/news/Linux-Considers-AGENTS-MD" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#c084fc">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">6h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://botbin.io/?md=true" target="_blank" rel="noopener">Show HN: Botbin.io – pastebin for AI agent artifacts</a></h3>
+      <p  class="card-desc">🔥 2 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://botbin.io/?md=true" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#c084fc">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">6h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://www.f-secure.com/en/partners/insights/can-ai-shopping-agents-be-trusted-we-built-one-to-find-out" target="_blank" rel="noopener">Can AI Shopping Agents Be Trusted?</a></h3>
+      <p  class="card-desc">🔥 15 points · 27 comments on Hacker News</p>
+      <a  class="card-link" href="https://www.f-secure.com/en/partners/insights/can-ai-shopping-agents-be-trusted-we-built-one-to-find-out" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+    </div>
+  </section>
+  <section class="cat-section" id="products" style="--cat:#60a5fa;--cat-bg:rgba(96,165,250,0.07);--cat-glow:rgba(96,165,250,0.12)">
+    <header class="section-hdr">
+      <span class="section-icon">🚀</span>
+      <h2 class="section-title">New Products &amp; Releases</h2>
+      <span class="section-count">6 stories</span>
+    </header>
+    <div class="card-grid">
+      
+    <article class="card" style="--cat:#60a5fa">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">30m ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://news.ycombinator.com/item?id=49855468" target="_blank" rel="noopener">Show HN: I built a tool that gives any website an API and MCP</a></h3>
+      <p  class="card-desc">🔥 3 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://news.ycombinator.com/item?id=49855468" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#60a5fa">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">12h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/09/25/crusoe-abandons-1-25b-plan-to-use-boom-turbines-at-ai-data-centers/" target="_blank" rel="noopener">Crusoe abandons $1.25B plan to use Boom turbines at AI data centers</a></h3>
+      <p  class="card-desc">Boom Supersonic CEO Blake Scholl said the company&#x27;s new stationary power plants were no longer in Crusoe&#x27;s near-term plans.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/09/25/crusoe-abandons-1-25b-plan-to-use-boom-turbines-at-ai-data-centers/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#60a5fa">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">15h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/09/25/meta-opens-early-access-program-for-new-muse-features/" target="_blank" rel="noopener">Meta opens early access program for new Muse features</a></h3>
+      <p  class="card-desc">Anyone interested in joining has to ask Muse to put them on the list.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/09/25/meta-opens-early-access-program-for-new-muse-features/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#60a5fa">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">17h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/podcast/metas-muse-just-stole-the-ai-spotlight-from-openai-and-anthropic/" target="_blank" rel="noopener">Meta’s Muse just stole the AI spotlight from OpenAI and Anthropic</a></h3>
+      <p  class="card-desc">When AI leaders at OpenAI and Anthropic started talking about “pacing the frontier,”&amp;#160;maybe someone&amp;#160;should have asked: what pace?&amp;#160;Now&amp;#160;it’s&amp;#160;turned into model drop week for both companies as&amp;#160;Anthropic rolled out O</p>
+      <a  class="card-link" href="https://techcrunch.com/podcast/metas-muse-just-stole-the-ai-spotlight-from-openai-and-anthropic/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#60a5fa">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">18h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/09/25/some-supabase-customers-are-publicly-exposing-reams-of-peoples-data-to-the-web/" target="_blank" rel="noopener">Some Supabase customers are publicly exposing reams of people’s data to the web</a></h3>
+      <p  class="card-desc">The findings highlight how AI-generated and vibe-coded apps can spill and expose users&#x27; data when not configured or secured properly.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/09/25/some-supabase-customers-are-publicly-exposing-reams-of-peoples-data-to-the-web/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#60a5fa">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">10h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://www.restaurantdive.com/news/mcdonalds-archiq-drive-thru-artificial-intelligence-next-strategy/831256/" target="_blank" rel="noopener">McDonald&#x27;s turns to AI for drive-thru, inventory management, order accuracy</a></h3>
+      <p  class="card-desc">🔥 3 points · 5 comments on Hacker News</p>
+      <a  class="card-link" href="https://www.restaurantdive.com/news/mcdonalds-archiq-drive-thru-artificial-intelligence-next-strategy/831256/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+    </div>
+  </section>
+  <section class="cat-section" id="industry" style="--cat:#4ade80;--cat-bg:rgba(74,222,128,0.07);--cat-glow:rgba(74,222,128,0.12)">
+    <header class="section-hdr">
+      <span class="section-icon">💼</span>
+      <h2 class="section-title">Industry &amp; Business</h2>
+      <span class="section-count">6 stories</span>
+    </header>
+    <div class="card-grid">
+      
+    <article class="card" style="--cat:#4ade80">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">10h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/09/25/at-meta-connect-the-companys-smart-glasses-were-everywhere/" target="_blank" rel="noopener">At Meta Connect, the company’s smart glasses were everywhere</a></h3>
+      <p  class="card-desc">The company behind Facebook and Instagram wants to keep consumers connected to the digital world via its ever-growing line of smart glasses.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/09/25/at-meta-connect-the-companys-smart-glasses-were-everywhere/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#4ade80">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">16h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/09/25/anthropic-to-pay-akamai-11-6-billion-over-seven-years-in-cloud-deal/" target="_blank" rel="noopener">Anthropic to pay Akamai $11.6 billion over seven years in cloud deal</a></h3>
+      <p  class="card-desc">Anthropic has committed $11.6 billion over seven years to Akamai&#x27;s cloud infrastructure, a bet on CPUs that could grow to about $20 billion, and in an unusual arrangement, Akamai is giving Anthropic a potential stake of up to 5% of its stoc</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/09/25/anthropic-to-pay-akamai-11-6-billion-over-seven-years-in-cloud-deal/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#4ade80">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">17h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/09/25/mark-wahlberg-is-coming-to-techcrunch-disrupt-2026/" target="_blank" rel="noopener">Mark Wahlberg is coming to TechCrunch Disrupt 2026, and he wants to talk about your work, not his</a></h3>
+      <p  class="card-desc">Mark Wahlberg joins Bruce K. Lee at Disrupt to discuss investing, entrepreneurship, healthcare, wellness, and building businesses.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/09/25/mark-wahlberg-is-coming-to-techcrunch-disrupt-2026/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#4ade80">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">17h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/09/25/ahead-of-u-s-ipo-british-ai-neocloud-nscale-secures-3-36b-in-convertible-finacing/" target="_blank" rel="noopener">Ahead of US IPO, British AI neocloud Nscale secures $3.36B in convertible financing</a></h3>
+      <p  class="card-desc">The funding, which comes from Third Point, Nvidia, and others, will fuel the company&#x27;s massive AI data center buildout.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/09/25/ahead-of-u-s-ipo-british-ai-neocloud-nscale-secures-3-36b-in-convertible-finacing/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#4ade80">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">18h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/09/25/astra-and-opus-just-passed-turings-other-test/" target="_blank" rel="noopener">Astra and Opus just passed Turing’s other test</a></h3>
+      <p  class="card-desc">Frontier AI models are finishing Alan Turing&#x27;s World War II codebreaking work.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/09/25/astra-and-opus-just-passed-turings-other-test/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#4ade80">
+      <div class="card-top">
+        <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">MIT Tech Review</span>
+        <span class="card-age">23h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://www.technologyreview.com/2026/09/25/1145157/the-download-pentagon-ai-lie-detector-young-organ-limits/" target="_blank" rel="noopener">The Download: the Pentagon’s AI-powered lie detector and young organ limits</a></h3>
+      <p  class="card-desc">This is today&amp;#8217;s edition of The Download, our weekday newsletter that provides a daily dose of what&amp;#8217;s going on in the world of technology. The Pentagon wants $30 million to build an AI-powered lie detector The US government wants</p>
+      <a  class="card-link" href="https://www.technologyreview.com/2026/09/25/1145157/the-download-pentagon-ai-lie-detector-young-organ-limits/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+    </div>
+  </section>
+  </main>
+
+  <div class="stats-bar"><span class="stat-item"><span class="stat-dot" style="--c:#22d3ee"></span>🔬 6 Research &amp; Breakthroughs</span><span class="stat-item"><span class="stat-dot" style="--c:#c084fc"></span>🤖 6 AI Agents &amp; Automation</span><span class="stat-item"><span class="stat-dot" style="--c:#60a5fa"></span>🚀 6 New Products &amp; Releases</span><span class="stat-item"><span class="stat-dot" style="--c:#4ade80"></span>💼 6 Industry &amp; Business</span></div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">⚡ AI Pulse</div>
+      <div class="footer-links">
+        <a href="https://github.com/oeway/ai-news-channel" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">arXiv CS.AI</a>
+        <a href="https://news.ycombinator.com" target="_blank" rel="noopener">HackerNews</a>
+      </div>
+      <div class="footer-sources"><span>HackerNews</span><span>IEEE Spectrum</span><span>MIT Tech Review</span><span>TechCrunch</span></div>
+      <div class="footer-note">
+        Auto-generated from 4 sources · 24 articles · Last updated September 26, 2026
+        <br>Generated at <time datetime="2026-09-26T11:52:57Z">2026-09-26T11:52:57Z</time>
+      </div>
+    </div>
+  </footer>
+
+</div>
+<a class="scroll-top" href="#" aria-label="Back to top">↑</a>
+</body>
+</html>
