@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Pulse — Daily AI News Digest · Issue #105</title>
+  <meta name="description" content="Daily curated AI news: research, agents, products, and industry — Issue #105, November 14, 2026">
+  <meta property="og:title"       content="AI Pulse — Issue #105 · November 14, 2026">
+  <meta property="og:description" content="Daily curated AI news digest covering research breakthroughs, AI agents, new products, and industry.">
+  <meta property="og:type"        content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+
+:root {
+  --bg:        #07071a;
+  --surface:   #0d0d24;
+  --card:      #111128;
+  --card-h:    #16163a;
+  --border:    rgba(255,255,255,0.06);
+  --border-h:  rgba(255,255,255,0.12);
+  --text:      #e8eaf6;
+  --muted:     #64748b;
+  --dim:       #334155;
+  font-size: 15px;
+}
+
+html { scroll-behavior: smooth }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a { color: inherit; }
+
+/* ── Background radial glows ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%,  rgba(99,102,241,.08) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 80%,  rgba(6,182,212,.06)  0%, transparent 70%);
+}
+
+.page { position: relative; z-index: 1; }
+
+/* ── Header ── */
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(13,13,36,.98) 0%, rgba(7,7,26,.9) 100%);
+  backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 100;
+}
+.header-inner {
+  max-width: 1160px; margin: 0 auto;
+  padding: .9rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.brand { display: flex; align-items: center; gap: .75rem; text-decoration: none }
+.brand-logo { font-size: 1.7rem; line-height: 1 }
+.brand-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.35rem; font-weight: 700;
+  background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.brand-sub { font-size: .72rem; color: var(--muted); margin-top: 1px }
+
+.header-right { display: flex; align-items: center; gap: .75rem; flex-shrink: 0 }
+.issue-badge {
+  font-size: .72rem; font-weight: 700; letter-spacing: .07em;
+  background: linear-gradient(135deg, rgba(167,139,250,.15), rgba(56,189,248,.15));
+  border: 1px solid rgba(167,139,250,.3);
+  color: #a78bfa; padding: .25rem .7rem; border-radius: 20px;
+}
+.header-date { font-size: .8rem; color: var(--muted) }
+.live-dot {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: #22c55e; margin-right: .3rem;
+  animation: pulse-dot 2.5s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,.4) }
+  50%      { opacity: .7; box-shadow: 0 0 0 5px rgba(34,197,94,0) }
+}
+
+/* ── Category nav ── */
+.cat-nav {
+  max-width: 1160px; margin: 0 auto;
+  padding: .9rem 1.5rem;
+  display: flex; gap: .5rem; flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+.nav-pill {
+  font-size: .78rem; font-weight: 500;
+  padding: .3rem .75rem; border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--cat) 30%, transparent);
+  color: var(--cat); text-decoration: none;
+  transition: background .15s, transform .15s;
+  white-space: nowrap;
+}
+.nav-pill:hover {
+  background: color-mix(in srgb, var(--cat) 12%, transparent);
+  transform: translateY(-1px);
+}
+
+/* ── Main ── */
+main { max-width: 1160px; margin: 0 auto; padding: 2rem 1.5rem }
+
+/* ── Featured ── */
+.featured-wrap { margin-bottom: 2.5rem }
+.featured-card {
+  background: linear-gradient(135deg, #14103a 0%, #0e0e28 60%, #0a1428 100%);
+  border: 1px solid rgba(167,139,250,.22);
+  border-radius: 18px; padding: 2rem 2.5rem;
+  position: relative; overflow: hidden;
+}
+.featured-card::after {
+  content: ''; position: absolute; top: -80px; right: -80px;
+  width: 350px; height: 350px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.featured-eyebrow {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem
+}
+.featured-badge {
+  font-size: .72rem; font-weight: 700; letter-spacing: .1em;
+  color: #a78bfa; text-transform: uppercase;
+}
+.featured-cat { font-size: .78rem; font-weight: 500 }
+.featured-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.3rem,3vw,1.9rem); font-weight: 700;
+  line-height: 1.3; margin-bottom: 1rem;
+}
+.featured-meta { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem }
+.featured-age  { font-size: .8rem; color: var(--muted) }
+.featured-body { color: #94a3b8; line-height: 1.7; margin-bottom: 1.5rem; max-width: 680px }
+.featured-btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: linear-gradient(135deg, #6d28d9, #4f46e5);
+  color: #fff; text-decoration: none;
+  padding: .6rem 1.3rem; border-radius: 9px;
+  font-size: .88rem; font-weight: 600;
+  transition: opacity .2s, transform .15s;
+  box-shadow: 0 4px 14px rgba(99,102,241,.35);
+}
+.featured-btn:hover { opacity: .88; transform: translateY(-1px) }
+
+/* ── Category section ── */
+.cat-section { margin-bottom: 3rem }
+.section-hdr {
+  display: flex; align-items: center; gap: .6rem;
+  margin-bottom: 1.25rem; padding-bottom: .75rem;
+  border-bottom: 1px solid var(--border);
+}
+.section-icon  { font-size: 1.25rem }
+.section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem; font-weight: 600; color: var(--cat);
+}
+.section-count {
+  margin-left: auto; font-size: .72rem; color: var(--muted);
+  background: var(--card); border: 1px solid var(--border);
+  padding: .15rem .55rem; border-radius: 12px;
+}
+
+/* ── Cards ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 1rem;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.15rem 1.25rem;
+  display: flex; flex-direction: column; gap: .6rem;
+  transition: border-color .2s, background .2s, transform .2s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--cat, #8b5cf6); opacity: 0; transition: opacity .2s;
+}
+.card:hover {
+  border-color: color-mix(in srgb, var(--cat) 40%, transparent);
+  background: var(--card-h);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,.35), 0 0 0 1px color-mix(in srgb,var(--cat) 15%,transparent);
+}
+.card:hover::before { opacity: 1 }
+
+.card-top  { display: flex; align-items: center; justify-content: space-between }
+.card-age  { font-size: .72rem; color: var(--muted) }
+.card-title {
+  font-size: .93rem; font-weight: 600; line-height: 1.45;
+}
+.card-title a {
+  text-decoration: none; color: var(--text);
+  transition: color .15s;
+}
+.card-title a:hover { color: var(--cat, #a78bfa) }
+.card-desc {
+  font-size: .81rem; color: var(--muted); line-height: 1.55;
+  flex-grow: 1;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-link {
+  font-size: .78rem; font-weight: 500;
+  color: color-mix(in srgb, var(--cat) 90%, #fff);
+  text-decoration: none; margin-top: auto;
+  transition: opacity .15s;
+}
+.card-link:hover { opacity: .75 }
+
+/* ── Source pill ── */
+.pill {
+  display: inline-block;
+  font-size: .68rem; font-weight: 700; letter-spacing: .04em;
+  padding: .15rem .5rem; border-radius: 5px; border: 1px solid;
+  text-transform: uppercase;
+}
+
+/* ── Stats bar ── */
+.stats-bar {
+  max-width: 1160px; margin: 0 auto 0;
+  padding: .75rem 1.5rem;
+  display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  font-size: .78rem; color: var(--muted);
+}
+.stat-item { display: flex; align-items: center; gap: .35rem }
+.stat-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--c, #6b7280) }
+
+/* ── Footer ── */
+.site-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 2rem 1.5rem; margin-top: 3rem;
+}
+.footer-inner {
+  max-width: 1160px; margin: 0 auto;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 1rem; text-align: center;
+}
+.footer-brand {
+  font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700;
+  background: linear-gradient(135deg,#a78bfa,#38bdf8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.footer-links { display: flex; gap: 1.25rem; flex-wrap: wrap; justify-content: center }
+.footer-links a { font-size: .82rem; color: var(--muted); text-decoration: none }
+.footer-links a:hover { color: var(--text) }
+.footer-note { font-size: .75rem; color: var(--dim) }
+.footer-sources {
+  font-size: .75rem; color: var(--dim);
+  display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center;
+}
+.footer-sources span::after { content: '·'; margin-left: .5rem }
+.footer-sources span:last-child::after { content: '' }
+
+/* ── Empty state ── */
+.empty-state {
+  text-align: center; padding: 3rem 1rem; color: var(--muted);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 1rem }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .header-inner { flex-wrap: wrap }
+  .featured-card { padding: 1.5rem }
+  main { padding: 1.25rem 1rem }
+  .cat-nav { padding: .75rem 1rem }
+}
+@media (max-width: 500px) {
+  .card-grid { grid-template-columns: 1fr }
+  .header-date { display: none }
+}
+
+/* ── Scroll-to-top ── */
+.scroll-top {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;
+  background: rgba(13,13,36,.9); border: 1px solid rgba(167,139,250,.3);
+  color: #a78bfa; width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; cursor: pointer; text-decoration: none;
+  backdrop-filter: blur(8px); transition: background .2s, transform .2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,.3);
+}
+.scroll-top:hover { background: rgba(99,102,241,.25); transform: translateY(-2px) }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#">
+        <span class="brand-logo">⚡</span>
+        <div>
+          <div class="brand-name">AI Pulse</div>
+          <div class="brand-sub">Daily AI News Digest</div>
+        </div>
+      </a>
+      <div class="header-right">
+        <span class="issue-badge">Issue #105</span>
+        <span class="header-date"><span class="live-dot"></span>November 14, 2026</span>
+      </div>
+    </div>
+    <nav class="cat-nav"><a class="nav-pill" href="#research" style="--cat:#22d3ee">🔬&thinsp;Research &amp; Breakthroughs</a><a class="nav-pill" href="#agents" style="--cat:#c084fc">🤖&thinsp;AI Agents &amp; Automation</a><a class="nav-pill" href="#products" style="--cat:#60a5fa">🚀&thinsp;New Products &amp; Releases</a><a class="nav-pill" href="#industry" style="--cat:#4ade80">💼&thinsp;Industry &amp; Business</a></nav>
+  </header>
+
+  <main>
+    
+  <section class="featured-wrap">
+    <div class="featured-card">
+      <div class="featured-eyebrow">
+        <span class="featured-badge">✦ Featured Story</span>
+        <span class="featured-cat" style="color:#4ade80">💼 Industry &amp; Business</span>
+      </div>
+      <h2 class="featured-title">Jensen Huang and the decline of the visionary showman founder CEO</h2>
+      <div class="featured-meta">
+        <span class="pill" style="background:#e11d4822;color:#e11d48;border-color:#e11d4844">The Verge</span>
+        <span class="featured-age">1h ago</span>
+      </div>
+      <p class="featured-body">On January 6th, 2025, Nvidia CEO Jensen Huang got his rockstar moment at last. He strode triumphantly onstage, hand raised in the air, to the claps and cheers of a 14,000-person arena absolutely packed with influencers and fans, their faces awash in blue glow, as he made his entrance in a black leather jacket that [&amp;#8230;]</p>
+      <a class="featured-btn" href="https://www.theverge.com/tech/1033781/nvidia-jensen-huang-last-visionary-showman-founder-ceo" target="_blank" rel="noopener">
+        Read Full Story ↗
+      </a>
+    </div>
+  </section>
+    
+  <section class="cat-section" id="research" style="--cat:#22d3ee;--cat-bg:rgba(34,211,238,0.07);--cat-glow:rgba(34,211,238,0.12)">
+    <header class="section-hdr">
+      <span class="section-icon">🔬</span>
+      <h2 class="section-title">Research &amp; Breakthroughs</h2>
+      <span class="section-count">6 stories</span>
+    </header>
+    <div class="card-grid">
+      
+    <article class="card" style="--cat:#22d3ee">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">19h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/11/13/export-banned-nvidia-chips-are-behind-chinas-most-powerful-ai-models-uh-oh-jensen/" target="_blank" rel="noopener">Export-banned Nvidia chips are behind China’s most powerful AI models — uh-oh, Jensen!</a></h3>
+      <p  class="card-desc">New research shows the most advanced AI models from China were trained on banned Nvidia chips.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/11/13/export-banned-nvidia-chips-are-behind-chinas-most-powerful-ai-models-uh-oh-jensen/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#22d3ee">
+      <div class="card-top">
+        <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">MIT Tech Review</span>
+        <span class="card-age">Yesterday</span>
+      </div>
+      <h3 class="card-title"><a href="https://www.technologyreview.com/2026/11/13/1148474/more-autonomy-fewer-ndas-volunteers-have-new-requests-for-brain-implant-trials/" target="_blank" rel="noopener">More autonomy, fewer NDAs: Volunteers have new requests for brain implant trials</a></h3>
+      <p  class="card-desc">Scientists have been working on ways to decode brain activity for decades. Teams have developed brain implants that can be used to control robotic limbs and computers, and even to “speak.” The people who volunteer for trials of those device</p>
+      <a  class="card-link" href="https://www.technologyreview.com/2026/11/13/1148474/more-autonomy-fewer-ndas-volunteers-have-new-requests-for-brain-implant-trials/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#22d3ee">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">20h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://machinelearning.apple.com/research/theoretical-limits-alignment" target="_blank" rel="noopener">Theoretical Limits of Language Model Alignment</a></h3>
+      <p  class="card-desc">🔥 1 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://machinelearning.apple.com/research/theoretical-limits-alignment" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#22d3ee">
+      <div class="card-top">
+        <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">arXiv</span>
+        <span class="card-age">Yesterday</span>
+      </div>
+      <h3 class="card-title"><a href="http://arxiv.org/abs/2611.17332v1" target="_blank" rel="noopener">ArchSpace: Recording, Reviewing, and Referencing LLM Architecture Research</a></h3>
+      <p  class="card-desc">[cs.CL · cs.LG] Model architecture shapes the scaling behavior, training efficiency, and inference cost of LLMs, making it a central focus of both industry and academia. In industry, teams such as those behind DeepSeek, Qwen, and Kimi routi</p>
+      <a  class="card-link" href="http://arxiv.org/abs/2611.17332v1" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#22d3ee">
+      <div class="card-top">
+        <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">arXiv</span>
+        <span class="card-age">Yesterday</span>
+      </div>
+      <h3 class="card-title"><a href="http://arxiv.org/abs/2611.17329v1" target="_blank" rel="noopener">Internalizing Investment Mandates: A Neurosymbolic RL Approach to Portfolio Allocation</a></h3>
+      <p  class="card-desc">[cs.LG] Institutional portfolios operate under investment policy statements that specify asset allocation constraints, often conditioned on market regime information. Deep reinforcement learning has been shown to optimize financial performa</p>
+      <a  class="card-link" href="http://arxiv.org/abs/2611.17329v1" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#22d3ee">
+      <div class="card-top">
+        <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">arXiv</span>
+        <span class="card-age">Yesterday</span>
+      </div>
+      <h3 class="card-title"><a href="http://arxiv.org/abs/2611.17323v1" target="_blank" rel="noopener">AgentSSL: Can MLE Agents Leverage Unlabeled Data?</a></h3>
+      <p  class="card-desc">[cs.AI · cs.LG] Applying machine learning systems to new domains introduces bottlenecks in both labeled data acquisition and manual pipeline engineering. While recent MLE agents show promise in automating pipeline design, they have been stu</p>
+      <a  class="card-link" href="http://arxiv.org/abs/2611.17323v1" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+    </div>
+  </section>
+  <section class="cat-section" id="agents" style="--cat:#c084fc;--cat-bg:rgba(192,132,252,0.07);--cat-glow:rgba(192,132,252,0.12)">
+    <header class="section-hdr">
+      <span class="section-icon">🤖</span>
+      <h2 class="section-title">AI Agents &amp; Automation</h2>
+      <span class="section-count">6 stories</span>
+    </header>
+    <div class="card-grid">
+      
+    <article class="card" style="--cat:#c084fc">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">46m ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://www.shotoku.dev/" target="_blank" rel="noopener">Show HN: Shotoku – Local-first action governance and budget caps for AI agents</a></h3>
+      <p  class="card-desc">🔥 1 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://www.shotoku.dev/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#c084fc">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">57m ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://github.com/ai-timon/timon" target="_blank" rel="noopener">Show HN: Timon, an open-source AI workstation for coordinating agents</a></h3>
+      <p  class="card-desc">🔥 3 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://github.com/ai-timon/timon" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#c084fc">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">1h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://glthr.com/transitive-policies-for-ai-agents" target="_blank" rel="noopener">Transitive Policies for Agents: Agent Permissions Don&#x27;t Automatically Compose</a></h3>
+      <p  class="card-desc">🔥 2 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://glthr.com/transitive-policies-for-ai-agents" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#c084fc">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">5h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://www.whatstask.com" target="_blank" rel="noopener">WhatsTask – An AI project manager for teams of people and agents</a></h3>
+      <p  class="card-desc">🔥 1 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://www.whatstask.com" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#c084fc">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">1h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://vercel.com/academy/build-ai-agent-harness" target="_blank" rel="noopener">Build Your Own AI Coding Agent Harness</a></h3>
+      <p  class="card-desc">🔥 1 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://vercel.com/academy/build-ai-agent-harness" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#c084fc">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">10h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://browserr.dev" target="_blank" rel="noopener">Show HN: Browserr – An MCP-first browser for AI agents (one Rust binary)</a></h3>
+      <p  class="card-desc">🔥 2 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://browserr.dev" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+    </div>
+  </section>
+  <section class="cat-section" id="products" style="--cat:#60a5fa;--cat-bg:rgba(96,165,250,0.07);--cat-glow:rgba(96,165,250,0.12)">
+    <header class="section-hdr">
+      <span class="section-icon">🚀</span>
+      <h2 class="section-title">New Products &amp; Releases</h2>
+      <span class="section-count">6 stories</span>
+    </header>
+    <div class="card-grid">
+      
+    <article class="card" style="--cat:#60a5fa">
+      <div class="card-top">
+        <span class="pill" style="background:#f9731622;color:#f97316;border-color:#f9731644">HackerNews</span>
+        <span class="card-age">1h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://www.reuters.com/business/media-telecom/amazons-plan-own-worlds-product-data-fight-ai-shopping-agents-2026-11-13/" target="_blank" rel="noopener">Amazon&#x27;s plan to own the product data and fight AI shopping agents</a></h3>
+      <p  class="card-desc">🔥 2 points · 0 comments on Hacker News</p>
+      <a  class="card-link" href="https://www.reuters.com/business/media-telecom/amazons-plan-own-worlds-product-data-fight-ai-shopping-agents-2026-11-13/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#60a5fa">
+      <div class="card-top">
+        <span class="pill" style="background:#0ea5e922;color:#0ea5e9;border-color:#0ea5e944">IEEE Spectrum</span>
+        <span class="card-age">18h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://spectrum.ieee.org/microcredentials-trustworthy-ai" target="_blank" rel="noopener">How Microcredentials Help Engineers Build Trustworthy AI</a></h3>
+      <p  class="card-desc">Engineering teams are moving at breakneck speed to integrate artificial intelligence, but they are running into a formidable new barrier: compliance issues. Translating high-level AI ethics , governance , and auditing into daily operational</p>
+      <a  class="card-link" href="https://spectrum.ieee.org/microcredentials-trustworthy-ai" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#60a5fa">
+      <div class="card-top">
+        <span class="pill" style="background:#e11d4822;color:#e11d48;border-color:#e11d4844">The Verge</span>
+        <span class="card-age">14h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://www.theverge.com/tech/1033697/amazon-world-product-graph-ai-search" target="_blank" rel="noopener">Amazon has a plan to index the world’s online shopping data</a></h3>
+      <p  class="card-desc">Amazon has plans to build a vault of data on every product sold anywhere on the internet, even products Amazon doesn&#x27;t sell, and make the information available through its own site, according to Reuters. The project, called the &quot;World Produ</p>
+      <a  class="card-link" href="https://www.theverge.com/tech/1033697/amazon-world-product-graph-ai-search" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#60a5fa">
+      <div class="card-top">
+        <span class="pill" style="background:#e11d4822;color:#e11d48;border-color:#e11d4844">The Verge</span>
+        <span class="card-age">17h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://www.theverge.com/ai-artificial-intelligence/1033425/openai-chatgpt-wallet" target="_blank" rel="noopener">ChatGPT Wallet lets OpenAI’s Dots agents make purchases for you</a></h3>
+      <p  class="card-desc">After launching its Dots AI agents platform earlier this year, OpenAI is launching a wallet for the agents. ChatGPT Wallet is rolling out starting today for ChatGPT Pro subscribers in the US aged 18 and older using a US billing address and </p>
+      <a  class="card-link" href="https://www.theverge.com/ai-artificial-intelligence/1033425/openai-chatgpt-wallet" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#60a5fa">
+      <div class="card-top">
+        <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">MIT Tech Review</span>
+        <span class="card-age">Yesterday</span>
+      </div>
+      <h3 class="card-title"><a href="https://www.technologyreview.com/2026/11/13/1148551/the-download-silicon-valley-midterms-nvidia-chip-tracking/" target="_blank" rel="noopener">The Download: Silicon Valley’s blind spot and Nvidia’s chip-tracking plan</a></h3>
+      <p  class="card-desc">This is today&amp;#8217;s edition of The Download, our weekday newsletter that provides a daily dose of what&amp;#8217;s going on in the world of technology. Silicon Valley claims to know the future. So why did it get the midterms so wrong? —Aaron </p>
+      <a  class="card-link" href="https://www.technologyreview.com/2026/11/13/1148551/the-download-silicon-valley-midterms-nvidia-chip-tracking/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#60a5fa">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">21h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/11/13/chatgpts-new-wallet-lets-ai-agents-shop-and-check-out-for-you/" target="_blank" rel="noopener">ChatGPT’s new Wallet lets AI agents shop and check out for you</a></h3>
+      <p  class="card-desc">ChatGPT Wallet lets AI agents shop and check out on users&#x27; behalf, starting with a limited rollout to U.S. Pro subscribers.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/11/13/chatgpts-new-wallet-lets-ai-agents-shop-and-check-out-for-you/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+    </div>
+  </section>
+  <section class="cat-section" id="industry" style="--cat:#4ade80;--cat-bg:rgba(74,222,128,0.07);--cat-glow:rgba(74,222,128,0.12)">
+    <header class="section-hdr">
+      <span class="section-icon">💼</span>
+      <h2 class="section-title">Industry &amp; Business</h2>
+      <span class="section-count">6 stories</span>
+    </header>
+    <div class="card-grid">
+      
+    <article class="card" style="--cat:#4ade80">
+      <div class="card-top">
+        <span class="pill" style="background:#e11d4822;color:#e11d48;border-color:#e11d4844">The Verge</span>
+        <span class="card-age">1h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://www.theverge.com/tech/1033781/nvidia-jensen-huang-last-visionary-showman-founder-ceo" target="_blank" rel="noopener">Jensen Huang and the decline of the visionary showman founder CEO</a></h3>
+      <p  class="card-desc">On January 6th, 2025, Nvidia CEO Jensen Huang got his rockstar moment at last. He strode triumphantly onstage, hand raised in the air, to the claps and cheers of a 14,000-person arena absolutely packed with influencers and fans, their faces</p>
+      <a  class="card-link" href="https://www.theverge.com/tech/1033781/nvidia-jensen-huang-last-visionary-showman-founder-ceo" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#4ade80">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">15h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/11/13/jensen-huangs-departure-blasts-big-hole-in-ai-startup-funding-vcs-and-founders-say/" target="_blank" rel="noopener">Jensen Huang’s departure blasts big hole in AI startup funding, VCs and founders say</a></h3>
+      <p  class="card-desc">Nvidia poured tens of billions into AI startups under Huang. Without him at the helm, founders and VCs are bracing for smaller checks and lower valuations.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/11/13/jensen-huangs-departure-blasts-big-hole-in-ai-startup-funding-vcs-and-founders-say/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#4ade80">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">18h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/11/13/ai-agent-startup-langchain-hits-3b-valuation/" target="_blank" rel="noopener">AI agent startup LangChain hits $3B valuation</a></h3>
+      <p  class="card-desc">LangChain now claims 7,000 customers of its model and platform agnostic agent management tool LangSmith.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/11/13/ai-agent-startup-langchain-hits-3b-valuation/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#4ade80">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">21h ago</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/11/13/nvidia-ceo-jensen-huangs-affair-with-alleged-chinese-spy-a-timeline/" target="_blank" rel="noopener">The unfolding Jensen Huang scandal: a timeline</a></h3>
+      <p  class="card-desc">Jensen Huang has resigned from Nvidia following an affair, which could have ramifications for national security as the U.S. and China race to develop the most advanced AI infrastructure.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/11/13/nvidia-ceo-jensen-huangs-affair-with-alleged-chinese-spy-a-timeline/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#4ade80">
+      <div class="card-top">
+        <span class="pill" style="background:#a78bfa22;color:#a78bfa;border-color:#a78bfa44">MIT Tech Review</span>
+        <span class="card-age">Yesterday</span>
+      </div>
+      <h3 class="card-title"><a href="https://www.technologyreview.com/2026/11/13/1148498/silicon-valley-claims-to-know-the-future-so-why-did-it-get-the-midterms-so-wrong/" target="_blank" rel="noopener">Silicon Valley claims to know the future. So why did it get the midterms so wrong?</a></h3>
+      <p  class="card-desc">The self-styled visionaries of Silicon Valley, leaders like OpenAI chief executive Sam Altman and SpaceX boss Elon Musk, have built careers claiming to see the future. Long-term vision is currency: Meta’s Mark Zuckerberg built a 10-year roa</p>
+      <a  class="card-link" href="https://www.technologyreview.com/2026/11/13/1148498/silicon-valley-claims-to-know-the-future-so-why-did-it-get-the-midterms-so-wrong/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+
+    <article class="card" style="--cat:#4ade80">
+      <div class="card-top">
+        <span class="pill" style="background:#22c55e22;color:#22c55e;border-color:#22c55e44">TechCrunch</span>
+        <span class="card-age">Yesterday</span>
+      </div>
+      <h3 class="card-title"><a href="https://techcrunch.com/2026/11/13/israels-vcs-see-opportunity-for-challengers-in-nvidias-turmoil/" target="_blank" rel="noopener">Israel’s VCs see opportunity for challengers in Nvidia’s turmoil</a></h3>
+      <p  class="card-desc">Given Nvidia’s stronghold on AI and its importance in Israel, many in the country&#x27;s startup ecosystem are worried about the impact of his departure.</p>
+      <a  class="card-link" href="https://techcrunch.com/2026/11/13/israels-vcs-see-opportunity-for-challengers-in-nvidias-turmoil/" target="_blank" rel="noopener">Read more ↗</a>
+    </article>
+    </div>
+  </section>
+  </main>
+
+  <div class="stats-bar"><span class="stat-item"><span class="stat-dot" style="--c:#22d3ee"></span>🔬 6 Research &amp; Breakthroughs</span><span class="stat-item"><span class="stat-dot" style="--c:#c084fc"></span>🤖 6 AI Agents &amp; Automation</span><span class="stat-item"><span class="stat-dot" style="--c:#60a5fa"></span>🚀 6 New Products &amp; Releases</span><span class="stat-item"><span class="stat-dot" style="--c:#4ade80"></span>💼 6 Industry &amp; Business</span></div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">⚡ AI Pulse</div>
+      <div class="footer-links">
+        <a href="https://github.com/oeway/ai-news-channel" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://arxiv.org/list/cs.AI/recent" target="_blank" rel="noopener">arXiv CS.AI</a>
+        <a href="https://news.ycombinator.com" target="_blank" rel="noopener">HackerNews</a>
+      </div>
+      <div class="footer-sources"><span>HackerNews</span><span>IEEE Spectrum</span><span>MIT Tech Review</span><span>TechCrunch</span><span>The Verge</span><span>arXiv</span></div>
+      <div class="footer-note">
+        Auto-generated from 6 sources · 24 articles · Last updated November 14, 2026
+        <br>Generated at <time datetime="2026-11-14T13:49:46Z">2026-11-14T13:49:46Z</time>
+      </div>
+    </div>
+  </footer>
+
+</div>
+<a class="scroll-top" href="#" aria-label="Back to top">↑</a>
+</body>
+</html>
