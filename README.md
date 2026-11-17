@@ -51,7 +51,7 @@ If live fetching isn't available (e.g. a sandboxed environment that blocks the R
 python scripts/fetch_news.py --from-json articles.json
 ```
 
-Each entry needs `title`, `url`, `source`; `desc`, `source_color`, `date` (ISO 8601), and `category` (one of `research`, `agents`, `products`, `industry`, `open_source`) are optional.
+Each entry needs `title`, `url`, `source`; `desc`, `source_color`, `date` (ISO 8601), `category` (one of `research`, `agents`, `products`, `industry`, `open_source`) and `priority` (a number added to the ranking score, e.g. `5` to make a story the featured lead) are optional.
 
 ## License
 

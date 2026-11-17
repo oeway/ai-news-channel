@@ -299,6 +299,7 @@ def score(a: Dict) -> float:
     s += source_bonus.get(a.get("source",""), 1.0)
     tl = len(a.get("title",""))
     if 40 < tl < 130: s += 0.4
+    s += a.get("priority", 0)                  # editorial boost (curated mode only)
     return s
 
 # ─── Deduplicate ─────────────────────────────────────────────────────────────
@@ -328,6 +329,7 @@ def load_curated(path: Path) -> List[Dict]:
             "source_color": a.get("source_color", ""),
             "date":         to_dt(a.get("date")),
             "category":     a.get("category"),
+            "priority":     float(a.get("priority", 0)),
         })
     return articles
 
